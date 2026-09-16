@@ -219,3 +219,33 @@ linear-gradient(135deg,#1c3347,#0d1722)}
   .hero-photo{height:230px}
   .article-visual{height:150px}
 }
+
+.rss-link{display:inline-block;margin-top:8px;color:var(--accent);font-weight:900;text-decoration:none}
+.archive-link{display:inline-block;margin-top:8px;color:#dbe3ea;font-size:.82rem;font-weight:800;text-decoration:none}
+.article-page{padding:48px 0 80px}
+.article-detail{max-width:1100px}
+.article-back{display:inline-block;color:#aab7c4;text-decoration:none;font-weight:800;margin-bottom:28px}
+.article-archive-banner{border:1px solid #725f2b;background:#2a2414;color:#f3e8b2;padding:13px 16px;border-radius:12px;margin-bottom:22px}
+.article-detail-header{max-width:900px;margin-bottom:28px}
+.article-detail-header h1{font-size:clamp(2.4rem,5.4vw,5.3rem);margin:15px 0 20px}
+.article-lead{font-size:1.25rem;color:#c6d0da;max-width:800px}
+.article-detail-meta{display:flex;gap:22px;flex-wrap:wrap;color:#8f9ead;font-size:.86rem;margin-top:20px}
+.article-detail-image{margin:0 0 34px;position:relative}
+.article-detail-image img{width:100%;max-height:590px;object-fit:cover;display:block;border-radius:20px;border:1px solid var(--line)}
+.article-detail-image figcaption{color:#8d9aa7;font-size:.76rem;margin-top:7px}
+.article-detail-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,.6fr);gap:48px}
+.article-detail-copy section{padding:0 0 30px;margin-bottom:30px;border-bottom:1px solid var(--line)}
+.article-detail-copy p:not(.overline){font-size:1.08rem;color:#ced6de;line-height:1.75}
+.article-detail-side{display:grid;align-content:start;gap:14px}
+.article-side-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px}
+.article-side-card strong{display:block;font-size:1.35rem;margin:9px 0}
+.article-side-card p{color:var(--muted);font-size:.9rem}
+.source-button{display:inline-block;color:#071019;background:var(--accent);padding:9px 11px;border-radius:8px;font-weight:900;text-decoration:none;font-size:.82rem}
+.article-not-found{padding:60px 0;max-width:760px}
+.article-not-found h1{font-size:clamp(2.6rem,5vw,5rem)}
+@media(max-width:760px){
+  .article-page{padding-top:28px}
+  .article-detail-grid{grid-template-columns:1fr;gap:20px}
+  .article-detail-header h1{font-size:2.5rem}
+  .article-detail-image img{border-radius:12px}
+}
