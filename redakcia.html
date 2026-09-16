@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="sk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Redakcia | Objektív24</title>
+  <link rel="stylesheet" href="redakcia.css">
+  <script src="redakcia.js" defer></script>
+</head>
+<body>
+  <header class="editor-topbar">
+    <a class="editor-brand" href="index.html" aria-label="Objektív24 domov"><span>OBJEKTÍV</span><b>24</b></a>
+    <div class="editor-label">REDAKCIA / IBA PRE VLASTNÍKA</div>
+    <nav class="editor-nav" aria-label="Redakčné odkazy">
+      <a href="index.html#clanky">Návštevnosť ↗</a>
+      <a href="index.html#clanky">Vydané články ↗</a>
+    </nav>
+  </header>
+
+  <main class="editor-shell">
+    <aside class="drafts-panel">
+      <div class="drafts-sticky">
+        <h1>Pracovný stôl</h1>
+        <button class="new-draft" id="new-draft" type="button">+ Nový návrh</button>
+        <label class="search-label" for="draft-search">Hľadať článok</label>
+        <input id="draft-search" class="draft-search" type="search" placeholder="Titulok…">
+        <p class="draft-count"><strong id="draft-count">0</strong> uložených návrhov</p>
+        <div id="draft-list" class="draft-list" aria-live="polite"></div>
+      </div>
+    </aside>
+
+    <section class="editor-main">
+      <div class="editor-heading">
+        <div>
+          <p class="eyebrow">NOVÝ ČLÁNOK</p>
+          <h2>Najprv fakty.<br>Potom vysvetlenie.</h2>
+        </div>
+        <span class="draft-status" id="draft-status">Nový návrh</span>
+      </div>
+
+      <div class="mode-note">Táto GitHub Pages verzia je zatiaľ pracovný editor. Návrhy sa ukladajú iba v tomto prehliadači; bezpečné serverové ukladanie pripojíme samostatne.</div>
+
+      <form id="article-form" class="article-form">
+        <input type="hidden" id="draft-id">
+
+        <section class="form-section">
+          <h3>Obrázok článku</h3>
+          <label for="image-upload">Nahrať obrázok</label>
+          <input id="image-upload" type="file" accept="image/jpeg,image/png,image/webp">
+          <p class="hint">JPG, PNG alebo WebP. Použite vlastnú fotografiu alebo obrázok s právom zverejnenia.</p>
+          <div id="image-preview" class="image-preview" hidden>
+            <img alt="Náhľad obrázka článku">
+            <button type="button" id="remove-image">Odstrániť obrázok</button>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <label for="title">Titulok</label>
+          <input id="title" type="text" maxlength="180" required>
+          <label for="category">Rubrika</label>
+          <input id="category" type="text" value="Slovensko v súvislostiach">
+          <label for="intro">Krátky úvod</label>
+          <textarea id="intro" rows="4" maxlength="500"></textarea>
+        </section>
+
+        <section class="form-section two-col">
+          <div>
+            <label for="what-happened">Čo sa stalo</label>
+            <textarea id="what-happened" rows="8"></textarea>
+          </div>
+          <div>
+            <label for="what-it-means">Čo to znamená</label>
+            <textarea id="what-it-means" rows="8"></textarea>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <label for="next-step">Čo ďalej</label>
+          <textarea id="next-step" rows="6"></textarea>
+          <label for="sources">Zdroje a odkazy</label>
+          <textarea id="sources" rows="5" placeholder="Každý zdroj na nový riadok"></textarea>
+        </section>
+
+        <section class="form-section form-footer">
+          <div>
+            <label for="state">Stav</label>
+            <select id="state">
+              <option value="draft">Návrh</option>
+              <option value="published">Vydaný</option>
+              <option value="archived">Archív</option>
+            </select>
+          </div>
+          <div class="actions">
+            <button class="secondary" type="button" id="export-draft">Stiahnuť JSON</button>
+            <button class="primary" type="submit">Uložiť návrh</button>
+          </div>
+        </section>
+      </form>
+    </section>
+  </main>
+</body>
+</html>
