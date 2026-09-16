@@ -28,7 +28,7 @@ function cardTemplate(article) {
         <p>${article.summary}</p>
         <div class="article-meta">
           <span>Overené ${article.verified}</span>
-          <a href="${article.url}" rel="noopener">Čítať ↗</a>
+          <a href="${article.url}">Čítať ↗</a>
         </div>
       </div>
     </article>`;
@@ -40,6 +40,7 @@ function archiveTemplate(article) {
       <span class="eyebrow">${article.category}</span>
       <h3>${article.title}</h3>
       <p>${article.archiveNote || "Časovo viazaná informácia je už po termíne a zostáva dostupná iba v archíve."}</p>
+      <a class="archive-link" href="${article.url}">Otvoriť článok ↗</a>
     </article>`;
 }
 
