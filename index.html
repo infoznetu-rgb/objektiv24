@@ -1,183 +1,30 @@
 <!doctype html>
 <html lang="sk">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Objektív24 — správy v súvislostiach. Čo sa deje, čo to znamená pre vás a čo ďalej.">
-  <title>Objektív24 — Správy v súvislostiach</title>
-  <meta name="theme-color" content="#071019">
-  <link rel="canonical" href="https://objektiv24.sk/">
-  <link rel="alternate" type="application/rss+xml" title="Objektív24 RSS" href="https://objektiv24.sk/rss.xml">
-  <link rel="stylesheet" href="styles.css?v=20260916-4">
-  <script src="app.js?v=20260916-publish1" defer></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Objektív24 — fakty, kontext, ľudia. Správy v súvislostiach.">
+<title>Objektív24 — Fakty. Kontext. Ľudia.</title><meta name="theme-color" content="#061018">
+<link rel="canonical" href="https://objektiv24.sk/"><link rel="alternate" type="application/rss+xml" title="Objektív24 RSS" href="rss.xml">
+<link rel="stylesheet" href="styles.css?v=20260916-redesign"><script src="app.js?v=20260916-redesign" defer></script>
 </head>
 <body>
-  <a class="skip-link" href="#obsah">Preskočiť na obsah</a>
-
-  <header class="site-header">
-    <div class="topbar container">
-      <a class="brand" href="index.html" aria-label="Objektív24 domov">
-        <span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span>
-      </a>
-      <span class="brand-tagline">Správy v súvislostiach.</span>
-      <a class="help-link" href="#pomoc">Nájsť pomoc <span aria-hidden="true">↗</span></a>
-      <button class="menu-button" type="button" aria-expanded="false" aria-controls="site-nav">Menu ☰</button>
-    </div>
-
-    <nav id="site-nav" class="nav-wrap" aria-label="Hlavná navigácia">
-      <div class="container nav-inner">
-        <a href="#clanky">Vydané články</a>
-        <a href="redakcia.html">Redakcia</a>
-        <a href="#suvislosti">Správy v súvislostiach</a>
-        <a href="#pomoc">Praktické informácie</a>
-        <a href="#pomoc">Kam sa obrátiť</a>
-        <a href="ako-pracujeme.html">Ako pracujeme</a>
-        <a href="#tv">TV archívy</a>
-        <span class="nav-motto">Slovensko. Zrozumiteľne.</span>
-      </div>
-    </nav>
-  </header>
-
-  <main id="obsah">
-    <section class="edition-strip container" aria-label="Redakčné vydanie">
-      <strong>REDAKČNÉ VYDANIE</strong>
-      <span>Čo sa deje. Čo to znamená pre vás. Čo ďalej.</span>
-    </section>
-
-    <section id="suvislosti" class="hero container">
-      <article class="hero-main">
-        <figure class="hero-photo">
-          <img src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Solar%20panels%20on%20a%20house%20in%20Boholiuby%202026.jpg?width=1600" alt="Rodinný dom so solárnymi panelmi">
-          <figcaption class="visual-caption">Ilustračná fotografia · Wikimedia Commons · CC0</figcaption>
-        </figure>
-        <div class="hero-content">
-          <div class="meta-row">
-            <span class="eyebrow">Peniaze domácností</span>
-            <span>Podklady overené 2026-09-15</span>
-          </div>
-          <h1>Zelená solidarita: pri aktivovanej žiadosti rozhoduje termín 30. september</h1>
-          <p>Domácnosti s aktivovanou žiadosťou si majú skontrolovať, či SIEA dostala potrebné súhlasy na overenie príjmu v stanovenom termíne.</p>
-          <a class="text-link" href="clanok.html?slug=zelena-solidarita-30-september">Čítať článok <span aria-hidden="true">↗</span></a>
-        </div>
-      </article>
-
-      <aside class="related" aria-label="V súvislostiach">
-        <h2>V SÚVISLOSTIACH</h2>
-        <a class="related-card" href="clanok.html?slug=solvex-vyplaty">
-          <img class="mini-visual" src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Travel%20luggage.png?width=1600" alt="Cestovná batožina pripravená na cestu" loading="lazy">
-          <span class="eyebrow">Spotrebiteľ a peniaze</span>
-          <strong>Solvex: poisťovňa hlási odškodňovanie klientov</strong>
-          <span class="card-copy">Čo si overiť, ak už máte nahlásený nárok.</span>
-        </a>
-        <a class="related-card" href="clanok.html?slug=vakcinacia-lisok">
-          <img class="mini-visual" src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Wild%20Red%20Fox.jpg?width=1600" alt="Líška vo voľnej prírode" loading="lazy">
-          <span class="eyebrow">Život v regiónoch</span>
-          <strong>V októbri budú rozkladať návnady pre líšky</strong>
-          <span class="card-copy">Kde sa bude vakcinovať a ako sa pri náleze správať.</span>
-        </a>
-      </aside>
-    </section>
-
-    <section id="clanky" class="discover container">
-      <div class="section-kicker">SPRÁVY V SÚVISLOSTIACH</div>
-      <div class="discover-head">
-        <div>
-          <p class="overline">VŠETKY TÉMY NA JEDNOM MIESTE</p>
-          <h2>Objavte súvislosti.</h2>
-          <p>Krátke vysvetlenie. Jasné poradie.<br>Kontakt, ktorý vás posunie ďalej.</p>
-        </div>
-        <div class="count-box">
-          <span>Vydané články</span>
-          <strong id="issued-count">10</strong>
-          <small id="active-count">Aktuálne na titulke: 8</small>
-        </div>
-      </div>
-
-      <form class="search-box" role="search" id="search-form">
-        <label for="search-input">Vyhľadať článok alebo tému</label>
-        <div class="search-row">
-          <input id="search-input" type="search" autocomplete="off" placeholder="Napríklad: úrad, dávky, internet…">
-          <button type="submit">Hľadať <span aria-hidden="true">↗</span></button>
-        </div>
-      </form>
-
-      <div id="filters" class="filters" aria-label="Filtrovanie podľa témy"></div>
-      <div id="articles-grid" class="articles-grid" aria-live="polite"></div>
-      <div id="empty-state" class="empty-state" hidden>
-        <h3>Pre tento výber zatiaľ nemáme vydaný článok.</h3>
-        <p>Skúste iné slovo alebo zobrazte všetky témy.</p>
-        <button id="reset-search" type="button">Zobraziť všetko</button>
-      </div>
-
-      <details class="archive-note">
-        <summary>Zobraziť časovo neaktuálne články v archíve</summary>
-        <div id="archive-grid" class="archive-grid"></div>
-      </details>
-    </section>
-
-    <section id="pomoc" class="help-section">
-      <div class="container">
-        <p class="overline">KAM SA OBRÁTIŤ</p>
-        <div class="help-head">
-          <h2>Správny kontakt.<br>Menej blúdenia.</h2>
-          <p>Rozlišujte technický problém a otázku k vlastnej žiadosti. Nie každý kontakt vyrieši oboje.</p>
-        </div>
-        <div class="help-grid">
-          <article>
-            <span class="eyebrow">TECHNICKÝ PROBLÉM</span>
-            <h3>Pomoc so slovensko.sk</h3>
-            <p class="big-contact">+421 2 35 803 083</p>
-            <p>Pracovné dni, 8.00 – 17.00. Pred volaním si skontrolujte aktuálne hodiny na oficiálnom webe.</p>
-            <a class="text-link" href="https://www.slovensko.sk/" rel="noopener">Oficiálny kontakt ↗</a>
-          </article>
-          <article>
-            <span class="eyebrow">MOJA ŽIADOSŤ ALEBO DOKLAD</span>
-            <h3>Príslušný úrad</h3>
-            <p>Podmienky, prílohy a termíny si potvrďte u inštitúcie, ktorá vašu vec vybavuje.</p>
-            <a class="text-link" href="https://www.slovensko.sk/" rel="noopener">Ako nájsť správne pracovisko ↗</a>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section id="zasady" class="principles container">
-      <p class="overline">NA ČOM SI DÁVAME ZÁLEŽAŤ</p>
-      <h2>Jednoduchý jazyk.<br>Nie jednoduché sľuby.</h2>
-      <div class="principles-grid">
-        <article><span>01</span><h3>Fakt nie je komentár</h3><p>Odlišujeme informáciu zo zdroja od redakčného vysvetlenia.</p></article>
-        <article><span>02</span><h3>Postup musí viesť niekam</h3><p>Pri návodoch uvádzame konkrétny prvý krok a oficiálnu pomoc.</p></article>
-        <article><span>03</span><h3>Aj rada môže zostarnúť</h3><p>Pri časovo citlivých informáciách uvádzame dátum kontroly podkladov.</p></article>
-      </div>
-      <a class="text-link" href="ako-pracujeme.html">Naše redakčné pravidlá ↗</a>
-    </section>
-
-    <section id="tv" class="newsletter">
-      <div class="container newsletter-inner">
-        <div>
-          <span class="eyebrow">ĎALŠIE VYDANIA</span>
-          <h2>Buďte pri ďalších článkoch.</h2>
-        </div>
-        <div>
-          <p>Automatické sťahovanie nových podkladov pripravíme ako ďalší krok. Publikovanie môže zostať na manuálne potvrdenie.</p>
-          <a class="rss-link" href="rss.xml">RSS kanál →</a>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <div class="container footer-grid">
-      <div>
-        <a class="brand" href="index.html"><span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span></a>
-        <p>Čo sa deje. Čo to znamená pre vás. Čo ďalej.</p>
-      </div>
-      <div class="footer-links">
-        <a href="ako-pracujeme.html">Redakčné pravidlá</a>
-        <a href="ako-pracujeme.html#sukromie">Súkromie</a>
-        <a href="#pomoc">Kontakt a opravy</a>
-      </div>
-      <p class="copyright">© 2026 Objektív24. Nie sme štátny úrad ani jeho oficiálny partner.</p>
-    </div>
-  </footer>
-</body>
-</html>
+<a class="skip-link" href="#obsah">Preskočiť na obsah</a>
+<header class="site-header"><div class="topbar container">
+<a class="brand" href="index.html" aria-label="Objektív24 domov"><span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span><small>FAKTY · KONTEXT · ĽUDIA</small></a>
+<form class="header-search" role="search"><input type="search" placeholder="Hľadať články, témy…" aria-label="Hľadať"><span>⌕</span></form>
+<a class="help-link" href="#pomoc">Praktická pomoc</a><button class="menu-button" type="button" aria-expanded="false" aria-controls="site-nav">Menu ☰</button>
+</div><nav id="site-nav" class="nav-wrap"><div class="container nav-inner"><a href="#clanky">Všetko</a><a href="#clanky">Slovensko</a><a href="#clanky">Ekonomika</a><a href="#clanky">Technológie</a><a href="#clanky">Spoločnosť</a><a href="#pomoc">Praktické</a><a href="ako-pracujeme.html">Ako pracujeme</a><a href="redakcia.html">Redakcia</a></div></nav></header>
+<main id="obsah">
+<section class="breaking container"><strong>⚡ AKTUÁLNE</strong><span>Najdôležitejšie informácie, ktoré sa oplatí vedieť práve teraz.</span><a href="#clanky">Najnovšie →</a></section>
+<section id="suvislosti" class="hero container reveal">
+<article class="hero-main"><figure class="hero-photo"><img src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Solar%20panels%20on%20a%20house%20in%20Boholiuby%202026.jpg?width=1600" alt="Rodinný dom so solárnymi panelmi"><figcaption>Ilustračná fotografia · Wikimedia Commons</figcaption></figure><div class="hero-shade"></div><div class="hero-content"><div class="meta-row"><span class="eyebrow">PENIAZE DOMÁCNOSTÍ</span><span>5 min čítania</span></div><h1>Zelená solidarita: pri aktivovanej žiadosti rozhoduje termín 30. september</h1><p>Čo sa deje, koho sa zmena týka a čo si treba skontrolovať, aby vám nič dôležité neušlo.</p><a class="primary-cta" href="clanok.html?slug=zelena-solidarita-30-september">Čítať ďalej →</a></div></article>
+<aside class="latest"><div class="section-row"><h2>Najnovšie</h2><a href="#clanky">Všetky →</a></div><a class="latest-item" href="clanok.html?slug=solvex-vyplaty"><img src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Travel%20luggage.png?width=600" alt=""><span><b>Solvex: poisťovňa hlási odškodňovanie klientov</b><small>Spotrebiteľ · dnes</small></span></a><a class="latest-item" href="clanok.html?slug=vakcinacia-lisok"><img src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Wild%20Red%20Fox.jpg?width=600" alt=""><span><b>V októbri budú rozkladať návnady pre líšky</b><small>Regióny · dnes</small></span></a><div class="latest-note"><span>Objektív24</span><strong>Správa nestačí. Dávame jej súvislosti.</strong><p>Pri časovo citlivých témach uvádzame dátum overenia a praktický ďalší krok.</p></div></aside>
+</section>
+<section class="topic-rail container reveal"><a href="#clanky">◎<span>Slovensko</span></a><a href="#clanky">◉<span>Ekonomika</span></a><a href="#clanky">⌁<span>Technológie</span></a><a href="#clanky">♧<span>Spoločnosť</span></a><a href="#pomoc">✦<span>Praktické rady</span></a></section>
+<section id="clanky" class="discover container reveal"><div class="section-row big"><div><span class="section-kicker">SPRÁVY V SÚVISLOSTIACH</span><h2>Vybrané pre vás</h2></div><div class="count-box"><span>Vydané</span><strong id="issued-count">—</strong><small id="active-count">Načítavam…</small></div></div>
+<form class="search-box" role="search" id="search-form"><div class="search-row"><input id="search-input" type="search" autocomplete="off" placeholder="Hľadať článok alebo tému…"><button type="submit">Hľadať</button></div></form><div id="filters" class="filters"></div><div id="articles-grid" class="articles-grid" aria-live="polite"></div><div id="empty-state" class="empty-state" hidden><h3>Nič sme nenašli.</h3><button id="reset-search" type="button">Zobraziť všetko</button></div><details class="archive-note"><summary>Archív starších článkov</summary><div id="archive-grid" class="archive-grid"></div></details></section>
+<section id="pomoc" class="help-section reveal"><div class="container"><div class="section-row big"><div><span class="section-kicker">PRAKTICKÝ OBJEKTÍV</span><h2>Čo potrebujete vedieť?</h2></div><a href="ako-pracujeme.html">Ako pracujeme →</a></div><div class="help-grid"><article><span>💡</span><h3>Praktické rady</h3><p>Ako vybaviť vec, čo si pripraviť a na čo nezabudnúť.</p></article><article><span>▤</span><h3>Vysvetľujeme</h3><p>Zložité témy jednoducho, bez zbytočného balastu.</p></article><article><span>▥</span><h3>Dáta a fakty</h3><p>Čísla dávame do kontextu a ukazujeme zdroj.</p></article><article><span>◎</span><h3>Kam sa obrátiť</h3><p>Správny kontakt a konkrétny prvý krok.</p></article></div></div></section>
+<section class="principles container reveal"><span class="section-kicker">NA ČOM SI DÁVAME ZÁLEŽAŤ</span><h2>Jednoduchý jazyk.<br>Nie jednoduché sľuby.</h2><div class="principles-grid"><article><span>01</span><h3>Fakt nie je komentár</h3><p>Odlišujeme informáciu od vysvetlenia.</p></article><article><span>02</span><h3>Postup musí viesť niekam</h3><p>Uvádzame konkrétny ďalší krok.</p></article><article><span>03</span><h3>Informácia môže zostarnúť</h3><p>Časovo citlivé podklady dátumujeme.</p></article></div></section>
+<section class="newsletter reveal"><div class="container newsletter-inner"><div><span class="section-kicker">OBJEKTÍV24</span><h2>Buďte o krok vpredu.</h2><p>Najdôležitejšie správy, analýzy a praktické informácie na jednom mieste.</p></div><a class="primary-cta" href="rss.xml">Odoberať RSS →</a></div></section>
+</main><footer class="site-footer"><div class="container footer-grid"><div><a class="brand" href="index.html"><span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span></a><p>Fakty. Kontext. Ľudia.</p></div><div class="footer-links"><a href="redakcia.html">Redakcia</a><a href="ako-pracujeme.html">Etika a pravidlá</a><a href="ako-pracujeme.html#sukromie">Súkromie</a></div><p class="copyright">© 2026 Objektív24 · Nie sme štátny úrad ani jeho oficiálny partner.</p></div></footer>
+</body></html>
