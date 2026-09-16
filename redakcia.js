@@ -2,7 +2,14 @@ const SUPABASE_URL="https://bkyappgttwjxakkwycub.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_xgl_GnkeKPFDCtyr1RtnnA_f6aaPdS4";
 const LEGACY_STORAGE_KEY="objektiv24-redakcia-drafts-v2";
 const $=s=>document.querySelector(s);
-const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
+  auth:{
+    persistSession:true,
+    autoRefreshToken:true,
+    detectSessionInUrl:true,
+    flowType:"pkce"
+  }
+});
 
 let drafts=[];
 let publishedDrafts=[];
@@ -359,6 +366,32 @@ $("#export-draft").addEventListener("click",()=>{
   a.click();URL.revokeObjectURL(u);
 });
 
+async function finishAuthRedirect(){
+  const url=new URL(window.location.href);
+  const authError=url.searchParams.get("error_description")||url.searchParams.get("error");
+  if(authError){
+    authMessage("Prihlasovací odkaz nebolo možné použiť: "+decodeURIComponent(authError),"error");
+    return;
+  }
+
+  const code=url.searchParams.get("code");
+  if(code){
+    const {error}=await client.auth.exchangeCodeForSession(code);
+    if(error){
+      authMessage("Prihlasovací odkaz sa nepodarilo dokončiť: "+friendlyAuthError(error),"error");
+      return;
+    }
+    url.searchParams.delete("code");
+    url.searchParams.delete("sb_flow_id");
+    history.replaceState({},document.title,url.pathname+url.search);
+  }
+
+  if(location.hash&&location.hash.includes("error_description")){
+    const hash=new URLSearchParams(location.hash.slice(1));
+    authMessage("Prihlasovací odkaz nebolo možné použiť: "+(hash.get("error_description")||hash.get("error")||"Neznáma chyba"),"error");
+  }
+}
+
 client.auth.onAuthStateChange(async(event,session)=>{
   if(session?.user){
     try{await showEditor(session.user)}catch(err){console.error(err);authMessage("Pri načítaní Redakcie nastala chyba: "+err.message,"error")}
@@ -368,7 +401,12 @@ client.auth.onAuthStateChange(async(event,session)=>{
 });
 
 (async()=>{
-  const {data}=await client.auth.getSession();
+  showLogin();
+  await finishAuthRedirect();
+  const {data,error}=await client.auth.getSession();
+  if(error){
+    authMessage("Nepodarilo sa načítať prihlásenie: "+friendlyAuthError(error),"error");
+    return;
+  }
   if(data.session?.user)await showEditor(data.session.user);
-  else showLogin();
 })();
