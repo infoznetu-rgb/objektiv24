@@ -17,3 +17,21 @@ textarea{resize:vertical;line-height:1.5}input[type="file"]{width:100%;border:1p
 .form-footer{display:flex;align-items:end;justify-content:space-between;gap:22px}.form-footer>div:first-child{min-width:180px}.actions{display:flex;gap:10px}.primary,.secondary{border-radius:5px;padding:11px 16px;font-weight:800;cursor:pointer}.primary{border:0;background:#303136;color:var(--lime)}.secondary{border:1px solid #bfc2c8;background:#fff;color:#3c3e44}
 @media(max-width:900px){.editor-topbar{grid-template-columns:1fr auto;padding:0 20px}.editor-label{display:none}.editor-nav{gap:16px}.editor-shell{grid-template-columns:1fr}.drafts-panel{border-right:0;border-bottom:1px solid var(--line)}.drafts-sticky{position:static}.editor-main{padding:30px 20px 60px}.two-col{grid-template-columns:1fr}.editor-heading h2{font-size:2.5rem}}
 @media(max-width:620px){.editor-nav{display:none}.editor-topbar{grid-template-columns:1fr}.form-footer{align-items:stretch;flex-direction:column}.actions{width:100%}.actions button{flex:1}}
+.editor-tools{display:grid;grid-template-columns:minmax(220px,.65fr) minmax(280px,1fr);gap:22px;margin:8px 0 28px}
+.editor-tools>div,.live-card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:18px}
+.tool-label{display:block;font-size:.68rem;letter-spacing:.13em;font-weight:900;color:#686c75;margin-bottom:12px}
+.checklist{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.checklist li{font-size:.82rem;color:#858991;display:flex;align-items:center;gap:8px}
+.checklist li::before{content:"";width:9px;height:9px;border:1px solid #aeb2ba;border-radius:50%}
+.checklist li.ok{color:#30343a;font-weight:700}
+.checklist li.ok::before{background:var(--lime);border-color:#9aaa16;box-shadow:inset 0 0 0 2px #fff}
+.live-card{padding:0;overflow:hidden}
+.live-image{height:128px;background:linear-gradient(135deg,#dadce1,#f6f6f7);display:grid;place-items:center;color:#888d97;font-size:.78rem;background-size:cover;background-position:center}
+.live-category{display:block;color:#849b00;font-size:.68rem;font-weight:900;padding:14px 16px 0}
+.live-card h3{font-size:1.05rem;line-height:1.2;margin:7px 16px 8px}
+.live-card p{font-size:.8rem;line-height:1.45;color:#72767f;margin:0 16px 17px}
+.danger{border:1px solid #d1a5a5;background:#fff;color:#924343;border-radius:5px;padding:11px 16px;font-weight:800;cursor:pointer}
+.danger[hidden]{display:none}
+.save-flash{animation:saveFlash .7s ease}
+@keyframes saveFlash{0%{background:#e9f6a5}100%{background:transparent}}
+@media(max-width:900px){.editor-tools{grid-template-columns:1fr}}
