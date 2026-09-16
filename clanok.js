@@ -1,5 +1,8 @@
+const SUPABASE_PUBLIC_URL="https://bkyappgttwjxakkwycub.supabase.co";
+const SUPABASE_PUBLIC_KEY="sb_publishable_xgl_GnkeKPFDCtyr1RtnnA_f6aaPdS4";
 const params = new URLSearchParams(location.search);
 const slug = params.get("slug");
+const draftId = params.get("id");
 const root = document.querySelector("#article-detail");
 
 const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, ch => ({
@@ -45,17 +48,58 @@ function sourcesHtml(items) {
   '</section>';
 }
 
+function dbRowToArticle(row){
+  return {
+    category:row.category||"Slovensko v súvislostiach",
+    title:row.title||"Bez názvu",
+    summary:row.intro||"",
+    verified:row.updated_at?String(row.updated_at).slice(0,10):"",
+    image:row.image_url||"",
+    imageAlt:row.title||"",
+    imageLicense:"",
+    author:"Objektív24",
+    facts:row.what_happened||"",
+    meaning:row.what_it_means||"",
+    watch:"",
+    steps:String(row.next_step||"").split(/\n\s*\n|\r?\n/).map(x=>x.trim()).filter(Boolean),
+    contact:"",
+    sources:String(row.sources||"").split(/\r?\n/).map(x=>x.trim()).filter(Boolean),
+    migrationStatus:"full"
+  };
+}
+
+async function loadDraftArticle(id){
+  const response=await fetch(
+    SUPABASE_PUBLIC_URL+"/rest/v1/drafts?id=eq."+encodeURIComponent(id)+"&state=eq.published&select=*",
+    {
+      headers:{
+        apikey:SUPABASE_PUBLIC_KEY,
+        Authorization:"Bearer "+SUPABASE_PUBLIC_KEY
+      },
+      cache:"no-store"
+    }
+  );
+  if(!response.ok)throw new Error("Supabase "+response.status);
+  const rows=await response.json();
+  return Array.isArray(rows)&&rows[0]?dbRowToArticle(rows[0]):null;
+}
+
 async function load() {
-  if (!slug) {
+  if (!slug && !draftId) {
     renderNotFound();
     return;
   }
 
   try {
-    const response = await fetch("data/articles.json", { cache: "no-store" });
-    if (!response.ok) throw new Error("load");
-    const articles = await response.json();
-    const article = articles.find(item => item.slug === slug);
+    let article=null;
+    if(draftId){
+      article=await loadDraftArticle(draftId);
+    }else{
+      const response = await fetch("data/articles.json", { cache: "no-store" });
+      if (!response.ok) throw new Error("load");
+      const articles = await response.json();
+      article = articles.find(item => item.slug === slug);
+    }
 
     if (!article) {
       renderNotFound();
@@ -90,10 +134,12 @@ async function load() {
         '</div>' +
       '</header>' +
 
-      '<figure class="article-detail-image">' +
-        '<img src="' + escapeHtml(article.image) + '" alt="' + escapeHtml(article.imageAlt || "") + '">' +
-        '<figcaption>Ilustračná fotografia · ' + escapeHtml(article.imageLicense || "") + '</figcaption>' +
-      '</figure>' +
+      (article.image
+        ? '<figure class="article-detail-image">' +
+            '<img src="' + escapeHtml(article.image) + '" alt="' + escapeHtml(article.imageAlt || "") + '">' +
+            '<figcaption>Ilustračná fotografia' + (article.imageLicense ? ' · ' + escapeHtml(article.imageLicense) : '') + '</figcaption>' +
+          '</figure>'
+        : '') +
 
       '<div class="article-detail-grid">' +
         '<div class="article-detail-copy">' +
