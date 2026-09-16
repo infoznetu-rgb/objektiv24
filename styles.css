@@ -249,3 +249,10 @@ linear-gradient(135deg,#1c3347,#0d1722)}
   .article-detail-header h1{font-size:2.5rem}
   .article-detail-image img{border-radius:12px}
 }
+
+.article-steps{margin:14px 0 0;padding-left:24px;color:#d2dae2}
+.article-steps li{padding:5px 0 7px;line-height:1.65}
+.article-sources{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:8px}
+.article-sources a{display:inline-flex;padding:8px 10px;border:1px solid var(--line);border-radius:8px;color:#d7e0e8;text-decoration:none;font-size:.86rem;background:#0c1721}
+.article-sources a:hover{border-color:#496076;color:var(--accent)}
+.watch-section{border-left:3px solid #d8a927;padding-left:18px!important}
