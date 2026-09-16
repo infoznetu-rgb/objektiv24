@@ -32,13 +32,10 @@
         <label for="login-email">E-mail</label>
         <input id="login-email" type="email" autocomplete="email" required>
 
-        <label for="login-password">Heslo</label>
-        <input id="login-password" type="password" autocomplete="current-password" placeholder="Ak ste si ho nastavili">
-
         <div class="auth-actions">
-          <button class="primary" type="submit">Prihlásiť sa</button>
-          <button class="secondary" id="magic-link-button" type="button">Poslať prihlasovací odkaz</button>
+          <button class="primary" id="magic-link-button" type="submit">Poslať prihlasovací odkaz</button>
         </div>
+        <p class="auth-help">Heslo nepotrebujete. Pošleme vám jednorazový bezpečný odkaz na e-mail.</p>
         <p id="auth-message" class="auth-message" aria-live="polite"></p>
       </form>
     </div>
