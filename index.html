@@ -1,11 +1,42 @@
 <!doctype html>
 <html lang="sk">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,viewport-fit=cover">
 <meta name="description" content="Objektív24 — fakty, kontext, ľudia. Správy v súvislostiach.">
 <title>Objektív24 — Fakty. Kontext. Ľudia.</title><meta name="theme-color" content="#061018">
 <link rel="canonical" href="https://objektiv24.sk/"><link rel="alternate" type="application/rss+xml" title="Objektív24 RSS" href="rss.xml">
-<link rel="stylesheet" href="styles.css?v=20260916-redesign"><script src="app.js?v=20260916-redesign" defer></script>
+<link rel="stylesheet" href="styles.css?v=20260916-mobile3">
+<style>
+html,body{max-width:100%;overflow-x:hidden}
+@media(max-width:680px){
+ .container{width:calc(100% - 24px)!important;max-width:100%;margin-inline:auto}
+ .topbar{min-height:76px!important;gap:10px!important;padding:0!important;overflow:visible}
+ .brand{flex:1 1 auto;min-width:0;gap:6px!important}
+ .brand-word{font-size:1.42rem!important;white-space:nowrap}
+ .brand-badge{font-size:1rem!important;padding:3px 7px!important;flex:none}
+ .brand small{top:49px!important;left:1px!important;font-size:.39rem!important;letter-spacing:.25em!important;white-space:nowrap}
+ .menu-button{flex:none!important;margin-left:8px!important;padding:10px 13px!important;font-size:.82rem!important;min-width:auto!important;border-radius:999px!important}
+ .breaking{min-height:58px!important;margin-top:14px!important;padding:11px 14px!important;gap:10px!important;border-radius:17px!important}
+ .breaking strong{font-size:.76rem!important;white-space:nowrap}
+ .breaking span{font-size:.76rem!important;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .hero{padding-top:14px!important}
+ .hero-main{min-height:510px!important;border-radius:22px!important}
+ .hero-content{padding:22px 18px!important;max-width:100%!important}
+ .meta-row{gap:8px!important;flex-wrap:wrap;font-size:.7rem!important}
+ .hero .eyebrow{font-size:.62rem!important;padding:6px 9px!important}
+ .hero h1{font-size:clamp(2rem,10.2vw,2.75rem)!important;line-height:.98!important;letter-spacing:-.045em!important;margin:14px 0 12px!important;overflow-wrap:break-word}
+ .hero-content p{font-size:.88rem!important;line-height:1.45!important;margin:0 0 8px!important}
+ .primary-cta{padding:11px 15px!important;font-size:.82rem!important;border-radius:12px!important}
+ .hero-photo figcaption{top:10px!important;right:10px!important;max-width:72%;font-size:.55rem!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .latest{padding:18px!important}
+ .latest-item{grid-template-columns:84px minmax(0,1fr)!important}
+ .latest-item img{width:84px!important;height:64px!important}
+ .topic-rail{padding-top:14px!important}
+ .topic-rail a{min-width:108px!important;min-height:82px!important}
+}
+@media(max-width:380px){.brand-word{font-size:1.25rem!important}.menu-button{font-size:.76rem!important;padding:9px 11px!important}.brand small{letter-spacing:.18em!important}.hero h1{font-size:2rem!important}}
+</style>
+<script src="app.js?v=20260916-mobile3" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#obsah">Preskočiť na obsah</a>
@@ -18,7 +49,7 @@
 <section class="breaking container"><strong>⚡ AKTUÁLNE</strong><span>Najdôležitejšie informácie, ktoré sa oplatí vedieť práve teraz.</span><a href="#clanky">Najnovšie →</a></section>
 <section id="suvislosti" class="hero container reveal">
 <article class="hero-main"><figure class="hero-photo"><img src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Solar%20panels%20on%20a%20house%20in%20Boholiuby%202026.jpg?width=1600" alt="Rodinný dom so solárnymi panelmi"><figcaption>Ilustračná fotografia · Wikimedia Commons</figcaption></figure><div class="hero-shade"></div><div class="hero-content"><div class="meta-row"><span class="eyebrow">PENIAZE DOMÁCNOSTÍ</span><span>5 min čítania</span></div><h1>Zelená solidarita: pri aktivovanej žiadosti rozhoduje termín 30. september</h1><p>Čo sa deje, koho sa zmena týka a čo si treba skontrolovať, aby vám nič dôležité neušlo.</p><a class="primary-cta" href="clanok.html?slug=zelena-solidarita-30-september">Čítať ďalej →</a></div></article>
-<aside class="latest"><div class="section-row"><h2>Najnovšie</h2><a href="#clanky">Všetky →</a></div><a class="latest-item" href="clanok.html?slug=solvex-vyplaty"><img src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Travel%20luggage.png?width=600" alt=""><span><b>Solvex: poisťovňa hlási odškodňovanie klientov</b><small>Spotrebiteľ · dnes</small></span></a><a class="latest-item" href="clanok.html?slug=vakcinacia-lisok"><img src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Wild%20Red%20Fox.jpg?width=600" alt=""><span><b>V októbri budú rozkladať návnady pre líšky</b><small>Regióny · dnes</small></span></a><div class="latest-note"><span>Objektív24</span><strong>Správa nestačí. Dávame jej súvislosti.</strong><p>Pri časovo citlivých témach uvádzame dátum overenia a praktický ďalší krok.</p></div></aside>
+<aside class="latest"><div class="section-row"><h2>Najnovšie</h2><a href="#clanky">Všetky →</a></div><a class="latest-item" href="clanok.html?slug=solvex-vyplaty"><img src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Travel%20luggage.png?width=600" alt=""><span><b>Solvex: poisťovňa hlási odškodňovanie klientov</b><small>Spotrebiteľ · dnes</small></span></a><a class="latest-item" href="clanok.html?slug=vakcinacia-lisok"><img src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Vulpes%20vulpes%20standing.jpg?width=600" alt=""><span><b>V októbri budú rozkladať návnady pre líšky</b><small>Regióny · dnes</small></span></a><div class="latest-note"><span>Objektív24</span><strong>Správa nestačí. Dávame jej súvislosti.</strong><p>Pri časovo citlivých témach uvádzame dátum overenia a praktický ďalší krok.</p></div></aside>
 </section>
 <section class="topic-rail container reveal"><a href="#clanky">◎<span>Slovensko</span></a><a href="#clanky">◉<span>Ekonomika</span></a><a href="#clanky">⌁<span>Technológie</span></a><a href="#clanky">♧<span>Spoločnosť</span></a><a href="#pomoc">✦<span>Praktické rady</span></a></section>
 <section id="clanky" class="discover container reveal"><div class="section-row big"><div><span class="section-kicker">SPRÁVY V SÚVISLOSTIACH</span><h2>Vybrané pre vás</h2></div><div class="count-box"><span>Vydané</span><strong id="issued-count">—</strong><small id="active-count">Načítavam…</small></div></div>
