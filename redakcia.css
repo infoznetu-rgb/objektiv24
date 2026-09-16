@@ -57,3 +57,12 @@ textarea{resize:vertical;line-height:1.5}input[type="file"]{width:100%;border:1p
 
 .auth-help{margin:12px 0 0;font-size:.8rem;line-height:1.45;color:#747882}
 .auth-actions .primary{width:100%}
+
+
+/* Ensure the HTML hidden attribute wins over component display rules. */
+.auth-gate[hidden],
+.editor-shell[hidden],
+.session-user[hidden],
+.logout-button[hidden]{
+  display:none !important;
+}
