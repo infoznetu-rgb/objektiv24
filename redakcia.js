@@ -359,28 +359,58 @@ $("#export-draft").addEventListener("click",()=>{
 
 async function finishAuthRedirect(){
   const url=new URL(window.location.href);
-  const authError=url.searchParams.get("error_description")||url.searchParams.get("error");
-  if(authError){
-    authMessage("Prihlasovací odkaz nebolo možné použiť: "+decodeURIComponent(authError),"error");
-    return;
+  const queryError=url.searchParams.get("error_description")||url.searchParams.get("error");
+  if(queryError){
+    authMessage("Prihlasovací odkaz nebolo možné použiť: "+decodeURIComponent(queryError),"error");
+    return false;
   }
 
+  // Implicit magic-link flow: Supabase returns tokens in the URL hash.
+  if(location.hash){
+    const hash=new URLSearchParams(location.hash.slice(1));
+    const hashError=hash.get("error_description")||hash.get("error");
+    if(hashError){
+      authMessage("Prihlasovací odkaz nebolo možné použiť: "+decodeURIComponent(hashError),"error");
+      return false;
+    }
+
+    const accessToken=hash.get("access_token");
+    const refreshToken=hash.get("refresh_token");
+    if(accessToken&&refreshToken){
+      const {data,error}=await client.auth.setSession({
+        access_token:accessToken,
+        refresh_token:refreshToken
+      });
+      if(error){
+        authMessage("Prihlasovací odkaz sa nepodarilo dokončiť: "+friendlyAuthError(error),"error");
+        return false;
+      }
+      history.replaceState({},document.title,url.pathname+url.search);
+      if(data?.session?.user){
+        await showEditor(data.session.user);
+        return true;
+      }
+    }
+  }
+
+  // PKCE/code flow fallback.
   const code=url.searchParams.get("code");
   if(code){
-    const {error}=await client.auth.exchangeCodeForSession(code);
+    const {data,error}=await client.auth.exchangeCodeForSession(code);
     if(error){
       authMessage("Prihlasovací odkaz sa nepodarilo dokončiť: "+friendlyAuthError(error),"error");
-      return;
+      return false;
     }
     url.searchParams.delete("code");
     url.searchParams.delete("sb_flow_id");
     history.replaceState({},document.title,url.pathname+url.search);
+    if(data?.session?.user){
+      await showEditor(data.session.user);
+      return true;
+    }
   }
 
-  if(location.hash&&location.hash.includes("error_description")){
-    const hash=new URLSearchParams(location.hash.slice(1));
-    authMessage("Prihlasovací odkaz nebolo možné použiť: "+(hash.get("error_description")||hash.get("error")||"Neznáma chyba"),"error");
-  }
+  return false;
 }
 
 client.auth.onAuthStateChange(async(event,session)=>{
@@ -393,7 +423,8 @@ client.auth.onAuthStateChange(async(event,session)=>{
 
 (async()=>{
   showLogin();
-  await finishAuthRedirect();
+  const handled=await finishAuthRedirect();
+  if(handled)return;
   const {data,error}=await client.auth.getSession();
   if(error){
     authMessage("Nepodarilo sa načítať prihlásenie: "+friendlyAuthError(error),"error");
