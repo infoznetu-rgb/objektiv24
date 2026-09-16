@@ -7,7 +7,7 @@ const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,
     persistSession:true,
     autoRefreshToken:true,
     detectSessionInUrl:true,
-    flowType:"pkce"
+    flowType:"implicit"
   }
 });
 
@@ -277,16 +277,6 @@ function showLogin(){
   $("#logout-button").hidden=true;
 }
 
-$("#login-form").addEventListener("submit",async e=>{
-  e.preventDefault();
-  const email=$("#login-email").value.trim();
-  const password=$("#login-password").value;
-  if(!password){authMessage("Zadajte heslo alebo použite prihlasovací odkaz.","error");return}
-  authMessage("Prihlasujem…");
-  const {error}=await client.auth.signInWithPassword({email,password});
-  if(error)authMessage(friendlyAuthError(error),"error");
-});
-
 let magicLinkCooldownUntil=0;
 
 function friendlyAuthError(error){
@@ -300,7 +290,8 @@ function friendlyAuthError(error){
   return error?.message||"Pri prihlásení nastala chyba.";
 }
 
-$("#magic-link-button").addEventListener("click",async()=>{
+$("#login-form").addEventListener("submit",async e=>{
+  e.preventDefault();
   const email=$("#login-email").value.trim();
   const button=$("#magic-link-button");
   if(!email){authMessage("Najprv zadajte e-mail.","error");return}
