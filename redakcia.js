@@ -30,7 +30,11 @@ async function seedPublishedArticles(){
     return a.map(x=>({
       id:"published-"+x.slug,seed:true,title:x.title,category:x.category,intro:x.summary,
       state:x.archived?"archived":"published",updated:x.verified,
-      whatHappened:"",whatItMeans:"",nextStep:"",sources:x.sourceUrl||x.url||"",image:x.image||"",imageName:""
+      whatHappened:x.facts||"",
+      whatItMeans:x.meaning||"",
+      nextStep:[...(Array.isArray(x.steps)?x.steps:[]),x.contact||""].filter(Boolean).join("\n\n"),
+      sources:Array.isArray(x.sources)?x.sources.join("\n"):(x.sourceUrl||x.url||""),
+      image:x.image||"",imageName:""
     }))
   }catch{return[]}
 }
@@ -81,7 +85,7 @@ function selectDraft(id){
   $("#next-step").value=d.nextStep||"";
   $("#sources").value=d.sources||"";
   $("#state").value=d.state||"draft";
-  $("#draft-status").textContent=d.seed?"Otvorená kópia článku":"Uložený návrh";
+  $("#draft-status").textContent=d.seed?"Vydaný článok · úprava vytvorí nový návrh":"Uložený návrh";
   currentImageData=d.image||"";
   currentImageData?showPreview(currentImageData):hidePreview();
   $("#delete-draft").hidden=!!d.seed;
