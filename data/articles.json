@@ -5,11 +5,12 @@
     "title": "Zelená solidarita: pri aktivovanej žiadosti rozhoduje termín 30. september",
     "summary": "Domácnosti s aktivovanou žiadosťou si majú skontrolovať, či SIEA dostala potrebné súhlasy na overenie príjmu včas.",
     "verified": "2026-09-15",
-    "url": "https://objektiv24.sk/",
+    "url": "clanok.html?slug=zelena-solidarita-30-september",
     "archived": false,
     "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Solar%20panels%20on%20a%20house%20in%20Boholiuby%202026.jpg?width=1600",
     "imageAlt": "Rodinný dom so solárnymi panelmi",
-    "imageLicense": "Wikimedia Commons · CC0"
+    "imageLicense": "Wikimedia Commons · CC0",
+    "sourceUrl": "https://objektiv24.sk/"
   },
   {
     "slug": "solvex-vyplaty",
@@ -17,11 +18,12 @@
     "title": "Solvex: poisťovňa hlási odškodňovanie klientov. K výplate žiada aj vyhlásenie",
     "summary": "Pri už nahlásenom nároku sa oplatí overiť, či má poisťovňa všetky potrebné podklady na výplatu.",
     "verified": "2026-09-15",
-    "url": "https://objektiv24.sk/clanky/objektiv24-20260915-solvex-vyplaty",
+    "url": "clanok.html?slug=solvex-vyplaty",
     "archived": false,
     "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Travel%20luggage.png?width=1600",
     "imageAlt": "Cestovná batožina pripravená na cestu",
-    "imageLicense": "Wikimedia Commons · CC0"
+    "imageLicense": "Wikimedia Commons · CC0",
+    "sourceUrl": "https://objektiv24.sk/clanky/objektiv24-20260915-solvex-vyplaty"
   },
   {
     "slug": "vakcinacia-lisok",
@@ -29,11 +31,12 @@
     "title": "V októbri budú rozkladať návnady pre líšky. Pri náleze s nimi nemanipulujte",
     "summary": "Jesenná vakcinácia proti besnote je plánovaná na október. Majitelia zvierat by si mali overiť pravidlá pre dotknuté oblasti.",
     "verified": "2026-09-15",
-    "url": "https://objektiv24.sk/clanky/objektiv24-20260915-vakcinacia-lisok",
+    "url": "clanok.html?slug=vakcinacia-lisok",
     "archived": false,
     "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Wild%20Red%20Fox.jpg?width=1600",
     "imageAlt": "Líška vo voľnej prírode",
-    "imageLicense": "Wikimedia Commons · CC0"
+    "imageLicense": "Wikimedia Commons · CC0",
+    "sourceUrl": "https://objektiv24.sk/clanky/objektiv24-20260915-vakcinacia-lisok"
   },
   {
     "slug": "malaposta-sala",
@@ -41,11 +44,12 @@
     "title": "V Šali-Veči vybavíte balík aj v COOP Jednote. SIPO zatiaľ nepatrí medzi služby",
     "summary": "Nový kontaktný bod umožňuje vybrané poštové úkony, no rozsah služieb je užší než na klasickej pobočke.",
     "verified": "2026-09-15",
-    "url": "https://objektiv24.sk/clanky/objektiv24-20260915-malaposta-sala",
+    "url": "clanok.html?slug=malaposta-sala",
     "archived": false,
     "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Parcel%20box%20and%20mailbox.webp?width=1600",
     "imageAlt": "Balíková schránka a poštová schránka",
-    "imageLicense": "Wikimedia Commons · CC0"
+    "imageLicense": "Wikimedia Commons · CC0",
+    "sourceUrl": "https://objektiv24.sk/clanky/objektiv24-20260915-malaposta-sala"
   },
   {
     "slug": "sedmak-zakaz",
@@ -53,11 +57,12 @@
     "title": "Peter Sedmák dostal osemročný zákaz činnosti. Rozhodnutie chce napadnúť",
     "summary": "Česká basketbalová federácia oznámila disciplinárne rozhodnutie, voči ktorému sa dotknutý hráč chce brániť.",
     "verified": "2026-09-15",
-    "url": "https://objektiv24.sk/",
+    "url": "clanok.html?slug=sedmak-zakaz",
     "archived": false,
     "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Pavillion%20Basketball%20Court.jpg?width=1600",
     "imageAlt": "Basketbalové ihrisko v športovej hale",
-    "imageLicense": "Wikimedia Commons · CC0"
+    "imageLicense": "Wikimedia Commons · CC0",
+    "sourceUrl": "https://objektiv24.sk/"
   },
   {
     "slug": "zoznam-dlznikov",
@@ -65,11 +70,12 @@
     "title": "Sociálna poisťovňa aktualizovala zoznam dlžníkov. Nesúlad najprv overte s pobočkou",
     "summary": "Ak údaje nesedia, pred ďalšou úhradou si overte evidenciu a priradenie platieb priamo v Sociálnej poisťovni.",
     "verified": "2026-09-15",
-    "url": "https://objektiv24.sk/clanky/objektiv24-20260915-zoznam-dlznikov",
+    "url": "clanok.html?slug=zoznam-dlznikov",
     "archived": false,
     "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Desktop%20with%20laptop%20and%20calculator%20(Unsplash).jpg?width=1600",
     "imageAlt": "Pracovný stôl s notebookom a kalkulačkou",
-    "imageLicense": "Wikimedia Commons · CC0"
+    "imageLicense": "Wikimedia Commons · CC0",
+    "sourceUrl": "https://objektiv24.sk/clanky/objektiv24-20260915-zoznam-dlznikov"
   },
   {
     "slug": "sms-vratka",
@@ -77,11 +83,12 @@
     "title": "SMS sľubuje vrátenie 450 eur od finančnej správy. Cez jej odkaz údaje nezadávajte",
     "summary": "Pri správe o údajnej daňovej vratke neotvárajte neoverený odkaz a nič nevypĺňajte skôr, než si správu overíte oficiálnym kanálom.",
     "verified": "2026-09-14",
-    "url": "https://objektiv24.sk/",
+    "url": "clanok.html?slug=sms-vratka",
     "archived": false,
     "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Smartphone%20in%20Hand%20(Unsplash).jpg?width=1600",
     "imageAlt": "Mobilný telefón v ruke",
-    "imageLicense": "Wikimedia Commons · CC0"
+    "imageLicense": "Wikimedia Commons · CC0",
+    "sourceUrl": "https://objektiv24.sk/"
   },
   {
     "slug": "materske-elektronicky",
@@ -89,11 +96,12 @@
     "title": "Materské bez žiadosti? Najprv si overte, či váš lekár používa elektronický systém",
     "summary": "Elektronické vybavenie sa zavádza postupne. Overte si u lekára a v Sociálnej poisťovni, či ešte treba niečo doložiť.",
     "verified": "2026-09-14",
-    "url": "https://objektiv24.sk/",
+    "url": "clanok.html?slug=materske-elektronicky",
     "archived": false,
     "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Baby%20shoes%20(Unsplash).jpg?width=1600",
     "imageAlt": "Detské topánočky v rukách rodičov",
-    "imageLicense": "Wikimedia Commons · CC0"
+    "imageLicense": "Wikimedia Commons · CC0",
+    "sourceUrl": "https://objektiv24.sk/"
   },
   {
     "slug": "ziar-urad-15-september",
@@ -101,12 +109,13 @@
     "title": "Mestský úrad v Žiari nad Hronom je 15. septembra zatvorený",
     "summary": "Jednodňová informácia o zatvorení úradu zostáva zachovaná v archíve.",
     "verified": "2026-09-15",
-    "url": "https://objektiv24.sk/",
+    "url": "clanok.html?slug=ziar-urad-15-september",
     "archived": true,
     "archiveNote": "Udalosť už prebehla. Článok zostáva v archíve, ale nie je medzi aktuálnymi správami.",
     "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Closed%20Door%20(7855555604).jpg?width=1600",
     "imageAlt": "Zatvorené modré dvere",
-    "imageLicense": "Wikimedia Commons · CC0"
+    "imageLicense": "Wikimedia Commons · CC0",
+    "sourceUrl": "https://objektiv24.sk/"
   },
   {
     "slug": "15-september-praca",
@@ -114,11 +123,12 @@
     "title": "15. september 2026 nie je dňom pracovného pokoja. Overte si svoju zmenu",
     "summary": "Praktická informácia viazaná na konkrétny deň zostáva zachovaná v archíve.",
     "verified": "2026-09-14",
-    "url": "https://objektiv24.sk/",
+    "url": "clanok.html?slug=15-september-praca",
     "archived": true,
     "archiveNote": "Dátum, ku ktorému sa článok viazal, už uplynul. Z titulky sa preto automaticky nezobrazuje.",
     "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Desktop%20with%20laptop%20and%20calculator%20(Unsplash).jpg?width=1600",
     "imageAlt": "Pracovný stôl s notebookom a kalkulačkou",
-    "imageLicense": "Wikimedia Commons · CC0"
+    "imageLicense": "Wikimedia Commons · CC0",
+    "sourceUrl": "https://objektiv24.sk/"
   }
 ]
