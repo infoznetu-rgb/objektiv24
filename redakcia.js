@@ -30,7 +30,7 @@ async function seedPublishedArticles(){
     return a.map(x=>({
       id:"published-"+x.slug,seed:true,title:x.title,category:x.category,intro:x.summary,
       state:x.archived?"archived":"published",updated:x.verified,
-      whatHappened:"",whatItMeans:"",nextStep:"",sources:x.url||"",image:x.image||"",imageName:""
+      whatHappened:"",whatItMeans:"",nextStep:"",sources:x.sourceUrl||x.url||"",image:x.image||"",imageName:""
     }))
   }catch{return[]}
 }
