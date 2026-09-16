@@ -10,7 +10,21 @@
     "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Solar%20panels%20on%20a%20house%20in%20Boholiuby%202026.jpg?width=1600",
     "imageAlt": "Rodinný dom so solárnymi panelmi",
     "imageLicense": "Wikimedia Commons · CC0",
-    "sourceUrl": "https://objektiv24.sk/"
+    "sourceUrl": "https://objektiv24.sk/",
+    "author": "Objektív24",
+    "facts": "SIEA pripravuje zmenu podmienok projektu Zelená solidarita. Domácnosti s už aktivovanou žiadosťou majú dostať možnosť dokončiť proces podľa doterajších podmienok, ak včas doručia súhlasy potrebné na overenie príjmu. Oficiálna stránka SIEA však momentálne uvádza rozdielne dátumy: v úvode 30. september 2026 a v jednej časti textu 25. september 2026.",
+    "meaning": "Ak už máte aktivovanú žiadosť, rozhodujúce je riadiť sa aktuálnou inštrukciou SIEA pre váš konkrétny prípad. Rozpor v dátumoch na oficiálnej stránke znamená, že nie je bezpečné spoliehať sa iba na titulok alebo staršiu verziu informácie.",
+    "watch": "Pred odoslaním alebo odkladaním súhlasu si skontrolujte aktuálne znenie pokynov SIEA. Objektív24 nebude jeden z dvoch rozdielnych dátumov vydávať za definitívny, kým ho zdroj jednoznačne nepotvrdí.",
+    "steps": [
+      "Otvorte oficiálnu stránku SIEA k Zelenej solidarite.",
+      "Ak máte aktivovanú žiadosť, skontrolujte stav a pokyny vo svojom prípade.",
+      "Pri nejasnosti termínu kontaktujte SIEA ešte pred neskorším z uvádzaných dátumov."
+    ],
+    "contact": "Oficiálne informácie a kontakty: SIEA / Zelená solidarita.",
+    "sources": [
+      "https://www.siea.sk/domacnosti-s-aktivovanymi-ziadostami-sa-mozu-rozhodnut-ci-chcu-vyuzit-podporu-zo-zelenej-solidarity-za-doterajsich-podmienok/"
+    ],
+    "migrationStatus": "full"
   },
   {
     "slug": "solvex-vyplaty",
@@ -23,7 +37,22 @@
     "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Travel%20luggage.png?width=1600",
     "imageAlt": "Cestovná batožina pripravená na cestu",
     "imageLicense": "Wikimedia Commons · CC0",
-    "sourceUrl": "https://objektiv24.sk/clanky/objektiv24-20260915-solvex-vyplaty"
+    "sourceUrl": "https://objektiv24.sk/clanky/objektiv24-20260915-solvex-vyplaty",
+    "author": "Objektív24",
+    "facts": "Poisťovňa Colonnade informovala o odškodňovaní klientov cestovnej kancelárie Solvex. Pri už nahlásenom nároku môže na dokončenie likvidácie chýbať podpísané vyhlásenie príjemcu; samotné nahlásenie preto ešte neznamená, že má poisťovňa všetky podklady.",
+    "meaning": "Týka sa to klientov, ktorí žiadajú náhradu za neuskutočnený alebo iba čiastočne poskytnutý zájazd. Všeobecná informácia o vyplácaní neurčuje deň, keď bude vybavený konkrétny nárok.",
+    "watch": "Objektív24 nevie potvrdiť stav jednotlivých žiadostí ani ich právny výsledok. Údaje o rozsahu odškodňovania pochádzajú z vyjadrení poisťovne a médií, nie z nezávislého auditu.",
+    "steps": [
+      "Ak ste nárok ešte nenahlásili, použite formulár a zoznam dokladov na oficiálnom webe Colonnade.",
+      "Ak ste nárok nahlásili, skontrolujte, či ste poslali aj požadované podpísané vyhlásenie.",
+      "Doklady posielajte iba cez kontakty uvedené priamo poisťovňou."
+    ],
+    "contact": "Colonnade uvádza e-mail likvidacia@colonnade.sk a všeobecnú linku +421 55 6826 222.",
+    "sources": [
+      "https://www.colonnade.sk/najnovsie-clanky/upadok-cestovnej-kancelarie-solvex",
+      "https://www.teraz.sk/ekonomika/poistovna-colonnade-insurance-odskod/992315-clanok.html"
+    ],
+    "migrationStatus": "full"
   },
   {
     "slug": "vakcinacia-lisok",
@@ -36,7 +65,21 @@
     "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Wild%20Red%20Fox.jpg?width=1600",
     "imageAlt": "Líška vo voľnej prírode",
     "imageLicense": "Wikimedia Commons · CC0",
-    "sourceUrl": "https://objektiv24.sk/clanky/objektiv24-20260915-vakcinacia-lisok"
+    "sourceUrl": "https://objektiv24.sk/clanky/objektiv24-20260915-vakcinacia-lisok",
+    "author": "Objektív24",
+    "facts": "ŠVPS oznámila jesennú kampaň orálnej vakcinácie líšok proti besnote od 5. do 23. októbra 2026. Návnady sa budú letecky distribuovať vo vybraných oblastiach Slovenska.",
+    "meaning": "Pre návštevníkov prírody a majiteľov zvierat je dôležité návnady nechytať ani neprenášať. Vo vakcinačnej oblasti má byť počas distribúcie a ešte dva týždne po nej obmedzený voľný pohyb psov a mačiek.",
+    "watch": "Presný deň distribúcie v konkrétnej obci nemusí byť zverejnený. Pri kontakte obsahu návnady s pokožkou alebo sliznicami sa riaďte oficiálnymi zdravotnými pokynmi ŠVPS.",
+    "steps": [
+      "S nájdenou návnadou nemanipulujte a miesto opustite.",
+      "V dotknutej oblasti nenechávajte psa alebo mačku voľne behať počas kampane a dva týždne po nej.",
+      "Ak sa obsah návnady dostane na ruky, umyte ich vodou a mydlom; pri kontakte so sliznicami vyhľadajte lekárske ošetrenie podľa pokynov ŠVPS."
+    ],
+    "contact": "Rozsah územia a aktuálne pokyny zverejňuje Štátna veterinárna a potravinová správa.",
+    "sources": [
+      "https://svps.sk/oznamenie-o-zacati-jesennej-kampane-2026-oralnej-vakcinacie-lisok-proti-besnote/"
+    ],
+    "migrationStatus": "full"
   },
   {
     "slug": "malaposta-sala",
@@ -49,7 +92,23 @@
     "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Parcel%20box%20and%20mailbox.webp?width=1600",
     "imageAlt": "Balíková schránka a poštová schránka",
     "imageLicense": "Wikimedia Commons · CC0",
-    "sourceUrl": "https://objektiv24.sk/clanky/objektiv24-20260915-malaposta-sala"
+    "sourceUrl": "https://objektiv24.sk/clanky/objektiv24-20260915-malaposta-sala",
+    "author": "Objektív24",
+    "facts": "Slovenská pošta oznámila otvorenie služby MaláPOŠTA v predajni COOP Jednota v Šali-Veči. Prevádzka umožňuje napríklad prevzatie balíkov vrátane dobierok a odoslanie vopred pripravených a zaplatených zásielok.",
+    "meaning": "Nie je to plnohodnotná náhrada klasickej pobočky. Platby SIPO, poštových poukazov a časť ďalších služieb majú pribudnúť až neskôr.",
+    "watch": "Rozsah služieb aj otváracie hodiny sa môžu meniť. Pred cestou si preto overte konkrétny úkon vo vyhľadávači pobočiek Slovenskej pošty.",
+    "steps": [
+      "Pri vyzdvihnutí zásielky skontrolujte miesto uloženia uvedené v oznámení.",
+      "Na odoslanie si zásielku pripravte a zaplaťte vopred podľa pokynov pošty.",
+      "Pred návštevou overte aktuálne služby a otváracie hodiny."
+    ],
+    "contact": "Zákaznícka linka Slovenskej pošty: 0850 122 413.",
+    "sources": [
+      "https://www.posta.sk/clanky/malaposta-uz-aj-v-predajniach-coop-jednota-slovensko",
+      "https://www.posta.sk/clanky/malaposta-sala-otvorenie",
+      "https://www.posta.sk/pobocky-a-balikoboxy"
+    ],
+    "migrationStatus": "full"
   },
   {
     "slug": "sedmak-zakaz",
@@ -62,7 +121,18 @@
     "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Pavillion%20Basketball%20Court.jpg?width=1600",
     "imageAlt": "Basketbalové ihrisko v športovej hale",
     "imageLicense": "Wikimedia Commons · CC0",
-    "sourceUrl": "https://objektiv24.sk/"
+    "sourceUrl": "https://objektiv24.sk/",
+    "author": "Jozef Kameník",
+    "facts": "Česká basketbalová federácia oznámila, že FIBA uložila Petrovi Sedmákovi osemročný zákaz činnosti. Disciplinárny prípad sa podľa federácie týkal viacerých porušení súvisiacich s integritou súťaží.",
+    "meaning": "Sankcia sa podľa oznámenia netýka iba hrania zápasov, ale aj ďalšieho pôsobenia v basketbale. Sedmák časť záverov spochybnil a avizoval odvolanie.",
+    "watch": "Objektív24 nemá k dispozícii úplné rozhodnutie FIBA ani potvrdený výsledok prípadného odvolania. Tvrdenia strán preto uvádzame ako ich stanoviská, nie ako vlastný záver o vine.",
+    "steps": [],
+    "contact": "Aktuálny stav disciplinárneho prípadu treba overovať v oficiálnych oznámeniach FIBA alebo národnej federácie.",
+    "sources": [
+      "https://cz.basketball/peter-sedmak-dostal-osmilety-zakaz-cinnosti/a23134",
+      "https://www.teraz.sk/sport/byvaly-reprezentant-sedmak-dostal-tre/992187-clanok.html"
+    ],
+    "migrationStatus": "full"
   },
   {
     "slug": "zoznam-dlznikov",
@@ -75,7 +145,22 @@
     "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Desktop%20with%20laptop%20and%20calculator%20(Unsplash).jpg?width=1600",
     "imageAlt": "Pracovný stôl s notebookom a kalkulačkou",
     "imageLicense": "Wikimedia Commons · CC0",
-    "sourceUrl": "https://objektiv24.sk/clanky/objektiv24-20260915-zoznam-dlznikov"
+    "sourceUrl": "https://objektiv24.sk/clanky/objektiv24-20260915-zoznam-dlznikov",
+    "author": "Jozef Kameník",
+    "facts": "Sociálna poisťovňa zverejnila aktualizovaný zoznam dlžníkov. Zoznam môže obsahovať aj prípady nesplnených vykazovacích alebo oznamovacích povinností a samotná evidencia má informatívny charakter.",
+    "meaning": "Ak sa v zozname nájdete, nemusí to automaticky znamenať, že ste platbu vôbec neposlali. Poisťovňa upozorňuje aj na prípady nespárovaných platieb, preto je pri nesúlade dôležité najprv overenie.",
+    "watch": "Objektív24 neoveruje správnosť jednotlivých záznamov a nevie posúdiť konkrétny dlh ani penále. Spornú evidenciu riešte priamo so Sociálnou poisťovňou.",
+    "steps": [
+      "Vyhľadajte svoj záznam v oficiálnom zozname a porovnajte identifikačné údaje.",
+      "Ak ste už platili alebo so zaradením nesúhlasíte, pripravte si doklad o úhrade a kontaktujte pobočku.",
+      "Ak sa nedoplatok potvrdí, použite iba oficiálne číslo účtu a správne platobné symboly."
+    ],
+    "contact": "Pripomienky k zaradeniu: dlznici@socpoist.sk. Kontakty a účty sú na webe Sociálnej poisťovne.",
+    "sources": [
+      "https://www.socpoist.sk/nastroje-sluzby/zoznam-dlznikov",
+      "https://www.socpoist.sk/socialne-poistenie/platenie-poistneho/cisla-uctov-pobociek-socialnej-poistovne"
+    ],
+    "migrationStatus": "full"
   },
   {
     "slug": "sms-vratka",
@@ -88,7 +173,21 @@
     "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Smartphone%20in%20Hand%20(Unsplash).jpg?width=1600",
     "imageAlt": "Mobilný telefón v ruke",
     "imageLicense": "Wikimedia Commons · CC0",
-    "sourceUrl": "https://objektiv24.sk/"
+    "sourceUrl": "https://objektiv24.sk/",
+    "author": "Jozef Kameník",
+    "facts": "Finančná správa 10. septembra 2026 upozornila na podvodné SMS, ktoré sľubujú vrátenie peňazí a obsahujú odkaz. V zachytených prípadoch sa objavovala suma 450 eur, no text, suma aj internetová adresa sa môžu meniť.",
+    "meaning": "Finančná správa uvádza, že cez SMS neposiela odkazy, na ktorých by mali ľudia zadávať osobné, prihlasovacie alebo platobné údaje kvôli údajnému preplatku.",
+    "watch": "Ak ste už citlivé údaje zadali, samotné vymazanie SMS nestačí. Pri bankových údajoch treba bezodkladne kontaktovať banku a pri podozrení na trestný čin políciu.",
+    "steps": [
+      "Na odkaz v podozrivej správe neklikajte a na SMS nereagujte.",
+      "Informáciu o preplatku si overte samostatným otvorením oficiálneho portálu Finančnej správy alebo Slovensko.sk.",
+      "Ak ste už zadali bankové alebo iné citlivé údaje, okamžite kontaktujte banku a následne políciu."
+    ],
+    "contact": "Call centrum Finančnej správy: 048 / 43 17 222. V núdzovej situácii kontaktujte svoju banku a políciu.",
+    "sources": [
+      "https://www.financnasprava.sk/sk/pre-media/novinky/archiv-noviniek/detail-novinky/_sms-podvod-202609-ts/bc"
+    ],
+    "migrationStatus": "full"
   },
   {
     "slug": "materske-elektronicky",
@@ -101,7 +200,23 @@
     "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Baby%20shoes%20(Unsplash).jpg?width=1600",
     "imageAlt": "Detské topánočky v rukách rodičov",
     "imageLicense": "Wikimedia Commons · CC0",
-    "sourceUrl": "https://objektiv24.sk/"
+    "sourceUrl": "https://objektiv24.sk/",
+    "author": "Jozef Kameník",
+    "facts": "Sociálna poisťovňa zavádza elektronické služby, pri ktorých môže pri tehotenskom a materskom posúdiť nárok bez osobitnej papierovej žiadosti, ak dostane potrebné elektronické údaje. Elektronická tehotenská knižka sa však zavádza postupne.",
+    "meaning": "Ak váš gynekológ používa elektronickú tehotenskú knižku a potrebné údaje sa dostali do systému, časť vybavovania môže prebehnúť automatizovane. To však samo osebe neznamená automatické priznanie dávky.",
+    "watch": "Z verejných údajov nemožno zistiť, či konkrétny lekár už systém používa, či Sociálna poisťovňa dostala všetky údaje ani či konkrétna osoba spĺňa podmienky nároku.",
+    "steps": [
+      "Spýtajte sa gynekológa, či vám vytvoril elektronickú tehotenskú knižku.",
+      "Ak si nie ste istá stavom, overte v Sociálnej poisťovni, či má potrebné údaje a či ešte treba niečo doložiť.",
+      "Pri otázkach ku konkrétnej výplate alebo nároku kontaktujte svoju pobočku Sociálnej poisťovne."
+    ],
+    "contact": "Informačno-poradenské centrum Sociálnej poisťovne: 0906 171 989 alebo 02 3247 1989.",
+    "sources": [
+      "https://www.socpoist.sk/news/digitalna-revolucia-v-socialnej-poistovni-prinasame-36-zlepseni-obcan-si-vybavi-viac-zivotnych",
+      "https://www.ezdravotnictvo.sk/sk/sluzby-etehotenska-knizka/-/display/wAOn8IRUctuu/content/id/4591905",
+      "https://www.socpoist.sk/kontakty/informacno-poradenske-centrum"
+    ],
+    "migrationStatus": "full"
   },
   {
     "slug": "ziar-urad-15-september",
@@ -115,7 +230,21 @@
     "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Closed%20Door%20(7855555604).jpg?width=1600",
     "imageAlt": "Zatvorené modré dvere",
     "imageLicense": "Wikimedia Commons · CC0",
-    "sourceUrl": "https://objektiv24.sk/"
+    "sourceUrl": "https://objektiv24.sk/",
+    "author": "Jozef Kameník",
+    "facts": "Mesto Žiar nad Hronom oznámilo, že mestský úrad bude 15. septembra 2026 zatvorený a osobné vybavovanie má pokračovať 16. septembra od 8.00 do 15.00.",
+    "meaning": "Informácia sa týkala konkrétneho mestského úradu a jedného dňa. Nemožno ju zovšeobecniť na iné úrady alebo celé Slovensko.",
+    "watch": "Oznámenie samo nevysvetľuje vplyv zatvorenia na individuálne procesné lehoty. Pri lehote viazanej na konkrétny deň si overte prípustný spôsob podania.",
+    "steps": [
+      "Bežnú osobnú návštevu presuňte na oznámený náhradný termín.",
+      "Pri vopred dohodnutom stretnutí si potvrďte náhradný čas.",
+      "Ak vám plynie zákonná alebo správna lehota, overte si možnosť elektronického či iného podania."
+    ],
+    "contact": "Mestský úrad Žiar nad Hronom: 045 678 71 53, msu@ziar.sk.",
+    "sources": [
+      "https://www.ziar.sk/board.php?BoardID=5367&work=board_detail"
+    ],
+    "migrationStatus": "full"
   },
   {
     "slug": "15-september-praca",
@@ -129,6 +258,21 @@
     "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Desktop%20with%20laptop%20and%20calculator%20(Unsplash).jpg?width=1600",
     "imageAlt": "Pracovný stôl s notebookom a kalkulačkou",
     "imageLicense": "Wikimedia Commons · CC0",
-    "sourceUrl": "https://objektiv24.sk/"
+    "sourceUrl": "https://objektiv24.sk/",
+    "author": "Jozef Kameník",
+    "facts": "Podľa zákona č. 241/1993 Z. z. a stanoviska Národného inšpektorátu práce nie je 15. september v roku 2026 dňom pracovného pokoja. Z pohľadu organizácie práce sa preto posudzuje ako bežný pracovný deň, hoci zostáva sviatkom na účely odmeňovania.",
+    "meaning": "To neznamená, že každý zamestnanec musí mať v ten deň naplánovanú zmenu. Rozhoduje pracovný rozvrh. Ak človek potrebuje voľno v deň, ktorý by bol jeho pracovným dňom, rieši ho ako pri bežnom pracovnom dni.",
+    "watch": "Konkrétna mzda, náhradné voľno, dovolenka alebo pracovný režim závisia od pracovnoprávnej situácie. Pri spore sa nespoliehajte iba na stručný internetový článok.",
+    "steps": [
+      "Skontrolujte svoj rozvrh pracovných zmien.",
+      "Ak chcete mať voľno a deň by bol vaším pracovným dňom, riešte dovolenku alebo inú dohodu so zamestnávateľom.",
+      "Pri otázkach k odmene alebo nároku použite oficiálne pracovnoprávne zdroje alebo odbornú pomoc."
+    ],
+    "contact": "Základné vysvetlenie zverejnil Národný inšpektorát práce; znenie zákona je v Slov-Lexe.",
+    "sources": [
+      "https://www.ip.gov.sk/aktuality/sviatky-8-maj-15-september-2026-z-pohladu-pracovneho-prava.html",
+      "https://www.slov-lex.sk/ezbierky/pravne-predpisy/SK/ZZ/1993/241/"
+    ],
+    "migrationStatus": "full"
   }
 ]
