@@ -277,19 +277,53 @@ $("#login-form").addEventListener("submit",async e=>{
   if(!password){authMessage("Zadajte heslo alebo použite prihlasovací odkaz.","error");return}
   authMessage("Prihlasujem…");
   const {error}=await client.auth.signInWithPassword({email,password});
-  if(error)authMessage(error.message,"error");
+  if(error)authMessage(friendlyAuthError(error),"error");
 });
+
+let magicLinkCooldownUntil=0;
+
+function friendlyAuthError(error){
+  const message=String(error?.message||"").toLowerCase();
+  if(message.includes("rate limit")||message.includes("too many")){
+    return "Supabase dočasne vyčerpal limit odosielania e-mailov. Počkajte približne hodinu a skúste poslať jeden nový prihlasovací odkaz.";
+  }
+  if(message.includes("invalid login credentials")){
+    return "E-mail alebo heslo nie sú správne. Ak heslo ešte nemáte, použite prihlasovací odkaz.";
+  }
+  return error?.message||"Pri prihlásení nastala chyba.";
+}
 
 $("#magic-link-button").addEventListener("click",async()=>{
   const email=$("#login-email").value.trim();
+  const button=$("#magic-link-button");
   if(!email){authMessage("Najprv zadajte e-mail.","error");return}
+
+  const now=Date.now();
+  if(now<magicLinkCooldownUntil){
+    const seconds=Math.ceil((magicLinkCooldownUntil-now)/1000);
+    authMessage("Nový odkaz môžete skúsiť poslať o "+seconds+" sekúnd.","error");
+    return;
+  }
+
+  button.disabled=true;
   authMessage("Odosielam prihlasovací odkaz…");
+
   const {error}=await client.auth.signInWithOtp({
     email,
-    options:{emailRedirectTo:"https://objektiv24.sk/redakcia.html"}
+    options:{
+      emailRedirectTo:"https://objektiv24.sk/redakcia.html",
+      shouldCreateUser:false
+    }
   });
-  if(error)authMessage(error.message,"error");
-  else authMessage("Prihlasovací odkaz bol odoslaný. Skontrolujte e-mail.","success");
+
+  magicLinkCooldownUntil=Date.now()+60000;
+  setTimeout(()=>{button.disabled=false},60000);
+
+  if(error){
+    authMessage(friendlyAuthError(error),"error");
+  }else{
+    authMessage("Prihlasovací odkaz bol odoslaný. Skontrolujte e-mail. Ďalší odkaz bude možné vyžiadať najskôr o minútu.","success");
+  }
 });
 
 $("#logout-button").addEventListener("click",async()=>{await client.auth.signOut()});
