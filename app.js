@@ -18,7 +18,10 @@ const normalize = value =>
 function cardTemplate(article) {
   return `
     <article class="article-card">
-      <div class="article-visual" aria-hidden="true"></div>
+      <div class="article-image-wrap">
+        <img class="article-visual" src="${article.image}" alt="${article.imageAlt || ""}" loading="lazy">
+        <span class="article-photo-label">Ilustračná fotografia</span>
+      </div>
       <div class="article-body">
         <span class="eyebrow">${article.category}</span>
         <h3>${article.title}</h3>
