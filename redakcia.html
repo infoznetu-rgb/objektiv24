@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <title>Redakcia | Objektív24</title>
-  <link rel="stylesheet" href="redakcia.css">
-  <script src="redakcia.js" defer></script>
+  <link rel="stylesheet" href="redakcia.css?v=20260916-auth1">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="redakcia.js?v=20260916-auth1" defer></script>
 </head>
 <body>
   <header class="editor-topbar">
@@ -15,10 +16,35 @@
     <nav class="editor-nav" aria-label="Redakčné odkazy">
       <a href="index.html#clanky">Návštevnosť ↗</a>
       <a href="index.html#clanky">Vydané články ↗</a>
+      <span id="session-user" class="session-user" hidden></span>
+      <button id="logout-button" class="logout-button" type="button" hidden>Odhlásiť</button>
     </nav>
   </header>
 
-  <main class="editor-shell">
+  <section id="auth-gate" class="auth-gate">
+    <div class="auth-card">
+      <div class="auth-brand"><span>OBJEKTÍV</span><b>24</b></div>
+      <p class="auth-kicker">BEZPEČNÁ REDAKCIA</p>
+      <h1>Prihlásenie do pracovného stola</h1>
+      <p class="auth-copy">Návrhy sa po prihlásení ukladajú do zabezpečenej databázy Supabase a budete ich mať dostupné aj z iného počítača.</p>
+
+      <form id="login-form" class="login-form">
+        <label for="login-email">E-mail</label>
+        <input id="login-email" type="email" autocomplete="email" required>
+
+        <label for="login-password">Heslo</label>
+        <input id="login-password" type="password" autocomplete="current-password" placeholder="Ak ste si ho nastavili">
+
+        <div class="auth-actions">
+          <button class="primary" type="submit">Prihlásiť sa</button>
+          <button class="secondary" id="magic-link-button" type="button">Poslať prihlasovací odkaz</button>
+        </div>
+        <p id="auth-message" class="auth-message" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+
+  <main id="editor-shell" class="editor-shell" hidden>
     <aside class="drafts-panel">
       <div class="drafts-sticky">
         <h1>Pracovný stôl</h1>
@@ -39,7 +65,7 @@
         <span class="draft-status" id="draft-status">Nový návrh</span>
       </div>
 
-      <div class="mode-note"><strong>Pracovná verzia:</strong> návrhy sa teraz ukladajú iba v tomto prehliadači. Bezpečné prihlásenie a serverové ukladanie pripojíme samostatne.</div>
+      <div class="mode-note"><strong>Bezpečná Redakcia:</strong> vlastné návrhy sa ukladajú do Supabase. Vydané články zostávajú na GitHube a ich úprava vytvorí nový návrh.</div>
 
       <section class="editor-tools" aria-label="Kontrola článku">
         <div>
