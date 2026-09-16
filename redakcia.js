@@ -244,6 +244,7 @@ async function saveDraft(){
   selectDraft(saved.id);
   $("#draft-status").textContent="Uložené "+new Date().toLocaleTimeString("sk-SK",{hour:"2-digit",minute:"2-digit"});
   $(".editor-heading").classList.remove("save-flash");void $(".editor-heading").offsetWidth;$(".editor-heading").classList.add("save-flash");
+  return saved;
 }
 
 async function deleteDraft(){
@@ -356,6 +357,55 @@ $("#export-draft").addEventListener("click",()=>{
   a.href=u;a.download=(d.title||"objektiv24-navrh").toLocaleLowerCase("sk").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+".json";
   a.click();URL.revokeObjectURL(u);
 });
+
+
+async function isPubliclyVisible(id){
+  try{
+    const response=await fetch(
+      SUPABASE_URL+"/rest/v1/drafts?id=eq."+encodeURIComponent(id)+"&state=eq.published&select=id",
+      {
+        headers:{
+          apikey:SUPABASE_PUBLISHABLE_KEY,
+          Authorization:"Bearer "+SUPABASE_PUBLISHABLE_KEY
+        },
+        cache:"no-store"
+      }
+    );
+    if(!response.ok)return false;
+    const rows=await response.json();
+    return Array.isArray(rows)&&rows.some(row=>row.id===id);
+  }catch{return false}
+}
+
+async function publishCurrentDraft(){
+  const title=$("#title").value.trim();
+  const intro=$("#intro").value.trim();
+  if(!title){alert("Pred publikovaním doplňte titulok.");return}
+  if(!intro){alert("Pred publikovaním doplňte krátky úvod.");return}
+
+  const button=$("#publish-draft");
+  button.disabled=true;
+  $("#draft-status").textContent="Publikujem…";
+  try{
+    $("#state").value="published";
+    const saved=await saveDraft();
+    const visible=await isPubliclyVisible(saved.id);
+    if(visible){
+      $("#draft-status").textContent="Publikované na webe";
+      alert("Článok je publikovaný. Na titulke sa zobrazí po obnovení stránky.");
+    }else{
+      $("#draft-status").textContent="Vydané v databáze";
+      alert("Článok je označený ako vydaný. Ešte treba jednorazovo povoliť verejné čítanie vydaných článkov v Supabase.");
+    }
+  }catch(err){
+    console.error(err);
+    alert("Publikovanie sa nepodarilo: "+(err?.message||err));
+  }finally{
+    button.disabled=false;
+  }
+}
+
+$("#publish-draft").addEventListener("click",publishCurrentDraft);
 
 async function finishAuthRedirect(){
   const url=new URL(window.location.href);
