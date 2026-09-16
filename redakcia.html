@@ -39,7 +39,25 @@
         <span class="draft-status" id="draft-status">Nový návrh</span>
       </div>
 
-      <div class="mode-note">Táto GitHub Pages verzia je zatiaľ pracovný editor. Návrhy sa ukladajú iba v tomto prehliadači; bezpečné serverové ukladanie pripojíme samostatne.</div>
+      <div class="mode-note"><strong>Pracovná verzia:</strong> návrhy sa teraz ukladajú iba v tomto prehliadači. Bezpečné prihlásenie a serverové ukladanie pripojíme samostatne.</div>
+
+      <section class="editor-tools" aria-label="Kontrola článku">
+        <div>
+          <span class="tool-label">KONTROLA PRED VYDANÍM</span>
+          <ul class="checklist">
+            <li id="check-title">Titulok</li>
+            <li id="check-intro">Krátky úvod</li>
+            <li id="check-source">Aspoň jeden zdroj</li>
+            <li id="check-body">Vysvetlenie alebo ďalší krok</li>
+          </ul>
+        </div>
+        <article class="live-card" id="live-card">
+          <div class="live-image" id="live-image"><span>Náhľad obrázka</span></div>
+          <span class="live-category" id="live-category">Slovensko v súvislostiach</span>
+          <h3 id="live-title">Titulok článku sa zobrazí tu</h3>
+          <p id="live-intro">Krátky úvod sa zobrazí tu.</p>
+        </article>
+      </section>
 
       <form id="article-form" class="article-form">
         <input type="hidden" id="draft-id">
@@ -92,6 +110,7 @@
             </select>
           </div>
           <div class="actions">
+            <button class="danger" type="button" id="delete-draft">Vymazať návrh</button>
             <button class="secondary" type="button" id="export-draft">Stiahnuť JSON</button>
             <button class="primary" type="submit">Uložiť návrh</button>
           </div>
