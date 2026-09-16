@@ -565,3 +565,22 @@ linear-gradient(135deg,#1c3347,#0d1722)}
     line-height:1.02;
   }
 }
+
+/* Hero headline sizing fix */
+@media (min-width:1281px){
+  .hero-content h1{
+    font-size:clamp(2rem,2.45vw,3.35rem);
+    line-height:1.04;
+    max-width:620px;
+    margin:16px 0 16px;
+  }
+}
+
+@media (min-width:981px) and (max-width:1280px){
+  .hero-content h1{
+    font-size:clamp(1.9rem,2.75vw,2.8rem);
+    line-height:1.05;
+    max-width:560px;
+    margin:14px 0 15px;
+  }
+}
