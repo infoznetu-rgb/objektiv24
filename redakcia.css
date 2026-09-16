@@ -66,3 +66,16 @@ textarea{resize:vertical;line-height:1.5}input[type="file"]{width:100%;border:1p
 .logout-button[hidden]{
   display:none !important;
 }
+
+.publish-button{
+  border:0;
+  background:#b9f400;
+  color:#11151b;
+  font:inherit;
+  font-weight:800;
+  padding:.9rem 1.1rem;
+  border-radius:4px;
+  cursor:pointer;
+}
+.publish-button:hover{filter:brightness(.96)}
+.publish-button:disabled{opacity:.55;cursor:wait}
