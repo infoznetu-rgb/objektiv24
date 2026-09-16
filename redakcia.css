@@ -54,3 +54,6 @@ textarea{resize:vertical;line-height:1.5}input[type="file"]{width:100%;border:1p
 .auth-message.success{color:#4d6511}
 .sync-status{font-size:.72rem;color:#6f737b;margin-top:8px}
 @media(max-width:620px){.auth-card{padding:24px 18px}.auth-actions{flex-direction:column}.auth-actions button{width:100%}}
+
+.auth-help{margin:12px 0 0;font-size:.8rem;line-height:1.45;color:#747882}
+.auth-actions .primary{width:100%}
