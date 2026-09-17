@@ -7,7 +7,7 @@
   function host(url){try{return new URL(url).hostname.replace(/^www\./,'')}catch{return''}}
   function sourceName(row){
     const h=host(row.image_source_url||row.image_url||'');
-    if(/wikimedia\.org$|wikimedia\.org\b|wikimedia\.org/.test(h)||/wikimedia/.test(h))return'Wikimedia Commons';
+    if(/wikimedia/.test(h))return'Wikimedia Commons';
     if(h)return h;
     return'';
   }
@@ -29,12 +29,14 @@
   function rowForImg(img){return byUrl.get(absolute(img.currentSrc||img.src||''))||null}
   function applyImg(img,row){
     if(!row)return;
-    if(row.image_alt)img.alt=row.image_alt;
-    if(row.image_position)img.style.objectPosition=row.image_position;
+    if(row.image_alt&&img.alt!==row.image_alt)img.alt=row.image_alt;
+    if(row.image_position&&img.style.objectPosition!==row.image_position)img.style.objectPosition=row.image_position;
   }
   function setCaption(cap,row,detail=false){
     if(!cap||!row)return;
-    cap.textContent=detail?fullLabel(row):shortLabel(row);
+    const wanted=detail?fullLabel(row):shortLabel(row);
+    if(!detail&&cap.textContent===wanted)return;
+    cap.textContent=wanted;
     if(detail&&row.image_source_url){
       cap.append(document.createTextNode(' · '));
       const a=document.createElement('a');a.href=row.image_source_url;a.target='_blank';a.rel='noopener';a.textContent='zdroj ↗';a.style.color='inherit';cap.appendChild(a);
@@ -63,7 +65,7 @@
       const rows=await r.json();
       (Array.isArray(rows)?rows:[]).forEach(row=>{if(row.image_url)byUrl.set(absolute(row.image_url),row);if(row.id)byId.set(String(row.id),row)});
       apply();
-      new MutationObserver(schedule).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['src','style']});
+      new MutationObserver(schedule).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['src']});
     }catch(error){console.warn('Metadáta obrázkov sa nepodarilo načítať',error)}
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load();
