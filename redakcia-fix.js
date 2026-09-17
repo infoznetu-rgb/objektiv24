@@ -150,4 +150,9 @@
   imageModule.onload = loadVideoModule;
   imageModule.onerror = loadVideoModule;
   document.head.appendChild(imageModule);
+
+  const backToTopModule = document.createElement("script");
+  backToTopModule.src = "back-to-top.js?v=1";
+  backToTopModule.defer = true;
+  document.head.appendChild(backToTopModule);
 })();
