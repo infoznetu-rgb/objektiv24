@@ -112,7 +112,7 @@
   function loadVideoRender(){
     if(document.querySelector('script[data-redakcia-video-render]')) { loadLatestRenderHelper(); return; }
     const renderModule=document.createElement('script');
-    renderModule.src='redakcia-video-render-studio.js?v=20260917-2';
+    renderModule.src='redakcia-video-render-studio.js?v=20260917-broll1';
     renderModule.async=false;
     renderModule.dataset.redakciaVideoRender='1';
     renderModule.onload=loadLatestRenderHelper;
@@ -120,14 +120,25 @@
     document.head.appendChild(renderModule);
   }
 
+  function loadBroll(){
+    if(document.querySelector('script[data-redakcia-video-broll]')) { loadVideoRender(); return; }
+    const brollModule=document.createElement('script');
+    brollModule.src='redakcia-video-broll.js?v=20260917-1';
+    brollModule.async=false;
+    brollModule.dataset.redakciaVideoBroll='1';
+    brollModule.onload=loadVideoRender;
+    brollModule.onerror=loadVideoRender;
+    document.head.appendChild(brollModule);
+  }
+
   function loadVideoPro(){
-    if(document.querySelector('script[data-redakcia-video-pro]')) { loadVideoRender(); return; }
+    if(document.querySelector('script[data-redakcia-video-pro]')) { loadBroll(); return; }
     const proModule=document.createElement('script');
     proModule.src='redakcia-video-pro.js?v=20260917-2';
     proModule.async=false;
     proModule.dataset.redakciaVideoPro='1';
-    proModule.onload=loadVideoRender;
-    proModule.onerror=loadVideoRender;
+    proModule.onload=loadBroll;
+    proModule.onerror=loadBroll;
     document.head.appendChild(proModule);
   }
 
