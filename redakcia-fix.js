@@ -112,7 +112,7 @@
   function loadVideoRender(){
     if(document.querySelector('script[data-redakcia-video-render]')) { loadLatestRenderHelper(); return; }
     const renderModule=document.createElement('script');
-    renderModule.src='redakcia-video-render-studio.js?v=20260917-1';
+    renderModule.src='redakcia-video-render-studio.js?v=20260917-2';
     renderModule.async=false;
     renderModule.dataset.redakciaVideoRender='1';
     renderModule.onload=loadLatestRenderHelper;
