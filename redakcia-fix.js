@@ -93,9 +93,13 @@
     if(document.querySelector('script[data-redakcia-video-library]')) { loadVideoRender(); return; }
     const s=document.createElement('script');s.src='redakcia-video-library.js?v=20260917-1';s.async=false;s.dataset.redakciaVideoLibrary='1';s.onload=loadVideoRender;s.onerror=loadVideoRender;document.head.appendChild(s);
   }
+  function loadVideoSaveQueue(){
+    if(document.querySelector('script[data-redakcia-video-save-queue]')) { loadVideoLibrary(); return; }
+    const s=document.createElement('script');s.src='redakcia-video-save-queue.js?v=20260917-1';s.async=false;s.dataset.redakciaVideoSaveQueue='1';s.onload=loadVideoLibrary;s.onerror=loadVideoLibrary;document.head.appendChild(s);
+  }
   function loadMotionBroll(){
-    if(document.querySelector('script[data-redakcia-video-motion]')) { loadVideoLibrary(); return; }
-    const s=document.createElement('script');s.src='redakcia-video-motion.js?v=20260917-2';s.async=false;s.dataset.redakciaVideoMotion='1';s.onload=loadVideoLibrary;s.onerror=loadVideoLibrary;document.head.appendChild(s);
+    if(document.querySelector('script[data-redakcia-video-motion]')) { loadVideoSaveQueue(); return; }
+    const s=document.createElement('script');s.src='redakcia-video-motion.js?v=20260917-2';s.async=false;s.dataset.redakciaVideoMotion='1';s.onload=loadVideoSaveQueue;s.onerror=loadVideoSaveQueue;document.head.appendChild(s);
   }
   function loadBroll(){
     if(document.querySelector('script[data-redakcia-video-broll]')) { loadMotionBroll(); return; }
