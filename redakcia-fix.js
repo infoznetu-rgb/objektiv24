@@ -101,7 +101,7 @@
   function loadLatestRenderHelper(){
     if(document.querySelector('script[data-redakcia-render-latest]')) { loadRenderStatusSync(); return; }
     const latestModule=document.createElement('script');
-    latestModule.src='redakcia-render-latest.js?v=20260917-1';
+    latestModule.src='redakcia-render-latest.js?v=20260917-2';
     latestModule.async=false;
     latestModule.dataset.redakciaRenderLatest='1';
     latestModule.onload=loadRenderStatusSync;
