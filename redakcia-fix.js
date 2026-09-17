@@ -89,12 +89,23 @@
     }, 250);
   });
 
+  function loadLatestRenderHelper(){
+    if(document.querySelector('script[data-redakcia-render-latest]')) return;
+    const latestModule=document.createElement('script');
+    latestModule.src='redakcia-render-latest.js?v=20260917-1';
+    latestModule.async=false;
+    latestModule.dataset.redakciaRenderLatest='1';
+    document.head.appendChild(latestModule);
+  }
+
   function loadVideoRender(){
-    if(document.querySelector('script[data-redakcia-video-render]')) return;
+    if(document.querySelector('script[data-redakcia-video-render]')) { loadLatestRenderHelper(); return; }
     const renderModule=document.createElement('script');
     renderModule.src='redakcia-video-render.js?v=20260917-1';
     renderModule.async=false;
     renderModule.dataset.redakciaVideoRender='1';
+    renderModule.onload=loadLatestRenderHelper;
+    renderModule.onerror=loadLatestRenderHelper;
     document.head.appendChild(renderModule);
   }
 
