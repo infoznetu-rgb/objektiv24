@@ -28,16 +28,15 @@
     .field input,.field textarea{width:100%;border:1px solid var(--line);border-radius:14px;background:rgba(3,10,15,.62);color:#fff;padding:13px 14px;font:inherit;outline:0}
     .field textarea{min-height:170px;resize:vertical}
     .field input:focus,.field textarea:focus{border-color:rgba(217,255,40,.55);box-shadow:0 0 0 4px rgba(217,255,40,.06)}
-    .form-privacy{display:flex;align-items:flex-start;gap:10px;color:#9cabb4;font-size:.78rem;line-height:1.5}
-    .form-privacy input{margin-top:3px;accent-color:#d9ff28}
+    .form-privacy{margin:0;color:#9cabb4;font-size:.78rem;line-height:1.5}
     .form-privacy a{color:#d9ff28}
     .contact-submit{justify-self:start;border:0;border-radius:14px;background:var(--accent);color:#061018;padding:13px 19px;font:900 .9rem/1 Inter,ui-sans-serif,system-ui;cursor:pointer;box-shadow:0 0 30px rgba(217,255,40,.12)}
     .contact-submit:hover{transform:translateY(-2px)}
     .honey{position:absolute!important;left:-9999px!important;width:1px!important;height:1px!important;overflow:hidden!important}
     @media(max-width:800px){.contact-page{padding-top:34px}.contact-grid{grid-template-columns:1fr}.contact-card,.contact-form-card{padding:21px;border-radius:21px}.contact-hero h1{font-size:clamp(2.5rem,13vw,4.2rem)}.site-header .topbar{width:calc(100% - 28px)}.site-header .header-search,.site-header .help-link{display:none}}
   </style>
-  <script src="analytics.js?v=2" defer></script>
-  <script src="pwa.js?v=2" defer></script>
+  <script src="analytics.js?v=3" defer></script>
+  <script src="pwa.js?v=3" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#obsah">Preskočiť na obsah</a>
@@ -101,7 +100,7 @@
             <label for="contact-message">Správa</label>
             <textarea id="contact-message" name="Správa" maxlength="5000" required></textarea>
           </div>
-          <label class="form-privacy"><input type="checkbox" required><span>Beriem na vedomie, že údaje z formulára sa použijú na vybavenie mojej správy. Viac v časti <a href="ako-pracujeme.html#sukromie">Súkromie</a>.</span></label>
+          <p class="form-privacy">Odoslaním formulára beriete na vedomie spracovanie údajov na účel vybavenia vašej správy. Podrobnosti sú v časti <a href="ako-pracujeme.html#sukromie">Ochrana osobných údajov</a>.</p>
           <button class="contact-submit" type="submit">Odoslať správu →</button>
         </form>
       </section>
