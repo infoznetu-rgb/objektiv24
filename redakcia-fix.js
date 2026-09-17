@@ -92,4 +92,11 @@
       }
     }, 250);
   });
+
+  // Rozšírený obrazový pracovný postup načítame až po základnej Redakcii,
+  // aby mohol doplniť metadáta, licenčnú kontrolu a vyhľadávanie fotografií.
+  const imageModule = document.createElement("script");
+  imageModule.src = "redakcia-images.js?v=20260917-1";
+  imageModule.async = false;
+  document.head.appendChild(imageModule);
 })();
