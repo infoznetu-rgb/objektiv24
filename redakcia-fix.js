@@ -93,17 +93,28 @@
     }, 250);
   });
 
+  function loadVideoPreviewModule(){
+    if(document.querySelector('script[data-redakcia-video-preview]')) return;
+    const previewModule=document.createElement('script');
+    previewModule.src='redakcia-video-preview.js?v=20260917-1';
+    previewModule.async=false;
+    previewModule.dataset.redakciaVideoPreview='1';
+    document.head.appendChild(previewModule);
+  }
+
   function loadVideoModule(){
-    if(document.querySelector('script[data-redakcia-video]')) return;
+    if(document.querySelector('script[data-redakcia-video]')) { loadVideoPreviewModule(); return; }
     const videoModule=document.createElement('script');
     videoModule.src='redakcia-video.js?v=20260917-1';
     videoModule.async=false;
     videoModule.dataset.redakciaVideo='1';
+    videoModule.onload=loadVideoPreviewModule;
+    videoModule.onerror=loadVideoPreviewModule;
     document.head.appendChild(videoModule);
   }
 
   // Rozšírený obrazový pracovný postup načítame až po základnej Redakcii,
-  // potom pripojíme pilot pre TikTok / Reels / Shorts.
+  // potom pripojíme pilot pre TikTok / Reels / Shorts a prehrávateľný náhľad.
   const imageModule = document.createElement("script");
   imageModule.src = "redakcia-images.js?v=20260917-1";
   imageModule.async = false;
