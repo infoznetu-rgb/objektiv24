@@ -47,6 +47,26 @@
     checklist.appendChild(li);
   }
 
+  function ensureVideoDivider() {
+    const videoSection = document.querySelector('.short-video-section');
+    if (!videoSection || document.querySelector('#tiktok-video-divider')) return;
+    if (!document.querySelector('#tiktok-video-divider-style')) {
+      const style = document.createElement('style');
+      style.id = 'tiktok-video-divider-style';
+      style.textContent = `
+        .tiktok-video-divider{display:flex;align-items:center;gap:12px;margin:34px 0 18px;color:#626a12;font-size:.7rem;font-weight:950;letter-spacing:.14em;text-transform:uppercase}
+        .tiktok-video-divider:before,.tiktok-video-divider:after{content:'';height:2px;background:#d9ff28;flex:1;border-radius:2px}
+        .tiktok-video-divider span{white-space:nowrap;background:#f5f9df;border:1px solid #dbe99a;border-radius:999px;padding:6px 10px}
+      `;
+      document.head.appendChild(style);
+    }
+    const divider = document.createElement('div');
+    divider.id = 'tiktok-video-divider';
+    divider.className = 'tiktok-video-divider';
+    divider.innerHTML = '<span>VIDEO / TIKTOK</span>';
+    videoSection.before(divider);
+  }
+
   try {
     const originalUpdateLivePreview = updateLivePreview;
     updateLivePreview = function () {
@@ -70,6 +90,7 @@
   window.addEventListener("load", () => {
     setTimeout(async () => {
       ensureImageChecklist();
+      ensureVideoDivider();
       if (typeof currentUser !== "undefined" && currentUser) {
         try { await refreshDrafts(); resetForm(); }
         catch (error) { console.error("Obnova zoznamu návrhov zlyhala:", error); }
@@ -114,12 +135,13 @@
     const s=document.createElement('script');s.src='redakcia-video-voice.js?v=20260917-2';s.async=false;s.dataset.redakciaVideoVoice='1';s.onload=loadVideoPro;s.onerror=loadVideoPro;document.head.appendChild(s);
   }
   function loadVideoPreviewModule(){
+    ensureVideoDivider();
     if(document.querySelector('script[data-redakcia-video-preview]')) { loadVoiceEnhancer(); return; }
     const s=document.createElement('script');s.src='redakcia-video-preview.js?v=20260917-2';s.async=false;s.dataset.redakciaVideoPreview='1';s.onload=loadVoiceEnhancer;s.onerror=loadVoiceEnhancer;document.head.appendChild(s);
   }
   function loadVideoModule(){
-    if(document.querySelector('script[data-redakcia-video]')) { loadVideoPreviewModule(); return; }
-    const s=document.createElement('script');s.src='redakcia-video.js?v=20260917-1';s.async=false;s.dataset.redakciaVideo='1';s.onload=loadVideoPreviewModule;s.onerror=loadVideoPreviewModule;document.head.appendChild(s);
+    if(document.querySelector('script[data-redakcia-video]')) { ensureVideoDivider(); loadVideoPreviewModule(); return; }
+    const s=document.createElement('script');s.src='redakcia-video.js?v=20260917-1';s.async=false;s.dataset.redakciaVideo='1';s.onload=()=>{ensureVideoDivider();loadVideoPreviewModule();};s.onerror=loadVideoPreviewModule;document.head.appendChild(s);
   }
 
   const imageModule = document.createElement("script");
