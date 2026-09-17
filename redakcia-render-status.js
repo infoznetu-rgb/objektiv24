@@ -5,6 +5,15 @@
   let busy = false;
   let capabilityChecked = false;
 
+  function loadAutoScript() {
+    if (document.querySelector('script[data-video-autoscript]')) return;
+    const s = document.createElement('script');
+    s.src = 'redakcia-video-autoscript.js?v=20260917-2';
+    s.async = false;
+    s.dataset.videoAutoscript = '1';
+    document.head.appendChild(s);
+  }
+
   async function invoke(action, body = {}) {
     const { data, error } = await client.functions.invoke('heygen-render', { body: { action, ...body } });
     if (error) throw error;
@@ -88,6 +97,7 @@
 
   function boot(tries = 0) {
     if (typeof client === 'undefined') { if (tries < 120) setTimeout(() => boot(tries + 1), 180); return; }
+    loadAutoScript();
     tick(); timer = setInterval(tick, 4000); window.addEventListener('beforeunload', () => timer && clearInterval(timer));
   }
   boot();
