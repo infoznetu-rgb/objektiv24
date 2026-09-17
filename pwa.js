@@ -2,42 +2,18 @@
   if(document.querySelector('link[rel="manifest"]')===null){const m=document.createElement('link');m.rel='manifest';m.href='/manifest.webmanifest';document.head.appendChild(m)}
   if(document.querySelector('link[rel="apple-touch-icon"]')===null){const i=document.createElement('link');i.rel='apple-touch-icon';i.href='/assets/app-icon.svg';document.head.appendChild(i)}
   if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
-
-  const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
-  const ua=navigator.userAgent||'';
-  const isIOS=/iphone|ipad|ipod/i.test(ua);
-  const isAndroid=/android/i.test(ua);
-  const isChrome=/chrome|crios/i.test(ua)&&!/edg|opr|opera/i.test(ua);
-  const isInApp=/wv|FBAN|FBAV|Instagram|WhatsApp|Messenger/i.test(ua);
-  const dismissKey='objektiv24_install_dismissed_until';
-  const visitKey='objektiv24_visit_count';
-  let deferredPrompt=null,shown=false;
+  const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true,ua=navigator.userAgent||'',isIOS=/iphone|ipad|ipod/i.test(ua),isAndroid=/android/i.test(ua),isChrome=/chrome|crios/i.test(ua)&&!/edg|opr|opera/i.test(ua),isInApp=/wv|FBAN|FBAV|Instagram|WhatsApp|Messenger/i.test(ua);
+  const dismissKey='objektiv24_install_dismissed_until',visitKey='objektiv24_visit_count';let deferredPrompt=null,shown=false,dockTimer=null;
   const track=type=>{if(typeof window.objektiv24Track==='function')window.objektiv24Track(type)};
-  const style=document.createElement('style');style.textContent=`
-    .pwa-install-link{cursor:pointer}.pwa-card{position:fixed;z-index:120;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(560px,calc(100% - 28px));padding:18px 18px 16px;border:1px solid rgba(217,255,40,.28);border-radius:20px;background:rgba(6,16,24,.96);box-shadow:0 24px 70px rgba(0,0,0,.45);backdrop-filter:blur(20px);color:#f7fafb;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}.pwa-card strong{display:block;font-size:1.05rem;margin-bottom:5px}.pwa-card p{margin:0;color:#aebac1;font-size:.86rem;line-height:1.45}.pwa-card .pwa-help{margin-top:10px;color:#d8e1e5}.pwa-actions{display:flex;gap:10px;margin-top:14px;align-items:center}.pwa-actions button{border:0;border-radius:12px;padding:10px 14px;font-weight:850;cursor:pointer}.pwa-install{background:#d9ff28;color:#061018}.pwa-later{background:transparent;color:#b8c4cb;border:1px solid rgba(255,255,255,.13)!important}.pwa-card[hidden]{display:none!important}@media(max-width:520px){.pwa-card{padding:16px}.pwa-actions{align-items:stretch}.pwa-actions button{flex:1}}
-  `;document.head.appendChild(style);
-
+  const style=document.createElement('style');style.textContent=`.pwa-install-link{cursor:pointer}.pwa-card{position:fixed;z-index:120;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(560px,calc(100% - 28px));padding:18px;border:1px solid rgba(217,255,40,.32);border-radius:20px;background:rgba(6,16,24,.97);box-shadow:0 24px 70px rgba(0,0,0,.45);backdrop-filter:blur(20px);color:#f7fafb;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;transition:opacity .35s ease,transform .45s cubic-bezier(.2,.8,.2,1)}.pwa-card.pwa-attention{animation:pwa-pop 1.8s ease 2}.pwa-card strong{display:block;font-size:1.05rem;margin-bottom:5px}.pwa-card p{margin:0;color:#aebac1;font-size:.86rem;line-height:1.45}.pwa-card .pwa-help{margin-top:10px;color:#d8e1e5}.pwa-actions{display:flex;gap:10px;margin-top:14px}.pwa-actions button{border:0;border-radius:12px;padding:10px 14px;font-weight:850;cursor:pointer}.pwa-install{background:#d9ff28;color:#061018}.pwa-later{background:transparent;color:#b8c4cb;border:1px solid rgba(255,255,255,.13)!important}.pwa-card[hidden]{display:none!important}.pwa-dock{position:fixed;z-index:119;right:0;bottom:22%;border:1px solid rgba(217,255,40,.38);border-right:0;border-radius:18px 0 0 18px;background:#d9ff28;color:#061018;padding:12px 9px 12px 12px;font:850 13px/1.1 Inter,ui-sans-serif,system-ui;box-shadow:0 10px 32px rgba(0,0,0,.28);cursor:pointer;animation:pwa-dock-in .5s ease}.pwa-dock span{writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:.02em}.pwa-dock[hidden]{display:none!important}@keyframes pwa-pop{0%,100%{transform:translateX(-50%) scale(1)}45%{transform:translateX(-50%) scale(1.025);box-shadow:0 24px 80px rgba(217,255,40,.16)}}@keyframes pwa-dock-in{from{transform:translateX(100%);opacity:0}to{transform:none;opacity:1}}@media(max-width:520px){.pwa-card{padding:16px}.pwa-actions button{flex:1}}@media(prefers-reduced-motion:reduce){.pwa-card,.pwa-dock{animation:none!important;transition:none!important}}`;document.head.appendChild(style);
   function addMenuLink(){document.querySelectorAll('.nav-inner').forEach(nav=>{if(nav.querySelector('.pwa-install-link'))return;const a=document.createElement('a');a.href='#';a.className='pwa-install-link';a.textContent=standalone?'Objektív24 v mobile ✓':'Objektív24 v mobile';a.addEventListener('click',e=>{e.preventDefault();openCard(true)});const motto=nav.querySelector('.nav-motto');motto?nav.insertBefore(a,motto):nav.appendChild(a)})}
   function card(){let el=document.querySelector('#pwa-install-card');if(el)return el;el=document.createElement('aside');el.id='pwa-install-card';el.className='pwa-card';el.hidden=true;el.setAttribute('aria-live','polite');document.body.appendChild(el);return el}
-  function dismiss(el){el.hidden=true;localStorage.setItem(dismissKey,String(Date.now()+30*864e5));track('install_dismissed')}
-  function fallbackHelp(){
-    if(isIOS)return 'V Safari klepnite na Zdieľať a potom na „Pridať na plochu“.';
-    if(isAndroid&&isInApp)return 'Táto aplikácia otvorila stránku vo svojom internom prehliadači. Otvorte menu prehliadača, zvoľte „Otvoriť v Chrome“ a potom v Chrome „Pridať na plochu“ alebo „Nainštalovať aplikáciu“.';
-    if(isAndroid&&isChrome)return 'V Chrome otvorte menu ⋮ vpravo hore a zvoľte „Pridať na plochu“ alebo „Nainštalovať aplikáciu“.';
-    if(isAndroid)return 'Otvorte túto stránku v Chrome. Potom v menu ⋮ zvoľte „Pridať na plochu“ alebo „Nainštalovať aplikáciu“.';
-    return 'V menu prehliadača vyhľadajte možnosť „Nainštalovať aplikáciu“ alebo „Pridať na plochu“.';
-  }
-  function openCard(manual=false){
-    if(standalone){if(manual){const el=card();el.innerHTML='<strong>Objektív24 už máte v mobile</strong><p>Otvárať ho môžete priamo z plochy zariadenia.</p><div class="pwa-actions"><button class="pwa-later">Zavrieť</button></div>';el.hidden=false;el.querySelector('button').onclick=()=>el.hidden=true}return}
-    const el=card(),canInstall=!!deferredPrompt;
-    const help=canInstall?'':'<p class="pwa-help">'+fallbackHelp()+'</p>';
-    el.innerHTML='<strong>Objektív24 poruke</strong><p>Ak chcete, môžete si Objektív24 pridať do mobilu a otvárať ho priamo z plochy.</p>'+help+'<div class="pwa-actions">'+(canInstall?'<button class="pwa-install">Pridať do mobilu</button>':'')+'<button class="pwa-later">'+(manual&&!canInstall?'Rozumiem':'Teraz nie')+'</button></div>';
-    el.hidden=false;if(!shown){track('install_offer_shown');shown=true}
-    el.querySelector('.pwa-later').onclick=()=>dismiss(el);
-    const install=el.querySelector('.pwa-install');if(install)install.onclick=async()=>{track('install_clicked');deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;el.hidden=true};
-  }
-
-  addMenuLink();
-  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;addMenuLink();const count=Math.min(99,(Number(localStorage.getItem(visitKey))||0)+1);localStorage.setItem(visitKey,String(count));const dismissed=Number(localStorage.getItem(dismissKey))||0;if(!standalone&&Date.now()>dismissed&&(count>=2)){setTimeout(()=>openCard(false),45000)}});
-  window.addEventListener('appinstalled',()=>{track('app_installed');deferredPrompt=null;const el=document.querySelector('#pwa-install-card');if(el)el.hidden=true;localStorage.setItem('objektiv24_installed','1')});
+  function dock(){let el=document.querySelector('#pwa-install-dock');if(el)return el;el=document.createElement('button');el.type='button';el.id='pwa-install-dock';el.className='pwa-dock';el.innerHTML='<span>📱 Do mobilu</span>';el.hidden=true;el.setAttribute('aria-label','Pridať Objektív24 do mobilu');el.onclick=()=>openCard(true);document.body.appendChild(el);return el}
+  function showDock(){if(!standalone)dock().hidden=false}
+  function dismiss(el){el.hidden=true;localStorage.setItem(dismissKey,String(Date.now()+30*864e5));track('install_dismissed');showDock()}
+  function fallbackHelp(){if(isIOS)return 'V Safari klepnite na Zdieľať a potom na „Pridať na plochu“.';if(isAndroid&&isInApp)return 'Otvorte stránku v Chrome a potom zvoľte „Pridať na plochu“ alebo „Nainštalovať aplikáciu“.';if(isAndroid&&isChrome)return 'V Chrome otvorte menu ⋮ a zvoľte „Pridať na plochu“ alebo „Nainštalovať aplikáciu“.';if(isAndroid)return 'Otvorte túto stránku v Chrome a v menu ⋮ zvoľte „Pridať na plochu“.';return 'V menu prehliadača vyhľadajte „Nainštalovať aplikáciu“ alebo „Pridať na plochu“.'}
+  function openCard(manual=false){if(dock())dock().hidden=true;if(standalone){return}const el=card(),canInstall=!!deferredPrompt,help=canInstall?'':'<p class="pwa-help">'+fallbackHelp()+'</p>';el.innerHTML='<strong>📱 Objektív24 poruke</strong><p>Pridajte si ho do mobilu a otvárajte správy jedným klepnutím.</p>'+help+'<div class="pwa-actions">'+(canInstall?'<button class="pwa-install">Pridať do mobilu</button>':'')+'<button class="pwa-later">'+(manual&&!canInstall?'Rozumiem':'Teraz nie')+'</button></div>';el.hidden=false;el.classList.toggle('pwa-attention',!manual);if(!shown){track('install_offer_shown');shown=true}el.querySelector('.pwa-later').onclick=()=>dismiss(el);const install=el.querySelector('.pwa-install');if(install)install.onclick=async()=>{track('install_clicked');deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;el.hidden=true};clearTimeout(dockTimer);if(!manual)dockTimer=setTimeout(()=>{if(!el.hidden){el.hidden=true;showDock()}},9000)}
+  addMenuLink();dock();
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;const count=Math.min(99,(Number(localStorage.getItem(visitKey))||0)+1);localStorage.setItem(visitKey,String(count));const dismissed=Number(localStorage.getItem(dismissKey))||0;if(!standalone&&Date.now()>dismissed&&count>=2)setTimeout(()=>openCard(false),12000)});
+  window.addEventListener('appinstalled',()=>{track('app_installed');deferredPrompt=null;card().hidden=true;dock().hidden=true;localStorage.setItem('objektiv24_installed','1')});
 })();
