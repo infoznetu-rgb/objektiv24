@@ -54,5 +54,15 @@
     box.innerHTML = `<strong style="display:block;color:#333b1e;margin-bottom:3px">Posledné video · ${esc(status)}</strong><span>${esc(data.title || 'Objektív24 video')}${data.status !== 'completed' ? ` · ${Math.round(Number(data.progress || 0))} %` : ''}</span><div>${watch}${heygen}${article}</div>`;
   }
 
+  function loadBrandModule() {
+    if (document.querySelector('script[data-redakcia-video-brand]')) return;
+    const s = document.createElement('script');
+    s.src = 'redakcia-video-brand.js?v=20260917-1';
+    s.async = false;
+    s.dataset.redakciaVideoBrand = '1';
+    document.head.appendChild(s);
+  }
+
+  loadBrandModule();
   boot();
 })();
