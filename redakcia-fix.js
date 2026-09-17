@@ -31,8 +31,6 @@
     if (status) status.textContent = serverDrafts.length ? "Synchronizované" : "Žiadne nové návrhy";
   };
 
-  // Kvalitatívna brána pred publikovaním. Návrh sa môže uložiť aj rozpracovaný,
-  // ale na verejný web nepustíme prázdny, veľmi krátky alebo bez obrázka/zdroja.
   function articleQualityProblems() {
     const d = readForm();
     const problems = [];
@@ -67,7 +65,6 @@
 
   ensureImageChecklist();
 
-  // Zachytíme klik ešte pred pôvodným publish handlerom.
   document.querySelector("#publish-draft")?.addEventListener("click", event => {
     const problems = articleQualityProblems();
     if (!problems.length) return;
@@ -78,7 +75,6 @@
     alert("Článok ešte nie je pripravený na publikovanie:\n\n• " + problems.join("\n• "));
   }, { capture: true });
 
-  // Po načítaní stránky ešte raz zosúladíme zoznam, aby v ňom nezostali staré ukážkové položky.
   window.addEventListener("load", () => {
     setTimeout(async () => {
       ensureImageChecklist();
@@ -93,12 +89,23 @@
     }, 250);
   });
 
+  function loadVoiceEnhancer(){
+    if(document.querySelector('script[data-redakcia-video-voice]')) return;
+    const voiceModule=document.createElement('script');
+    voiceModule.src='redakcia-video-voice.js?v=20260917-1';
+    voiceModule.async=false;
+    voiceModule.dataset.redakciaVideoVoice='1';
+    document.head.appendChild(voiceModule);
+  }
+
   function loadVideoPreviewModule(){
-    if(document.querySelector('script[data-redakcia-video-preview]')) return;
+    if(document.querySelector('script[data-redakcia-video-preview]')) { loadVoiceEnhancer(); return; }
     const previewModule=document.createElement('script');
-    previewModule.src='redakcia-video-preview.js?v=20260917-1';
+    previewModule.src='redakcia-video-preview.js?v=20260917-2';
     previewModule.async=false;
     previewModule.dataset.redakciaVideoPreview='1';
+    previewModule.onload=loadVoiceEnhancer;
+    previewModule.onerror=loadVoiceEnhancer;
     document.head.appendChild(previewModule);
   }
 
@@ -113,8 +120,6 @@
     document.head.appendChild(videoModule);
   }
 
-  // Rozšírený obrazový pracovný postup načítame až po základnej Redakcii,
-  // potom pripojíme pilot pre TikTok / Reels / Shorts a prehrávateľný náhľad.
   const imageModule = document.createElement("script");
   imageModule.src = "redakcia-images.js?v=20260917-1";
   imageModule.async = false;
