@@ -1,7 +1,9 @@
 (() => {
   const $ = s => document.querySelector(s);
+  const VOICE_KEY='objektiv24_video_preview_voice';
   let activeUtterance = null;
   let selectedVoiceName = '';
+  try { selectedVoiceName = localStorage.getItem(VOICE_KEY) || ''; } catch {}
 
   function clean(v){return String(v||'').replace(/\s+/g,' ').trim()}
   function voices(){return ('speechSynthesis' in window) ? speechSynthesis.getVoices() : []}
@@ -23,6 +25,7 @@
     if(selectedVoiceName){const chosen=list.find(v=>v.name===selectedVoiceName);if(chosen)return chosen}
     return list.find(v=>/^sk/i.test(v.lang)) || list[0] || null;
   }
+  function rememberVoice(){try{if(selectedVoiceName)localStorage.setItem(VOICE_KEY,selectedVoiceName)}catch{}}
 
   function addVoicePicker(){
     const controls=$('.video-preview-controls');
@@ -32,10 +35,10 @@
     wrap.innerHTML='<span>Hlas pre rýchly náhľad</span><select id="video-preview-voice-select" style="max-width:100%;padding:9px 10px;border:1px solid #c9ccd1;border-radius:7px;background:#fff"></select>';
     controls.parentElement.insertBefore(wrap, controls.nextSibling);
     fillVoicePicker();
-    $('#video-preview-voice-select')?.addEventListener('change',e=>{selectedVoiceName=e.target.value||''});
+    $('#video-preview-voice-select')?.addEventListener('change',e=>{selectedVoiceName=e.target.value||'';rememberVoice()});
 
     const help=$('.video-preview-help');
-    if(help)help.textContent='Rýchly náhľad používa najkvalitnejší slovenský hlas dostupný v tomto zariadení. Ak prehliadač nemá Natural/Neural hlas, bude stále znieť systémovo. Finálny TikTok render použije samostatný kvalitný AI voiceover.';
+    if(help)help.textContent='Rýchly náhľad používa najkvalitnejší slovenský hlas dostupný v tomto zariadení. Zvolený hlas si Redakcia zapamätá. Finálny TikTok render použije samostatný kvalitný AI voiceover.';
   }
 
   function fillVoicePicker(){
@@ -44,8 +47,11 @@
     if(!list.length){select.innerHTML='<option>Načítavam dostupné hlasy…</option>';return}
     const sk=list.filter(v=>/^sk/i.test(v.lang));
     const preferred=sk.length?sk:list.slice(0,12);
-    select.innerHTML=preferred.map((v,i)=>`<option value="${String(v.name).replace(/"/g,'&quot;')}"${(selectedVoiceName?v.name===selectedVoiceName:i===0)?' selected':''}>${v.name} · ${v.lang}${/natural|neural|premium|enhanced/i.test(v.name)?' · Natural':''}</option>`).join('');
-    selectedVoiceName=select.value||preferred[0]?.name||'';
+    const stored=preferred.find(v=>v.name===selectedVoiceName);
+    const chosen=stored || preferred[0];
+    select.innerHTML=preferred.map(v=>`<option value="${String(v.name).replace(/"/g,'&quot;')}"${chosen&&v.name===chosen.name?' selected':''}>${v.name} · ${v.lang}${/natural|neural|premium|enhanced/i.test(v.name)?' · Natural':''}</option>`).join('');
+    selectedVoiceName=select.value||chosen?.name||'';
+    rememberVoice();
   }
 
   function speakBetter(){
@@ -55,7 +61,9 @@
     const u=new SpeechSynthesisUtterance(text);
     const v=bestVoice();
     if(v){u.voice=v;u.lang=v.lang||'sk-SK'}else u.lang='sk-SK';
-    u.rate=.93;u.pitch=.98;u.volume=1;
+    const pace=$('#video-pace')?.value||'normal';
+    u.rate=pace==='calm'?.87:pace==='fast'?1.03:.93;
+    u.pitch=.98;u.volume=1;
     u.onend=()=>{activeUtterance=null};
     u.onerror=()=>{activeUtterance=null};
     activeUtterance=u;
