@@ -8,6 +8,7 @@
   <meta name="theme-color" content="#071019">
   <link rel="canonical" href="https://objektiv24.sk/ako-pracujeme.html">
   <link rel="stylesheet" href="styles.css?v=20260916-4">
+  <script src="pwa.js?v=3" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -19,7 +20,7 @@
     <nav class="nav-wrap">
       <div class="container nav-inner">
         <a href="index.html#clanky">Vydané články</a>
-        <a href="redakcia.html">Redakcia</a>
+        <a href="kontakt.html">Kontakt</a>
         <a href="index.html#suvislosti">Správy v súvislostiach</a>
         <a href="index.html#pomoc">Praktické informácie</a>
         <a href="index.html#pomoc">Kam sa obrátiť</a>
@@ -39,7 +40,7 @@
     <div class="prose">
       <section>
         <h2>Čo je teraz hotové a čo ešte nie</h2>
-        <p>Web má 10 vydaných článkov. Dva časovo viazané texty sú po uplynutí termínu ponechané v archíve a nezobrazujú sa medzi aktuálnymi článkami na titulke.</p>
+        <p>Web má vydané články a časovo viazané texty po uplynutí termínu oddeľujeme od aktuálneho obsahu.</p>
         <p>Novú verziu webu pripravujeme tak, aby sa dala neskôr napojiť na automatický zber podkladov. Automatické publikovanie zatiaľ nie je zapnuté — cieľom je najprv automaticky pripraviť návrh a publikovať až po kontrole.</p>
       </section>
 
@@ -65,14 +66,15 @@
       </section>
 
       <section id="sukromie">
-        <h2>Súkromie v tejto verzii</h2>
-        <p>Vyhľadávanie a filtrovanie článkov prebieha priamo v prehliadači. Táto verzia nepoužíva reklamný ani analytický skript a nezbiera e-mailové adresy.</p>
-        <p>Pred verejným spustením s analytikou, formulármi alebo reklamou bude potrebné doplniť príslušné informácie o spracúvaní údajov.</p>
+        <h2>Súkromie</h2>
+        <p>Objektív24 používa základné meranie návštevnosti. Prehliadač vytvorí náhodný identifikátor návštevníka uložený v localStorage a pri návšteve sa do databázy Supabase odosiela navštívená cesta, prípadný identifikátor článku, doména odkazujúcej stránky a typ udalosti. Tento systém nepoužíva meno ani e-mail návštevníka.</p>
+        <p>Ak použijete <a href="kontakt.html">kontaktný formulár</a>, spracujú sa údaje, ktoré doň sami zadáte — meno, e-mail, predmet a text správy. Technické odoslanie e-mailu sprostredkuje služba FormSubmit a správa je doručená na kontaktnú adresu redakcie. Údaje používame na vybavenie vašej správy a prípadnú odpoveď.</p>
+        <p>Ak nechcete použiť formulár, môžete redakciu kontaktovať priamo e-mailom uvedeným na stránke Kontakt.</p>
       </section>
 
       <section>
         <h2>Kontakt a opravy</h2>
-        <p>Objektív24 nespracúva úradné žiadosti. Pri individuálnom konaní používajte oficiálny kontakt príslušnej inštitúcie.</p>
+        <p>Máte upozornenie na chybu, doplnenie zdroja alebo námet? Použite stránku <a href="kontakt.html">Kontakt na redakciu</a>. Objektív24 nespracúva úradné žiadosti; pri individuálnom konaní používajte oficiálny kontakt príslušnej inštitúcie.</p>
       </section>
     </div>
   </main>
@@ -83,7 +85,7 @@
         <a class="brand" href="index.html"><span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span></a>
         <p>Čo sa deje. Čo to znamená pre vás. Čo ďalej.</p>
       </div>
-      <div class="footer-links"><a href="index.html">Domov</a><a href="#sukromie">Súkromie</a></div>
+      <div class="footer-links"><a href="index.html">Domov</a><a href="kontakt.html">Kontakt</a><a href="#sukromie">Súkromie</a></div>
       <p class="copyright">© 2026 Objektív24. Nie sme štátny úrad ani jeho oficiálny partner.</p>
     </div>
   </footer>
