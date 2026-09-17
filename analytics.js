@@ -60,3 +60,12 @@
   if(consent==='yes')start();
   else{localStorage.removeItem(VISITOR_KEY);if(consent!=='no')showBanner()}
 })();
+
+(() => {
+  if(document.querySelector('script[data-image-meta-public]'))return;
+  const s=document.createElement('script');
+  s.src='/image-meta-public.js?v=20260917-1';
+  s.defer=true;
+  s.dataset.imageMetaPublic='1';
+  document.head.appendChild(s);
+})();
