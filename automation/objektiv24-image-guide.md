@@ -1,60 +1,99 @@
 # Objektív24 — pravidlá obrázkov pre automatické návrhy
 
 ## Cieľ
-Každý automaticky pripravený návrh musí mať relevantný, bezpečne použiteľný obrázok. Ak sa nenájde vhodná fotografia s jasnou licenciou, použije sa vlastná AI ilustrácia.
+Každý automaticky pripravený návrh má dostať obrazový plán, ktorý čo najlepšie zodpovedá téme a zároveň neklame čitateľa. Prednosť má skutočná fotografia s jasným právom na použitie. AI je záloha, nie náhrada dokumentárnej fotografie.
 
 ## Poradie výberu
 1. Relevantná fotografia z Wikimedia Commons s licenciou CC0, Public Domain, CC BY alebo CC BY-SA.
-2. Iný primárny zdroj iba vtedy, ak explicitne povoľuje opätovné použitie.
-3. Ak nič bezpečné nie je, vytvoriť AI ilustráciu v štýle Objektív24.
+2. Vlastná fotografia Objektív24.
+3. Oficiálny obrázok primárneho zdroja iba vtedy, ak je povolené jeho opätovné použitie alebo máme súhlas.
+4. Ak nič bezpečné nie je, vlastná AI ilustrácia v štýle Objektív24.
+
+## Čo má automatický návrh pripraviť
+Pri vytvorení článku má systém pripraviť aj:
+- `image_search_query` — krátky konkrétny motív vhodný na vyhľadávanie fotografie, ideálne v angličtine pre Wikimedia Commons,
+- návrh ALT textu,
+- pri AI fallbacku stručné obrazové zadanie,
+- odporúčanie, či je téma citlivá a AI má byť iba symbolická.
+
+Samotná fotografia sa nesmie automaticky považovať za schválenú. Pred publikovaním ju musí redaktor vizuálne skontrolovať.
+
+## Povinné metadáta obrázka
+Redakcia ukladá k článku:
+- `image_url`
+- `image_type`: `photo`, `official`, `own` alebo `ai`
+- `image_alt`
+- `image_source_url`
+- `image_credit`
+- `image_license`
+- `image_position` — ohnisko výrezu
+- `image_search_query`
+- `image_reviewed`
+
+Pri fotografii z Wikimedia Commons sa autor, licencia a zdroj prevezmú z metadát Commons. Na verejnom webe sa zdroj a typ obrázka zobrazujú automaticky.
 
 ## Zakázané
 - obrázky skopírované z médií bez licencie,
 - watermarky,
-- nesúvisiace generické stock fotografie,
+- nesúvisiace generické stock fotografie len preto, aby článok „nejaký obrázok mal“,
+- fotografia, ktorá predstiera konkrétnu udalosť, hoci vznikla inde,
 - falošná fotografia udalosti alebo osoby,
 - AI obrázok vydávaný za dokumentárnu fotografiu,
+- AI podoba konkrétnej reálnej osoby v udalosti, ktorá sa nestala alebo nie je doložená,
 - text, titulky, logá médií alebo falošné dokumenty priamo v obrázku.
 
+## Ako vyberať skutočnú fotografiu
+Hľadať najprv predmet alebo prostredie, nie dramatickú rekonštrukciu udalosti. Príklady:
+- uzávera cesty → reálna cesta, dopravné obmedzenie, cyklistická premávka; nie vymyslená konkrétna nehoda,
+- dávky → dokumenty, domácnosť, pobočka; nie stereotypná fotografia „chudobnej rodiny“,
+- zdravotníctvo → nemocnica, ambulancia, zdravotnícke prostredie; nie falošný pacient,
+- energia → dom, solárne panely, merač, vykurovanie,
+- podvod → mobil, počítač, bezpečnostný motív bez čitateľnej falošnej SMS,
+- politika → budova, rokovacia sála, dokumenty; pri konkrétnej osobe používať iba skutočnú licencovanú fotografiu.
+
 ## Jednotný AI štýl
-Moderná realistická editorial ilustrácia pre slovenský spravodajský web. Horizontálny formát 16:9, čistá kompozícia, jeden hlavný motív, prirodzené svetlo, tmavomodré až neutrálne prostredie s jemným limetkovým akcentom značky Objektív24. Bez textu a watermarku. Vizuál musí byť dobre čitateľný aj ako malá mobilná miniatúra.
+Moderná fotorealistická editorial ilustrácia pre slovenský spravodajský web. Horizontálny formát 16:9, čistá kompozícia, jeden hlavný motív, prirodzené svetlo, realistické materiály a prostredie. Bez textu a watermarku. Vizuál musí byť dobre čitateľný aj ako malá mobilná miniatúra.
+
+AI obrázok musí byť na webe označený `Ilustračný obrázok · AI`.
 
 ## Prompty podľa typu témy
 
-### 1. Peniaze domácností
+### Peniaze domácností
 Realistická editorial scéna domácnosti pri stole s účtami, kalkulačkou, mobilom alebo notebookom. Dôraz na praktické rozhodovanie, nie luxus ani paniku.
 
-### 2. Dôchodky a dávky
+### Dôchodky a dávky
 Neutrálna civilná ilustrácia dokumentov, bankovej karty, kalendára alebo návštevy pobočky. Bez zobrazovania zraniteľných ľudí stereotypným spôsobom.
 
-### 3. Dane a Finančná správa
+### Dane a Finančná správa
 Čistý administratívny motív: formulár, kalkulačka, notebook, úradné prostredie. Nepoužívať falošné daňové dokumenty s čitateľným textom.
 
-### 4. Podvody a kyberbezpečnosť
+### Podvody a kyberbezpečnosť
 Smartfón alebo notebook so symbolickým varovaním, bezpečnostným zámkom alebo podozrivou správou bez čitateľného textu. Žiadne hackerské klišé s kuklou.
 
-### 5. Úrady a služby štátu
+### Úrady a služby štátu
 Moderné slovenské administratívne prostredie, občan pri digitálnej službe, počítač, dokumenty alebo verejná budova bez klamlivej identifikácie konkrétnej inštitúcie.
 
-### 6. Doprava a pravidlá
-Reálna cesta, križovatka, auto, chodec alebo kolobežka. Bez inscenovanej nehody, ak článok nie je o konkrétnej nehode.
+### Doprava a pravidlá
+Reálna cesta, križovatka, auto, chodec, cyklista alebo kolobežka. Bez inscenovanej nehody, ak článok nie je o konkrétnej nehode.
 
-### 7. Spotrebiteľské varovanie
+### Spotrebiteľské varovanie
 Produkt, balík, nákupný košík, e-shop na mobile alebo reklamácia. Produkt nech nie je zameniteľný s konkrétnou značkou, ak to nie je potrebné.
 
-### 8. Zdravie a veterinárne témy
+### Zdravie a veterinárne témy
 Neutrálna informačná ilustrácia prostredia, predmetu alebo zvieraťa. Bez dramatických pacientov, zranení alebo falošných medicínskych scén.
 
-### 9. Energia a bývanie
+### Energia a bývanie
 Dom, solárne panely, merač energie, kúrenie alebo účty za energie. Moderný realistický editorial vzhľad.
 
-### 10. Politika a verejné rozhodnutia
+### Politika a verejné rozhodnutia
 Použiť neutrálnu symbolickú ilustráciu parlamentu, rokovacej sály, dokumentov alebo verejnej inštitúcie. Nevytvárať fotorealistické falošné zábery konkrétnych politikov, mítingov alebo udalostí. Bez kampanových sloganov.
 
-## Uloženie AI obrázka
-- cesta v repozitári: `assets/ai/YYYY/MM/<slug>.png`
-- verejná URL: `https://objektiv24.sk/assets/ai/YYYY/MM/<slug>.png`
-- článok má byť označený ako `Ilustračný obrázok · AI`
+## Uloženie vlastných a AI obrázkov
+Obrázky nahrané cez Redakciu sa ukladajú do Supabase Storage bucketu `article-images`, nie ako veľké base64 dáta v databáze. AI obrázky majú v ceste segment `/assets/ai/`, aby zostalo označenie typu zachované aj pri starších častiach webu.
 
-## Technická kontrola
-Pred vložením návrhu musí byť obrázok verejne dostupný cez výslednú URL. Ak upload alebo dostupnosť zlyhá, návrh nevytvárať.
+## Kontrola pred vydaním
+Článok sa nemá publikovať, kým:
+- nemá relevantný obrázok,
+- nemá ALT opis,
+- pri cudzej fotografii nemá zdroj a licenciu,
+- obrázok neprešiel redakčnou kontrolou `image_reviewed=true`.
