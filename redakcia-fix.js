@@ -93,10 +93,21 @@
     }, 250);
   });
 
+  function loadVideoModule(){
+    if(document.querySelector('script[data-redakcia-video]')) return;
+    const videoModule=document.createElement('script');
+    videoModule.src='redakcia-video.js?v=20260917-1';
+    videoModule.async=false;
+    videoModule.dataset.redakciaVideo='1';
+    document.head.appendChild(videoModule);
+  }
+
   // Rozšírený obrazový pracovný postup načítame až po základnej Redakcii,
-  // aby mohol doplniť metadáta, licenčnú kontrolu a vyhľadávanie fotografií.
+  // potom pripojíme pilot pre TikTok / Reels / Shorts.
   const imageModule = document.createElement("script");
   imageModule.src = "redakcia-images.js?v=20260917-1";
   imageModule.async = false;
+  imageModule.onload = loadVideoModule;
+  imageModule.onerror = loadVideoModule;
   document.head.appendChild(imageModule);
 })();
