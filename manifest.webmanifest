@@ -1,0 +1,14 @@
+{
+  "name": "Objektív24",
+  "short_name": "Objektív24",
+  "description": "Fakty. Kontext. Ľudia. Správy v súvislostiach.",
+  "lang": "sk",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#03080d",
+  "theme_color": "#061018",
+  "icons": [
+    {"src":"/assets/app-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
