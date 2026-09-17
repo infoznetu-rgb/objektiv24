@@ -7,10 +7,10 @@
   let state={items:[]};
   let saving=false;
 
-  function empty(order){return {id:crypto.randomUUID(),order,url:'',label:'',credit:'',mediaType:'video'};}
+  function empty(order){return {id:crypto.randomUUID(),order,url:'',label:'',credit:'',sourceUrl:'',mediaType:'video'};}
   function normalize(items){
     const out=Array.isArray(items)?items.slice(0,MAX).map((x,i)=>({
-      id:x?.id||crypto.randomUUID(),order:i+1,url:clean(x?.url),label:clean(x?.label),credit:clean(x?.credit),mediaType:'video'
+      id:x?.id||crypto.randomUUID(),order:i+1,url:clean(x?.url),label:clean(x?.label),credit:clean(x?.credit),sourceUrl:clean(x?.sourceUrl),mediaType:'video'
     })):[];
     while(out.length<MAX)out.push(empty(out.length+1));
     return out;
@@ -27,12 +27,12 @@
   function build(grid){
     const style=document.createElement('style');
     style.textContent=`
-      .motion-broll-card{grid-column:1/-1;border:1px solid #d5dadd;background:#f7fafb;border-radius:10px;padding:14px}.motion-broll-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.motion-broll-head h5{margin:0 0 4px;font-size:.82rem}.motion-broll-head p{margin:0;color:#69717a;font-size:.7rem;line-height:1.45;max-width:720px}.motion-broll-badge{flex:none;border-radius:999px;background:#e8edf0;color:#55616a;padding:6px 9px;font-size:.62rem;font-weight:900}.motion-broll-badge.good{background:#d9ff28;color:#1d2700}.motion-broll-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:11px}.motion-broll-slot{overflow:hidden;border:1px solid #d9dfe3;border-radius:9px;background:#fff}.motion-broll-preview{position:relative;aspect-ratio:9/16;background:#071019;display:grid;place-items:center;color:#91a0aa;font-size:.67rem;text-align:center}.motion-broll-preview video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.motion-broll-num{position:absolute;z-index:3;left:7px;top:7px;background:#071019dd;color:#d9ff28;border-radius:999px;padding:4px 7px;font-size:.56rem;font-weight:950}.motion-broll-live{position:absolute;z-index:3;right:7px;top:7px;background:#d9ff28;color:#101700;border-radius:999px;padding:4px 7px;font-size:.54rem;font-weight:950}.motion-broll-body{padding:9px}.motion-broll-body label{display:block;font-size:.62rem;color:#68717a;margin-top:6px}.motion-broll-body input{width:100%;margin-top:3px;font-size:.68rem;padding:7px}.motion-broll-actions{display:flex;gap:5px;margin-top:7px}.motion-broll-actions button{flex:1;border:1px solid #c8ced3;background:#fff;border-radius:5px;padding:6px 7px;font-size:.61rem;font-weight:850;cursor:pointer}.motion-broll-actions .remove{color:#8b3e31}.motion-broll-note{margin-top:10px!important;font-size:.66rem!important;color:#6d767f!important;line-height:1.5!important}.motion-broll-priority{margin-top:9px;padding:9px 11px;border-left:3px solid #d9ff28;background:#f0f6d7;color:#4f5c20;font-size:.68rem;line-height:1.45}@media(max-width:800px){.motion-broll-grid{grid-template-columns:1fr}}
+      .motion-broll-card{grid-column:1/-1;border:1px solid #d5dadd;background:#f7fafb;border-radius:10px;padding:14px}.motion-broll-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.motion-broll-head h5{margin:0 0 4px;font-size:.82rem}.motion-broll-head p{margin:0;color:#69717a;font-size:.7rem;line-height:1.45;max-width:720px}.motion-broll-badge{flex:none;border-radius:999px;background:#e8edf0;color:#55616a;padding:6px 9px;font-size:.62rem;font-weight:900}.motion-broll-badge.good{background:#d9ff28;color:#1d2700}.motion-broll-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:11px}.motion-broll-slot{overflow:hidden;border:1px solid #d9dfe3;border-radius:9px;background:#fff}.motion-broll-preview{position:relative;aspect-ratio:9/16;background:#071019;display:grid;place-items:center;color:#91a0aa;font-size:.67rem;text-align:center}.motion-broll-preview video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.motion-broll-num{position:absolute;z-index:3;left:7px;top:7px;background:#071019dd;color:#d9ff28;border-radius:999px;padding:4px 7px;font-size:.56rem;font-weight:950}.motion-broll-live{position:absolute;z-index:3;right:7px;top:7px;background:#d9ff28;color:#101700;border-radius:999px;padding:4px 7px;font-size:.54rem;font-weight:950}.motion-broll-body{padding:9px}.motion-broll-body label{display:block;font-size:.62rem;color:#68717a;margin-top:6px}.motion-broll-body input{width:100%;margin-top:3px;font-size:.68rem;padding:7px}.motion-broll-actions{display:flex;gap:5px;margin-top:7px}.motion-broll-actions button{flex:1;border:1px solid #c8ced3;background:#fff;border-radius:5px;padding:6px 7px;font-size:.61rem;font-weight:850;cursor:pointer}.motion-broll-actions .remove{color:#8b3e31}.motion-broll-note{margin-top:10px!important;font-size:.66rem!important;color:#6d767f!important;line-height:1.5!important}.motion-broll-priority{margin-top:9px;padding:9px 11px;border-left:3px solid #d9ff28;background:#f0f6d7;color:#4f5c20;font-size:.68rem;line-height:1.45}.motion-url-row{display:grid;grid-template-columns:1fr auto;gap:5px;align-items:end}.motion-url-row button{height:34px;border:1px solid #c8ced3;background:#fff;border-radius:5px;padding:0 9px;font-size:.61rem;font-weight:850;cursor:pointer}@media(max-width:800px){.motion-broll-grid{grid-template-columns:1fr}}
     `;
     document.head.appendChild(style);
     const card=document.createElement('div');
     card.id='motion-broll-card';card.className='motion-broll-card';
-    card.innerHTML=`<div class="motion-broll-head"><div><h5>Živý B-roll · videoklipy</h5><p>Krátke reálne klipy majú pri renderi prednosť pred fotografiami. Stačia 2–8 sekundové zábery bez hovoreného zvuku — napríklad autá, cesta, budova, ulica, počasie alebo práca s dokumentom.</p></div><span id="motion-broll-count" class="motion-broll-badge">0/3</span></div><div class="motion-broll-priority"><strong>Priorita renderu:</strong> živý videoklip → B-roll fotografia → hlavná fotografia. Tým sa video nebude správať ako slideshow.</div><div id="motion-broll-grid" class="motion-broll-grid"></div><p class="motion-broll-note">Odporúčané: vertikálne MP4 9:16, 1080 × 1920, 2–8 s. Povolené MP4, WebM a MOV. Používajte iba klipy, na ktoré máte právo.</p>`;
+    card.innerHTML=`<div class="motion-broll-head"><div><h5>Živý B-roll · videoklipy</h5><p>Skutočné krátke klipy majú pri renderi prednosť pred fotografiami. Môžete ich nahrať alebo vložiť priamu HTTPS adresu licencovaného videa.</p></div><span id="motion-broll-count" class="motion-broll-badge">0/3</span></div><div class="motion-broll-priority"><strong>Najlepší výsledok:</strong> 2–3 rôzne klipy po 3–8 sekúnd. Pri jednom klipe sa zvyšok scén doplní fotografiami; bez klipov vznikne skôr animovaná fotoreportáž.</div><div id="motion-broll-grid" class="motion-broll-grid"></div><p class="motion-broll-note">Odporúčané: vertikálne MP4/WebM 9:16 alebo kvalitný horizontálny klip, ktorý znesie orez. Pôvodný zvuk sa pri finálnom renderi stlmí a nad klipom ide slovenský komentár.</p>`;
     const photo=$('#broll-card');photo?photo.after(card):grid.appendChild(card);
     render();
   }
@@ -40,10 +40,11 @@
   function render(){
     state.items=normalize(state.items);
     const grid=$('#motion-broll-grid');if(!grid)return;
-    grid.innerHTML=state.items.map((x,i)=>`<div class="motion-broll-slot" data-motion-slot="${i}"><div class="motion-broll-preview">${x.url?`<video src="${esc(x.url)}" muted loop playsinline preload="metadata"></video>`:'<span>Nahrajte krátky reálny videoklip</span>'}<b class="motion-broll-num">VIDEO ${i+1}</b>${x.url?'<span class="motion-broll-live">ŽIVÉ</span>':''}</div><div class="motion-broll-body"><label>Čo je na klipe<input data-motion-label maxlength="120" value="${esc(x.label)}" placeholder="napr. autá pred tunelom"></label><label>Kredit / zdroj<input data-motion-credit maxlength="160" value="${esc(x.credit)}" placeholder="autor / organizácia"></label><label>Nahrať video<input data-motion-file type="file" accept="video/mp4,video/webm,video/quicktime"></label><div class="motion-broll-actions"><button type="button" data-motion-up ${i===0?'disabled':''}>↑</button><button type="button" data-motion-down ${i===state.items.length-1?'disabled':''}>↓</button><button type="button" class="remove" data-motion-remove>Odstrániť</button></div></div></div>`).join('');
+    grid.innerHTML=state.items.map((x,i)=>`<div class="motion-broll-slot" data-motion-slot="${i}"><div class="motion-broll-preview">${x.url?`<video src="${esc(x.url)}" muted loop playsinline preload="metadata"></video>`:'<span>Pridajte reálny videoklip</span>'}<b class="motion-broll-num">VIDEO ${i+1}</b>${x.url?'<span class="motion-broll-live">ŽIVÉ</span>':''}</div><div class="motion-broll-body"><label>Čo je na klipe<input data-motion-label maxlength="120" value="${esc(x.label)}" placeholder="napr. premávka pred tunelom"></label><label>Kredit / licencia<input data-motion-credit maxlength="180" value="${esc(x.credit)}" placeholder="autor · licencia"></label><label>Nahrať video<input data-motion-file type="file" accept="video/mp4,video/webm,video/quicktime"></label><div class="motion-url-row"><label>alebo priama HTTPS adresa<input data-motion-url type="url" value="${esc(x.url)}" placeholder="https://…/clip.webm"></label><button type="button" data-motion-use-url>Použiť URL</button></div><div class="motion-broll-actions"><button type="button" data-motion-up ${i===0?'disabled':''}>↑</button><button type="button" data-motion-down ${i===state.items.length-1?'disabled':''}>↓</button><button type="button" class="remove" data-motion-remove>Odstrániť</button></div></div></div>`).join('');
     grid.querySelectorAll('[data-motion-slot]').forEach(wire);
     grid.querySelectorAll('video').forEach(v=>{v.addEventListener('mouseenter',()=>v.play().catch(()=>{}));v.addEventListener('mouseleave',()=>{v.pause();v.currentTime=0;});});
-    const count=state.items.filter(x=>/^https:\/\//i.test(x.url)).length,b=$('#motion-broll-count');if(b){b.textContent=`${count}/3`;b.classList.toggle('good',count>=1);}
+    const count=state.items.filter(x=>/^https:\/\//i.test(x.url)).length,b=$('#motion-broll-count');if(b){b.textContent=count?`${count}/3 · VIDEO READY`:'0/3 · FOTKY';b.classList.toggle('good',count>=1);}
+    window.dispatchEvent(new CustomEvent('objektiv24:motion-broll-change',{detail:{count}}));
   }
 
   function wire(slot){
@@ -51,11 +52,25 @@
     slot.querySelector('[data-motion-label]').onchange=e=>{state.items[i].label=clean(e.target.value);persistSoon();};
     slot.querySelector('[data-motion-credit]').onchange=e=>{state.items[i].credit=clean(e.target.value);persistSoon();};
     slot.querySelector('[data-motion-file]').onchange=e=>upload(i,e.target.files?.[0]);
+    slot.querySelector('[data-motion-use-url]').onclick=()=>useUrl(i,slot.querySelector('[data-motion-url]')?.value||'');
     slot.querySelector('[data-motion-remove]').onclick=()=>{state.items[i]=empty(i+1);render();persistSoon();};
     slot.querySelector('[data-motion-up]').onclick=()=>move(i,-1);
     slot.querySelector('[data-motion-down]').onclick=()=>move(i,1);
   }
   function move(i,d){const j=i+d;if(j<0||j>=state.items.length)return;[state.items[i],state.items[j]]=[state.items[j],state.items[i]];state.items.forEach((x,k)=>x.order=k+1);render();persistSoon();}
+
+  async function useUrl(i,url,meta={}){
+    const value=clean(url);
+    if(!/^https:\/\//i.test(value))return alert('Vložte verejnú HTTPS adresu videa.');
+    state.items[i]={...state.items[i],url:value,label:clean(meta.label)||state.items[i].label||`Živý B-roll ${i+1}`,credit:clean(meta.credit)||state.items[i].credit,sourceUrl:clean(meta.sourceUrl)||state.items[i].sourceUrl,mediaType:'video'};
+    render();await persistNow();
+  }
+
+  async function addItem(item={}){
+    let i=state.items.findIndex(x=>!/^https:\/\//i.test(x.url));if(i<0)i=state.items.length-1;
+    await useUrl(i,item.url||'',item);
+    return i;
+  }
 
   async function upload(i,file){
     if(!file)return;
@@ -73,7 +88,7 @@
     }catch(error){alert(`Videoklip sa nepodarilo uložiť: ${error.message}`);render();}
   }
 
-  function collect(){return {version:1,items:state.items.filter(x=>x.url||x.label||x.credit).map((x,i)=>({...x,order:i+1,mediaType:'video'}))};}
+  function collect(){return {version:2,items:state.items.filter(x=>x.url||x.label||x.credit).map((x,i)=>({...x,order:i+1,mediaType:'video'}))};}
   function fill(v={}){state.items=normalize(v?.items||[]);render();}
   function currentDraft(){const id=clean($('#draft-id')?.value);return (typeof drafts!=='undefined'?drafts:[]).find(d=>String(d.id)===id);}
   function restore(){const d=currentDraft();fill(d?.shortVideo?.motionBroll||{});}
@@ -94,6 +109,6 @@
     try{const f=resetForm;resetForm=function(){f();setTimeout(()=>fill({}),100);};}catch{}
   }
 
-  window.objektiv24MotionBroll={getItems:()=>state.items.filter(x=>/^https:\/\//i.test(x.url)).map(x=>({...x,mediaType:'video'})),getState:collect,refresh:restore};
+  window.objektiv24MotionBroll={getItems:()=>state.items.filter(x=>/^https:\/\//i.test(x.url)).map(x=>({...x,mediaType:'video'})),getState:collect,refresh:restore,addItem,setItem:useUrl};
   boot();
 })();
