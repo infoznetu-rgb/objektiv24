@@ -89,12 +89,23 @@
     }, 250);
   });
 
+  function loadVideoPro(){
+    if(document.querySelector('script[data-redakcia-video-pro]')) return;
+    const proModule=document.createElement('script');
+    proModule.src='redakcia-video-pro.js?v=20260917-1';
+    proModule.async=false;
+    proModule.dataset.redakciaVideoPro='1';
+    document.head.appendChild(proModule);
+  }
+
   function loadVoiceEnhancer(){
-    if(document.querySelector('script[data-redakcia-video-voice]')) return;
+    if(document.querySelector('script[data-redakcia-video-voice]')) { loadVideoPro(); return; }
     const voiceModule=document.createElement('script');
-    voiceModule.src='redakcia-video-voice.js?v=20260917-1';
+    voiceModule.src='redakcia-video-voice.js?v=20260917-2';
     voiceModule.async=false;
     voiceModule.dataset.redakciaVideoVoice='1';
+    voiceModule.onload=loadVideoPro;
+    voiceModule.onerror=loadVideoPro;
     document.head.appendChild(voiceModule);
   }
 
