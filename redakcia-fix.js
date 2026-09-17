@@ -1,11 +1,8 @@
 (() => {
-  // Redakcia má zobrazovať iba skutočné návrhy uložené v Supabase.
-  // Staré vstavané ukážkové návrhy a statické vydané články už nemiešame do zoznamu návrhov.
   try { if (typeof builtInDrafts !== "undefined") builtInDrafts.length = 0; } catch {}
   try { if (typeof publishedDrafts !== "undefined") publishedDrafts.length = 0; } catch {}
 
   const originalRenderDraftList = renderDraftList;
-
   renderDraftList = function () {
     originalRenderDraftList();
     const realDrafts = drafts.filter(d => !d.seed);
@@ -13,11 +10,7 @@
     const list = document.querySelector("#draft-list");
     if (count) count.textContent = String(realDrafts.length);
     if (list && realDrafts.length === 0) {
-      list.innerHTML = `
-        <div class="draft-empty-state">
-          <strong>Zatiaľ žiadne nové návrhy</strong>
-          <p>Automaticky pripravené články sa zobrazia tu až po uložení do Supabase.</p>
-        </div>`;
+      list.innerHTML = `<div class="draft-empty-state"><strong>Zatiaľ žiadne nové návrhy</strong><p>Automaticky pripravené články sa zobrazia tu až po uložení do Supabase.</p></div>`;
     }
   };
 
@@ -64,7 +57,6 @@
   } catch {}
 
   ensureImageChecklist();
-
   document.querySelector("#publish-draft")?.addEventListener("click", event => {
     const problems = articleQualityProblems();
     if (!problems.length) return;
@@ -79,100 +71,47 @@
     setTimeout(async () => {
       ensureImageChecklist();
       if (typeof currentUser !== "undefined" && currentUser) {
-        try {
-          await refreshDrafts();
-          resetForm();
-        } catch (error) {
-          console.error("Obnova zoznamu návrhov zlyhala:", error);
-        }
+        try { await refreshDrafts(); resetForm(); }
+        catch (error) { console.error("Obnova zoznamu návrhov zlyhala:", error); }
       }
     }, 250);
   });
 
   function loadRenderStatusSync(){
     if(document.querySelector('script[data-redakcia-render-status]')) return;
-    const statusModule=document.createElement('script');
-    statusModule.src='redakcia-render-status.js?v=20260917-1';
-    statusModule.async=false;
-    statusModule.dataset.redakciaRenderStatus='1';
-    document.head.appendChild(statusModule);
+    const s=document.createElement('script');s.src='redakcia-render-status.js?v=20260917-1';s.async=false;s.dataset.redakciaRenderStatus='1';document.head.appendChild(s);
   }
-
   function loadLatestRenderHelper(){
     if(document.querySelector('script[data-redakcia-render-latest]')) { loadRenderStatusSync(); return; }
-    const latestModule=document.createElement('script');
-    latestModule.src='redakcia-render-latest.js?v=20260917-2';
-    latestModule.async=false;
-    latestModule.dataset.redakciaRenderLatest='1';
-    latestModule.onload=loadRenderStatusSync;
-    latestModule.onerror=loadRenderStatusSync;
-    document.head.appendChild(latestModule);
+    const s=document.createElement('script');s.src='redakcia-render-latest.js?v=20260917-2';s.async=false;s.dataset.redakciaRenderLatest='1';s.onload=loadRenderStatusSync;s.onerror=loadRenderStatusSync;document.head.appendChild(s);
   }
-
   function loadVideoRender(){
     if(document.querySelector('script[data-redakcia-video-render]')) { loadLatestRenderHelper(); return; }
-    const renderModule=document.createElement('script');
-    renderModule.src='redakcia-video-render-studio.js?v=20260917-broll1';
-    renderModule.async=false;
-    renderModule.dataset.redakciaVideoRender='1';
-    renderModule.onload=loadLatestRenderHelper;
-    renderModule.onerror=loadLatestRenderHelper;
-    document.head.appendChild(renderModule);
+    const s=document.createElement('script');s.src='redakcia-video-render-studio.js?v=20260917-motion1';s.async=false;s.dataset.redakciaVideoRender='1';s.onload=loadLatestRenderHelper;s.onerror=loadLatestRenderHelper;document.head.appendChild(s);
   }
-
+  function loadMotionBroll(){
+    if(document.querySelector('script[data-redakcia-video-motion]')) { loadVideoRender(); return; }
+    const s=document.createElement('script');s.src='redakcia-video-motion.js?v=20260917-1';s.async=false;s.dataset.redakciaVideoMotion='1';s.onload=loadVideoRender;s.onerror=loadVideoRender;document.head.appendChild(s);
+  }
   function loadBroll(){
-    if(document.querySelector('script[data-redakcia-video-broll]')) { loadVideoRender(); return; }
-    const brollModule=document.createElement('script');
-    brollModule.src='redakcia-video-broll.js?v=20260917-1';
-    brollModule.async=false;
-    brollModule.dataset.redakciaVideoBroll='1';
-    brollModule.onload=loadVideoRender;
-    brollModule.onerror=loadVideoRender;
-    document.head.appendChild(brollModule);
+    if(document.querySelector('script[data-redakcia-video-broll]')) { loadMotionBroll(); return; }
+    const s=document.createElement('script');s.src='redakcia-video-broll.js?v=20260917-1';s.async=false;s.dataset.redakciaVideoBroll='1';s.onload=loadMotionBroll;s.onerror=loadMotionBroll;document.head.appendChild(s);
   }
-
   function loadVideoPro(){
     if(document.querySelector('script[data-redakcia-video-pro]')) { loadBroll(); return; }
-    const proModule=document.createElement('script');
-    proModule.src='redakcia-video-pro.js?v=20260917-2';
-    proModule.async=false;
-    proModule.dataset.redakciaVideoPro='1';
-    proModule.onload=loadBroll;
-    proModule.onerror=loadBroll;
-    document.head.appendChild(proModule);
+    const s=document.createElement('script');s.src='redakcia-video-pro.js?v=20260917-2';s.async=false;s.dataset.redakciaVideoPro='1';s.onload=loadBroll;s.onerror=loadBroll;document.head.appendChild(s);
   }
-
   function loadVoiceEnhancer(){
     if(document.querySelector('script[data-redakcia-video-voice]')) { loadVideoPro(); return; }
-    const voiceModule=document.createElement('script');
-    voiceModule.src='redakcia-video-voice.js?v=20260917-2';
-    voiceModule.async=false;
-    voiceModule.dataset.redakciaVideoVoice='1';
-    voiceModule.onload=loadVideoPro;
-    voiceModule.onerror=loadVideoPro;
-    document.head.appendChild(voiceModule);
+    const s=document.createElement('script');s.src='redakcia-video-voice.js?v=20260917-2';s.async=false;s.dataset.redakciaVideoVoice='1';s.onload=loadVideoPro;s.onerror=loadVideoPro;document.head.appendChild(s);
   }
-
   function loadVideoPreviewModule(){
     if(document.querySelector('script[data-redakcia-video-preview]')) { loadVoiceEnhancer(); return; }
-    const previewModule=document.createElement('script');
-    previewModule.src='redakcia-video-preview.js?v=20260917-2';
-    previewModule.async=false;
-    previewModule.dataset.redakciaVideoPreview='1';
-    previewModule.onload=loadVoiceEnhancer;
-    previewModule.onerror=loadVoiceEnhancer;
-    document.head.appendChild(previewModule);
+    const s=document.createElement('script');s.src='redakcia-video-preview.js?v=20260917-2';s.async=false;s.dataset.redakciaVideoPreview='1';s.onload=loadVoiceEnhancer;s.onerror=loadVoiceEnhancer;document.head.appendChild(s);
   }
-
   function loadVideoModule(){
     if(document.querySelector('script[data-redakcia-video]')) { loadVideoPreviewModule(); return; }
-    const videoModule=document.createElement('script');
-    videoModule.src='redakcia-video.js?v=20260917-1';
-    videoModule.async=false;
-    videoModule.dataset.redakciaVideo='1';
-    videoModule.onload=loadVideoPreviewModule;
-    videoModule.onerror=loadVideoPreviewModule;
-    document.head.appendChild(videoModule);
+    const s=document.createElement('script');s.src='redakcia-video.js?v=20260917-1';s.async=false;s.dataset.redakciaVideo='1';s.onload=loadVideoPreviewModule;s.onerror=loadVideoPreviewModule;document.head.appendChild(s);
   }
 
   const imageModule = document.createElement("script");
