@@ -60,9 +60,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          supabase db dump --db-url "$SUPABASE_DB_URL" -f backup/db/roles.sql --role-only
-          supabase db dump --db-url "$SUPABASE_DB_URL" -f backup/db/schema.sql
-          supabase db dump --db-url "$SUPABASE_DB_URL" -f backup/db/data.sql --use-copy --data-only \
+          db_url="$SUPABASE_DB_URL"
+          if [[ "$db_url" == *"pooler.supabase.com"* && "$db_url" == *"://postgres:"* ]]; then
+            db_url="${db_url/\/\/postgres:/\/\/postgres.${SUPABASE_PROJECT_REF}:}"
+          fi
+
+          supabase db dump --db-url "$db_url" -f backup/db/roles.sql --role-only
+          supabase db dump --db-url "$db_url" -f backup/db/schema.sql
+          supabase db dump --db-url "$db_url" -f backup/db/data.sql --use-copy --data-only \
             -x "storage.buckets_vectors" \
             -x "storage.vector_indexes"
 
@@ -70,7 +75,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -Atc \
+          db_url="$SUPABASE_DB_URL"
+          if [[ "$db_url" == *"pooler.supabase.com"* && "$db_url" == *"://postgres:"* ]]; then
+            db_url="${db_url/\/\/postgres:/\/\/postgres.${SUPABASE_PROJECT_REF}:}"
+          fi
+
+          psql "$db_url" -v ON_ERROR_STOP=1 -Atc \
             "select name from storage.objects where bucket_id = '${STORAGE_BUCKET}' order by name" \
             > backup/storage-manifest.txt
 
