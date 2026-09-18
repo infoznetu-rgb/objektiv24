@@ -24,7 +24,7 @@ const cleanSlug = v => String(v || "").toLowerCase().normalize("NFD").replace(/[
 const canonicalFor = slug => `${SITE}/clanky/${encodeURIComponent(slug)}/`;
 const guideCanonicalFor = slug => `${SITE}/poradna/${encodeURIComponent(slug)}/`;
 
-const absoluteUrl = v => { try { return new URL(String(v||""),SITE+"/").href; } catch { return String(v||""); } };
+const absoluteUrl = v => { const s=String(v||""); if(s.startsWith("/")) return SITE+s; if(/^https?:\/\//i.test(s)) return s; try { return new URL(s,SITE+"/").href; } catch { return s; } };
 const cutAtWord=(v,limit)=>{
   const s=String(v||"").replace(/\s+/g," ").trim();
   if(s.length<=limit)return s;
