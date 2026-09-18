@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      OLLAMA_MODEL: qwen2.5:3b
+      OLLAMA_MODEL: qwen3:4b-instruct
       OLLAMA_MODELS: ${{ github.workspace }}/.ollama-models
 
     steps:
