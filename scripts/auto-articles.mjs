@@ -898,7 +898,9 @@ for (const c of candidates) {
   try {
     const page = await fetchText(c.link);
     c.link = page.finalUrl || c.link;
-    if (knownSources.has(canonicalUrl(c.link))) continue;
+    const isQaRetrySource = QA_DRY_RUN && QA_RETRY_SOURCE_URL &&
+      canonicalUrl(c.link) === canonicalUrl(QA_RETRY_SOURCE_URL);
+    if (!isQaRetrySource && knownSources.has(canonicalUrl(c.link))) continue;
     const body = articleText(page.text);
     if (body.length < 700) {
       console.log("Preskočené pre málo textu:", c.title);
