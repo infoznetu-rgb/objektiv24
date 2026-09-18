@@ -347,7 +347,7 @@ const newsArticles=articles
     return Number.isFinite(t) && t>=newsCutoff && t<=Date.now()+60*60*1000;
   })
   .slice(0,1000);
-const newsSitemap=`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n${newsArticles.map(a=>`  <url>\n    <loc>${xml(canonicalFor(a.slug))}</loc>\n    <news:news>\n      <news:publication><news:name>Objektív24</news:name><news:language>sk</news:language></news:publication>\n      <news:publication_date>${xml(asDate(a.publishedAt||a.verifiedAt))}</news:publication_date>\n      <news:title>${xml(a.title)}</news:title>\n    </news:news>\n  </url>`).join("\\n")}\n</urlset>\n`;
+const newsSitemap=`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n${newsArticles.map(a=>`  <url>\n    <loc>${xml(canonicalFor(a.slug))}</loc>\n    <news:news>\n      <news:publication><news:name>Objektív24</news:name><news:language>sk</news:language></news:publication>\n      <news:publication_date>${xml(asDate(a.publishedAt||a.verifiedAt))}</news:publication_date>\n      <news:title>${xml(a.title)}</news:title>\n    </news:news>\n  </url>`).join("\n")}\n</urlset>\n`;
 await write("news-sitemap.xml",newsSitemap);
 
 const rssItems=articles.filter(a=>!a.archived).slice(0,50).map(a=>{
