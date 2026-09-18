@@ -283,6 +283,50 @@ function articleHtml(a,related=[],nextArticle=null){
 </body>
 </html>`;
 }
+
+function replaceBuildBlock(html,name,content){
+  const start=`<!-- BUILD:${name}:START -->`;
+  const end=`<!-- BUILD:${name}:END -->`;
+  const from=html.indexOf(start),to=html.indexOf(end);
+  if(from<0||to<0||to<from)throw new Error(`Chýba homepage build blok ${name}`);
+  return html.slice(0,from+start.length)+content+html.slice(to);
+}
+function homepageArticleUrl(a){return `/clanky/${encodeURIComponent(a.slug)}/`;}
+function homepageLatestItem(a){
+  const image=a.image?`<img src="${esc(a.image)}" alt="${esc(a.imageAlt||a.title)}" loading="lazy" decoding="async">`:"";
+  const date=dateOnly(a.verifiedAt||a.publishedAt);
+  return `<a class="latest-item" href="${homepageArticleUrl(a)}">${image}<span><b>${esc(a.title)}</b><small>${esc(topicForArticle(a))}${date?` · ${esc(date)}`:""}</small></span></a>`;
+}
+function homepageCard(a){
+  const image=a.image
+    ? `<img class="article-visual" src="${esc(a.image)}" alt="${esc(a.imageAlt||a.title)}" loading="lazy" decoding="async"><span class="article-photo-label">${esc(imageLabel(a))}</span>`
+    : '<div class="article-visual article-visual-placeholder" aria-hidden="true"></div>';
+  const date=dateOnly(a.verifiedAt||a.publishedAt);
+  const url=homepageArticleUrl(a);
+  return `<article class="article-card"><a class="article-image-wrap" href="${url}" aria-label="${esc(a.title)}">${image}</a><div class="article-body"><span class="eyebrow">${esc(a.category)}</span><h3>${esc(a.title)}</h3><p>${esc(a.summary)}</p><div class="article-meta"><span>${date?`Overené ${esc(date)}`:"Objektív24"}</span><a href="${url}">Čítať ďalej →</a></div></div></article>`;
+}
+async function renderHomepage(articles){
+  const active=articles.filter(a=>!a.archived&&a.slug);
+  if(!active.length)return;
+  const latest=active[0];
+  const hero=active.find(a=>a.image)||latest;
+  const side=active.filter(a=>a.slug!==hero.slug).slice(0,3);
+  const cards=active.slice(0,12);
+  const heroUrl=homepageArticleUrl(hero);
+  const heroImage=hero.image
+    ? `<figure class="hero-photo"><img src="${esc(hero.image)}" alt="${esc(hero.imageAlt||hero.title)}"><figcaption>${esc([imageLabel(hero),hero.imageCredit,hero.imageLicense].filter(Boolean).join(" · "))}</figcaption></figure>`
+    : '<figure class="hero-photo"><div class="article-visual-placeholder" aria-hidden="true"></div><figcaption>Objektív24</figcaption></figure>';
+  const breaking=`<section class="breaking container"><strong>● NAJNOVŠIE</strong><span>${esc(latest.title)}</span><a href="${homepageArticleUrl(latest)}">Čítať →</a></section>`;
+  const heroBlock=`<section id="suvislosti" class="hero container reveal"><article class="hero-main">${heroImage}<div class="hero-shade"></div><div class="hero-content"><div class="meta-row"><span class="eyebrow">${esc(hero.category)}</span><span>${readingMinutes(hero)} min čítania</span></div><h1>${esc(hero.title)}</h1><p>${esc(hero.summary)}</p><a class="primary-cta" href="${heroUrl}">Čítať ďalej →</a></div></article><aside class="latest"><div class="section-row"><h2>Najnovšie</h2><a href="/clanky/">Všetky →</a></div>${side.map(homepageLatestItem).join("")}<div class="latest-note"><span>Objektív24</span><strong>Správa nestačí. Dávame jej súvislosti.</strong><p>Pri časovo citlivých témach uvádzame dátum overenia a praktický ďalší krok.</p></div></aside></section>`;
+  let home=await fs.readFile(path.join(ROOT,"index.html"),"utf8");
+  home=replaceBuildBlock(home,"BREAKING",breaking);
+  home=replaceBuildBlock(home,"HERO",heroBlock);
+  home=replaceBuildBlock(home,"GRID",cards.map(homepageCard).join(""));
+  home=home.replace(/<strong id="issued-count">[^<]*<\/strong>/,`<strong id="issued-count">${articles.length}</strong>`);
+  home=home.replace(/<small id="active-count">[^<]*<\/small>/,`<small id="active-count">Aktuálne: ${active.length}</small>`);
+  await write("index.html",home);
+}
+
 function archiveHtml(articles){
   const cards=articles.filter(a=>!a.archived).map(a=>`<article class="article-card"><a class="article-image-wrap" href="/clanky/${encodeURIComponent(a.slug)}/">${a.image?`<img class="article-visual" src="${esc(a.image)}" alt="${esc(a.imageAlt||a.title)}" loading="lazy">`:'<div class="article-visual article-visual-placeholder"></div>'}</a><div class="article-body"><span class="eyebrow">${esc(a.category)}</span><h3>${esc(a.title)}</h3><p>${esc(a.summary)}</p><div class="article-meta"><span>${dateOnly(a.verifiedAt||a.publishedAt) ? "Overené "+dateOnly(a.verifiedAt||a.publishedAt) : "Objektív24"}</span><a href="/clanky/${encodeURIComponent(a.slug)}/">Čítať ďalej →</a></div></div></article>`).join("");
   return `<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Všetky články a praktické správy | Objektív24</title><meta name="description" content="Prehľad všetkých vydaných článkov Objektív24: praktické správy, termíny, doprava, úrady, peniaze a ďalšie dôležité témy zo Slovenska."><meta name="robots" content="index,follow,max-image-preview:large"><link rel="canonical" href="${SITE}/clanky/"><link rel="icon" href="/assets/app-icon.svg?v=20260918-2" type="image/svg+xml"><script type="application/ld+json">${JSON.stringify({"@context":"https://schema.org","@type":"CollectionPage","name":"Všetky články Objektív24","url":SITE+"/clanky/","isPartOf":{"@type":"WebSite","name":"Objektív24","url":SITE+"/"}})}</script><link rel="stylesheet" href="/styles.css?v=20260918-seo1"><script src="/analytics.js?v=4" defer></script><script src="/pwa.js?v=20" defer></script><script src="/back-to-top.js?v=2" defer></script></head><body><header class="site-header"><div class="topbar container"><a class="brand" href="/"><span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span><small>FAKTY · KONTEXT · ĽUDIA</small></a></div></header><main class="discover container" style="padding-top:56px"><div class="section-row big"><div><span class="section-kicker">ARCHÍV A AKTUÁLNE ČLÁNKY</span><h1 style="font-size:clamp(2.4rem,4vw,4.35rem);letter-spacing:-.06em">Všetky články</h1></div><a href="/">← Domov</a></div><div class="articles-grid" style="margin-top:32px">${cards}</div></main><footer class="site-footer"><div class="container footer-grid"><div><a class="brand" href="/"><span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span></a><p>Fakty. Kontext. Ľudia.</p></div><div class="footer-links"><a href="/kontakt.html">Kontakt</a><a href="/ako-pracujeme.html">Ako pracujeme</a></div><p class="copyright">© 2026 Objektív24.</p></div></footer></body></html>`;
@@ -310,6 +354,8 @@ const dbArticles=await fetchDbArticles();
 const bySlug=new Map();
 for(const a of [...dbArticles,...staticArticles]) if(a.slug&&!bySlug.has(a.slug)) bySlug.set(a.slug,a);
 const articles=[...bySlug.values()].sort((a,b)=>Date.parse(b.publishedAt||b.verifiedAt||0)-Date.parse(a.publishedAt||a.verifiedAt||0));
+
+await renderHomepage(articles);
 
 for(const a of articles){
   const related=relatedFor(a,articles);
