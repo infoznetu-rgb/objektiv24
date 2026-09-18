@@ -1,0 +1,72 @@
+name: Monitor Objektív24 publishing
+
+on:
+  workflow_run:
+    workflows:
+      - "Deploy Objektív24 to GitHub Pages"
+    types:
+      - completed
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+jobs:
+  publishing-incident:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open, update or resolve publishing incident
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_NUMBER: ${{ github.event.workflow_run.run_number }}
+          EVENT_NAME: ${{ github.event.workflow_run.event }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TITLE="🚨 Objektív24: publikovanie alebo deploy zlyhal"
+
+          issue_number="$(
+            gh issue list               --repo "$REPO"               --state open               --limit 100               --json number,title               --jq '.[] | select(.title == "🚨 Objektív24: publikovanie alebo deploy zlyhal") | .number'               | head -n 1
+          )"
+
+          if [ "$CONCLUSION" != "success" ]; then
+            BODY="$(cat <<EOF
+          Automatický monitoring zachytil problém pri publikovaní Objektív24.
+
+          - Výsledok: **$CONCLUSION**
+          - Workflow run: **#$RUN_NUMBER**
+          - Trigger: **$EVENT_NAME**
+          - Commit: `$HEAD_SHA`
+          - Run ID: `$RUN_ID`
+          - Detail: $RUN_URL
+
+          Incident zostane otvorený, kým nasledujúci deploy úspešne neprejde.
+          EOF
+          )"
+
+            if [ -n "$issue_number" ]; then
+              gh issue comment "$issue_number" --repo "$REPO" --body "$BODY"
+            else
+              gh issue create --repo "$REPO" --title "$TITLE" --body "$BODY"
+            fi
+          elif [ -n "$issue_number" ]; then
+            BODY="$(cat <<EOF
+          ✅ Publikovanie sa zotavilo.
+
+          Úspešný workflow run: **#$RUN_NUMBER**
+          Commit: `$HEAD_SHA`
+          Detail: $RUN_URL
+
+          Automatický monitoring incident uzatvára.
+          EOF
+          )"
+            gh issue comment "$issue_number" --repo "$REPO" --body "$BODY"
+            gh issue close "$issue_number" --repo "$REPO" --reason completed
+          fi

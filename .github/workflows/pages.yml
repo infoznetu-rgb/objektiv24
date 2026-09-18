@@ -34,6 +34,24 @@ jobs:
       - name: Build public SEO content
         run: node scripts/build-public-content.mjs
 
+      - name: Write deployment marker
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs = require("node:fs");
+          fs.writeFileSync(
+            "deploy-health.json",
+            JSON.stringify({
+              status: "ok",
+              commit: process.env.GITHUB_SHA,
+              generated_at: new Date().toISOString()
+            }) + "\n"
+          );
+          NODE
+
+      - name: Validate generated public content
+        run: node scripts/validate-public-build.mjs
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
@@ -47,3 +65,33 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Verify live deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          health_url="https://objektiv24.sk/deploy-health.json?sha=${GITHUB_SHA}"
+          ok=0
+
+          for attempt in $(seq 1 12); do
+            if curl --fail --silent --show-error --location \
+              --connect-timeout 10 --max-time 30 \
+              "$health_url" -o /tmp/objektiv24-health.json; then
+              if grep -Fq "$GITHUB_SHA" /tmp/objektiv24-health.json; then
+                ok=1
+                break
+              fi
+            fi
+            sleep 5
+          done
+
+          if [ "$ok" -ne 1 ]; then
+            echo "::error::Live site did not expose deployment marker for commit $GITHUB_SHA"
+            exit 1
+          fi
+
+          curl --fail --silent --show-error --location --retry 3 --retry-delay 3 \
+            https://objektiv24.sk/ -o /dev/null
+          curl --fail --silent --show-error --location --retry 3 --retry-delay 3 \
+            https://objektiv24.sk/sitemap.xml -o /dev/null
