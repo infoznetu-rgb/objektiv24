@@ -402,6 +402,21 @@ function numericClaimsSupported(article, sourceText, sourceTitle) {
   const source=norm(sourceText+" "+sourceTitle).replace(/,/g,".");
   return [...new Set(nums)].every(n=>source.includes(n));
 }
+function basicArticleValid(a, sourceText="", sourceTitle="") {
+  if(!a || typeof a!=="object") return false;
+  const title=String(a.title||"").trim();
+  const intro=String(a.intro||"").trim();
+  const happened=String(a.what_happened||"").trim();
+  const means=String(a.what_it_means||"").trim();
+  const next=String(a.next_step||"").trim();
+  if(!(title.length>=25 && title.length<=105
+    && intro.length>=80 && intro.length<=220
+    && happened.length>=250 && happened.length<=520
+    && means.length>=180 && means.length<=360
+    && next.length>=100 && next.length<=280)) return false;
+  return numericClaimsSupported(a,sourceText,sourceTitle);
+}
+
 function validArticle(a, sourceText="", sourceTitle="") {
   if(!a || typeof a!=="object") return false;
   const title=String(a.title||"").trim();
@@ -481,8 +496,8 @@ for (const c of candidates) {
     }
     attempts++;
     const draft = await generate(c, body);
-    if (!validArticle(draft, body, c.title)) {
-      console.log("Prvý návrh neprešiel QA:", c.title);
+    if (!basicArticleValid(draft, body, c.title)) {
+      console.log("Prvý návrh neprešiel faktickou/štrukturálnou kontrolou:", c.title);
       continue;
     }
     const article = await polishArticle(c, body, draft);
