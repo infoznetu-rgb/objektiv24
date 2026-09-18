@@ -10,13 +10,13 @@ const SOURCES = [
   },
   {
     name: "Finančná správa",
-    type: "html",
+    type: "rss",
     url: "https://www.financnasprava.sk/sk/rss/rss-novinky",
     accept: (u) => /financnasprava\.sk\/sk\/(pre-media\/novinky|rss)/i.test(u),
   },
   {
     name: "Finančná správa",
-    type: "html",
+    type: "rss",
     url: "https://www.financnasprava.sk/sk/rss/rss-tlacove-spravy",
     accept: (u) => /financnasprava\.sk\/sk\/(pre-media|rss)/i.test(u),
   },
@@ -160,7 +160,7 @@ function articleText(html) {
     .replace(/<form\b[\s\S]*?<\/form>/gi," ")
     .replace(/<(br|p|div|section|article|li|h1|h2|h3)[^>]*>/gi,"\n");
   s = stripTags(s).replace(/\s+/g," ").trim();
-  return s.slice(0, 6500);
+  return s.slice(0, 5000);
 }
 function isFresh(pubDate) {
   if (!pubDate) return true;
@@ -257,7 +257,7 @@ Spotrebiteľ a bezpečnosť
   };
 
   const ctrl = new AbortController();
-  const timer = setTimeout(()=>ctrl.abort(), 110000);
+  const timer = setTimeout(()=>ctrl.abort(), 180000);
   let r;
   try {
     r = await fetch("http://127.0.0.1:11434/api/chat", {
@@ -269,7 +269,7 @@ Spotrebiteľ a bezpečnosť
         stream:false,
         format:schema,
         messages:[{role:"system",content:system},{role:"user",content:prompt}],
-        options:{temperature:0.05,num_ctx:4096,num_predict:950}
+        options:{temperature:0.05,num_ctx:4096,num_predict:700}
       })
     });
   } finally {
@@ -390,11 +390,11 @@ let attempts = 0;
 const maxToPublish = Math.min(1, Math.max(0, 8 - (status.published_last_24h || 0)));
 for (const c of candidates) {
   if (published >= maxToPublish || attempts >= 2) break;
-  attempts++;
   try {
     const page = await fetchText(c.link);
     c.link = page.finalUrl || c.link;
     if (knownSources.has(canonicalUrl(c.link))) continue;
+    attempts++;
     const body = articleText(page.text);
     if (body.length < 700) {
       console.log("Preskočené pre málo textu:", c.title);
