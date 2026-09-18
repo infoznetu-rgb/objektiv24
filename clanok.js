@@ -128,4 +128,4 @@ async function load(){
 }
 load();
 
-(()=>{let a=document.createElement("script");a.src="/analytics.js?v=4";a.onload=()=>{let p=document.createElement("script");p.src="/pwa.js?v=17";p.defer=true;document.head.appendChild(p)};document.head.appendChild(a)})();
+(()=>{let a=document.createElement("script");a.src="/analytics.js?v=4";a.onload=()=>{let p=document.createElement("script");p.src="/pwa.js?v=18";p.defer=true;document.head.appendChild(p)};document.head.appendChild(a)})();
