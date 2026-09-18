@@ -37,7 +37,16 @@
     try{
       const reg=await navigator.serviceWorker.ready;
       const sub=await reg.pushManager.getSubscription();
-      if(sub)await sub.unsubscribe();
+      if(sub){
+        const endpoint=sub.endpoint;
+        const response=await fetch(PUSH_API,{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({action:'unsubscribe',endpoint})
+        });
+        if(!response.ok)throw new Error('Subscription delete failed');
+        await sub.unsubscribe();
+      }
       localStorage.removeItem('objektiv24_push_enabled');
       track('push_disabled');
       return true;
@@ -150,7 +159,19 @@
     if(isMobile&&!manual)dockTimer=setTimeout(()=>{if(!el.hidden){el.hidden=true;showDock()}},12000);
   }
   localStorage.removeItem('objektiv24_installed');localStorage.removeItem('objektiv24_push_enabled');
-  function scheduleMobilePanel(){if(!isMobile)return;setTimeout(()=>{const dismissed=Number(localStorage.getItem(dismissKey))||0;if(document.body?.classList.contains('analytics-consent-open')){showDock();return}if(Date.now()>dismissed)openCard(false);else showDock()},6500)}
+  const visitKey='objektiv24_visit_count_v1';
+  let visitCount=Math.max(0,Number(localStorage.getItem(visitKey))||0)+1;
+  localStorage.setItem(visitKey,String(Math.min(99,visitCount)));
+  function scheduleMobilePanel(){
+    if(!isMobile)return;
+    setTimeout(()=>{
+      const dismissed=Number(localStorage.getItem(dismissKey))||0;
+      if(document.body?.classList.contains('analytics-consent-open')){showDock();return}
+      if(visitCount>=2&&Date.now()>dismissed)openCard(false);
+      else showDock();
+    },9000)
+  }
+  window.objektiv24OpenSubscriptionPanel=()=>openCard(true);
   bindMenuLinks();dock();addBackToTop();scheduleMobilePanel();
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;const existing=document.querySelector('#pwa-install-card');if(existing&&!existing.hidden)openCard(true)});
   window.addEventListener('appinstalled',()=>{track('app_installed');deferredPrompt=null;localStorage.removeItem('objektiv24_installed');const existing=document.querySelector('#pwa-install-card');if(existing&&!existing.hidden)openCard(true);showDock()});

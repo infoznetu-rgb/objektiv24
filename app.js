@@ -210,10 +210,6 @@ document.querySelector("#search-input")?.addEventListener("input",e=>{markSearch
 document.querySelector("#header-search-form")?.addEventListener("submit",e=>{e.preventDefault();const value=document.querySelector("#header-search-input")?.value||"";markSearchUsed(value);runSearch(value,true)});
 document.querySelector("#header-search-input")?.addEventListener("input",e=>markSearchUsed(e.currentTarget.value));
 document.querySelector("#reset-search")?.addEventListener("click",()=>{state.filter="Všetky témy";runSearch("",false);renderFilters();renderArticles()});
-document.addEventListener("click",e=>{
-  const target=e.target.closest("[data-track-event]");
-  if(target)window.objektiv24Track?.(target.dataset.trackEvent,target.dataset.trackLabel||null);
-});
 bindTopicLinks();
 const revealEls=[...document.querySelectorAll(".reveal")];if(window.matchMedia("(max-width: 680px)").matches){revealEls.forEach(el=>el.classList.add("is-visible"))}else{const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add("is-visible");observer.unobserve(entry.target)}}),{threshold:.05,rootMargin:"0px 0px 120px 0px"});revealEls.forEach(el=>observer.observe(el))}
 loadArticles();

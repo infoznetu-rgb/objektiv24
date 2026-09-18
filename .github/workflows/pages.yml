@@ -55,6 +55,12 @@ jobs:
       - name: Validate analytics dashboard script
         run: node --check analytics-dashboard.js
 
+      - name: Validate PWA script
+        run: node --check pwa.js
+
+      - name: Validate analytics script
+        run: node --check analytics.js
+
       - name: Validate generated public content
         run: node scripts/validate-public-build.mjs
 

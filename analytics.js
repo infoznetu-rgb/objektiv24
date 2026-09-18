@@ -111,6 +111,11 @@
   }
 
   document.addEventListener('click',event=>{
+    const tracked=event.target.closest?.('[data-track-event]');
+    if(tracked){
+      send(tracked.dataset.trackEvent,tracked.dataset.trackLabel||null);
+    }
+
     const link=event.target.closest?.('.article-sources a[href]');
     if(!link)return;
     try{
