@@ -66,7 +66,7 @@
     if(slug)send('article_open',slug);
   }
 
-  function removeBanner(){document.querySelector('#analytics-consent')?.remove()}
+  function removeBanner(){document.querySelector('#analytics-consent')?.remove();document.body?.classList.remove('analytics-consent-open')}
   function choose(value){
     localStorage.setItem(CONSENT_KEY,value);
     removeBanner();
@@ -95,6 +95,7 @@
     box.innerHTML='<p><strong>Meranie návštevnosti</strong><br>Po vašom súhlase meriame základnú návštevnosť a anonymné interakcie, napríklad dočítanie článku, kliknutie na rubriku alebo zdieľanie. Text zadaný do vyhľadávania neukladáme. <a href="/ako-pracujeme.html#sukromie">Viac o súkromí</a>.</p><div class="analytics-consent-actions"><button class="allow" type="button">Povoliť</button><button class="deny" type="button">Odmietnuť</button></div>';
     box.querySelector('.allow').onclick=()=>choose('yes');
     box.querySelector('.deny').onclick=()=>choose('no');
+    document.body?.classList.add('analytics-consent-open');
     document.body.appendChild(box);
   }
 
