@@ -243,5 +243,133 @@
       "podvod"
     ],
     "image": "/assets/fallback/consumer.svg"
+  },
+  {
+    "slug": "zatvorena-posta-ako-overit-otvaracie-hodiny-a-sluzby",
+    "topic": "Úrady a služby",
+    "category": "Slovenská pošta",
+    "title": "Zatvorená pošta alebo zmenené hodiny: ako si overiť, kde vybavíte službu",
+    "seoTitle": "Zatvorená pošta: ako overiť hodiny a služby",
+    "metaDescription": "Je vaša pošta zatvorená alebo má zmenené hodiny? Overte si aktuálnu prevádzku, dostupné služby a vhodnú alternatívu cez oficiálne kanály.",
+    "summary": "Prevádzka konkrétnej pošty sa môže dočasne meniť a nie každé náhradné miesto poskytuje rovnaké služby. Pred cestou si preto overte pobočku aj službu, ktorú potrebujete.",
+    "audience": "Ľudia, ktorí chcú navštíviť pobočku Slovenskej pošty a potrebujú vedieť, či je otvorená, aké služby poskytuje a kde vybavia požiadavku pri obmedzenej prevádzke.",
+    "why": "Pri dočasných úpravách prevádzky sa môžu líšiť otváracie hodiny aj dostupnosť služieb. Overenie konkrétnej pobočky pred cestou šetrí zbytočnú návštevu a pomáha nájsť vhodnú alternatívu.",
+    "checklist": [
+      "Vyhľadajte svoju pobočku v oficiálnom vyhľadávači Slovenskej pošty a skontrolujte aktuálne otváracie hodiny.",
+      "Pozrite si, či pobočka poskytuje presne tú službu, ktorú potrebujete; nie všetky alternatívne miesta majú rovnaký rozsah služieb.",
+      "Ak je pobočka dočasne zatvorená alebo má obmedzenú prevádzku, vyhľadajte najbližšiu pobočku, PoštaPOINT alebo BalíkoBOX podľa typu zásielky či služby.",
+      "Pri službách, ktoré sa dajú vybaviť online alebo v mobilnej aplikácii, zvážte elektronický postup namiesto návštevy pobočky.",
+      "Ak z webu nie je jasné, kde požiadavku vybaviť, kontaktujte zákaznícky servis Slovenskej pošty."
+    ],
+    "sections": [
+      {
+        "heading": "Prečo treba kontrolovať konkrétnu pobočku",
+        "body": "Slovenská pošta pri sezónnych a dočasných úpravách prevádzky odporúča klientom overiť si aktuálne otváracie hodiny priamo na svojom webe alebo v mobilnej aplikácii. Rozsah zmeny a dĺžka obmedzenia sa môžu medzi pobočkami líšiť."
+      },
+      {
+        "heading": "Otváracie hodiny nestačia: skontrolujte aj službu",
+        "body": "Oficiálny vyhľadávač pobočiek a BalíkoBOXov umožňuje hľadať konkrétne miesto a zobraziť jeho služby aj otváracie hodiny. To je dôležité najmä vtedy, keď chcete vybaviť špecifickú službu a nestačí vám iba podanie alebo vyzdvihnutie zásielky."
+      },
+      {
+        "heading": "Dočasné obmedzenie nie je to isté ako trvalé zatvorenie",
+        "body": "Pri dočasnom režime môže ísť o sezónnu zmenu otváracích hodín alebo krátkodobé prerušenie prevádzky. Pri trvalej zmene siete môže byť pôvodná pobočka zrušená a služby presunuté inde. Preto sa oplatí vychádzať z aktuálneho záznamu konkrétnej pobočky, nie zo starého katalógu alebo mapy."
+      },
+      {
+        "heading": "Keď informácia na webe nestačí",
+        "body": "Slovenská pošta zverejňuje zákaznícky servis pre všeobecné otázky a požiadavky. Ak potrebujete potvrdiť dostupnosť služby alebo riešite zásielku viazanú na konkrétnu pobočku, pripravte si jej názov a údaje k zásielke alebo požiadavke."
+      }
+    ],
+    "warnings": [
+      "BalíkoBOX, PoštaPOINT alebo iná blízka pobočka nemusia poskytovať všetky služby, ktoré poskytovala pôvodná pobočka.",
+      "Pri časovo citlivej návšteve sa nespoliehajte iba na údaje v neoficiálnej mape alebo katalógu; rozhodujúci je aktuálny údaj Slovenskej pošty."
+    ],
+    "sources": [
+      {
+        "title": "Slovenská pošta – Pobočky a BalíkoBOXy",
+        "url": "https://www.posta.sk/pobocky-a-balikoboxy"
+      },
+      {
+        "title": "Slovenská pošta – Kontakty",
+        "url": "https://www.posta.sk/podpora/kontakty"
+      },
+      {
+        "title": "Slovenská pošta – informácie o dočasných zmenách letnej prevádzky 2026",
+        "url": "https://www.posta.sk/clanky/slovenska-posta-upozornuje-na-letnu-prevadzku-pre-zamestnancov-zabezpeci-oddych-pre-klientov-komfortne-vybavenie-sluzieb"
+      }
+    ],
+    "verified": "2026-09-18",
+    "keywords": [
+      "slovenská pošta",
+      "pobočka",
+      "otváracie hodiny",
+      "zatvorená pošta",
+      "náhradná pobočka",
+      "balíkobox",
+      "poštapoint",
+      "služby pošty"
+    ],
+    "image": "/assets/fallback/services.svg"
+  },
+  {
+    "slug": "ospravedlnenky-v-materskej-skole-2026-prakticky-prehlad",
+    "topic": "Rodina a zdravie",
+    "category": "Materská škola",
+    "title": "Ospravedlnenky v materskej škole od septembra 2026: čo si má rodič overiť",
+    "seoTitle": "Ospravedlnenky v škôlke 2026: čo si overiť",
+    "metaDescription": "Pri povinnom predprimárnom vzdelávaní platia od septembra 2026 nové pravidlá ospravedlňovania. Overte si režim svojej materskej školy a postup.",
+    "summary": "Od 1. septembra 2026 sa pri deťoch plniacich povinné predprimárne vzdelávanie uplatňujú nové pravidlá ospravedlňovania. Pre rodiča je kľúčové vedieť, aký režim používa konkrétna materská škola.",
+    "audience": "Rodičia a zákonní zástupcovia detí, ktoré plnia povinné predprimárne vzdelávanie alebo v jeho plnení pokračujú.",
+    "why": "Pravidlá rozlišujú prísnejší a miernejší režim a rozhodnutie sa viaže aj na situáciu konkrétnej materskej školy. Preto nestačí spoliehať sa na jednu všeobecnú vetu o počte dní.",
+    "checklist": [
+      "Overte si, či vaše dieťa v tomto školskom roku plní povinné predprimárne vzdelávanie alebo v ňom pokračuje.",
+      "Zistite v materskej škole, či pri ospravedlňovaní neprítomnosti postupuje v prísnejšom alebo miernejšom režime.",
+      "Pri ochorení alebo úraze sa riaďte aktuálnym školským poriadkom a oznámením materskej školy o režime ospravedlňovania.",
+      "Ak škola vyžaduje lekárske potvrdenie, použite postup a formulár, ktoré uvádza škola alebo ministerstvo.",
+      "Pri dlhšej alebo opakovanej neprítomnosti si podmienky overte priamo v materskej škole skôr, než budete predpokladať, že rodičovské ospravedlnenie stačí."
+    ],
+    "sections": [
+      {
+        "heading": "Čo sa zmenilo od 1. septembra 2026",
+        "body": "Ministerstvo školstva uvádza, že od 1. septembra 2026 sa nová právna úprava ospravedlňovania uplatňuje pri deťoch plniacich povinné predprimárne vzdelávanie a pri deťoch, ktoré v jeho plnení pokračujú. Usmernenie rozlišuje prísnejší a miernejší režim."
+      },
+      {
+        "heading": "Prečo môže byť postup medzi škôlkami odlišný",
+        "body": "Ministerstvo zverejňuje referenčnú hodnotu, podľa ktorej sa posudzuje možnosť školy uplatniť miernejší režim. Pre školský rok 2026/2027 je pre materské školy uvedená hodnota 75 vyučovacích dní. Ide o referenčný údaj pre posúdenie režimu školy, nie o počet dní, ktoré môže jedno dieťa automaticky vymeškať."
+      },
+      {
+        "heading": "Čo má rodič zistiť ako prvé",
+        "body": "Najpraktickejšie je overiť si priamo v materskej škole, podľa ktorého režimu postupuje, a pozrieť si školský poriadok alebo oznámenie o režime ospravedlňovania. Tým získate konkrétny postup pre svoju školu bez prenášania pravidiel z inej materskej školy."
+      },
+      {
+        "heading": "Kedy riešiť lekárske potvrdenie",
+        "body": "Potreba lekárskeho potvrdenia závisí od aktuálnych pravidiel a režimu, podľa ktorého škola postupuje. Ministerstvo zverejňuje aj vzor lekárskeho potvrdenia; pri nejasnosti si však vždy overte, čo v konkrétnej situácii požaduje vaša materská škola."
+      }
+    ],
+    "warnings": [
+      "Referenčná hodnota 75 vyučovacích dní nie je individuálny limit absencie jedného dieťaťa; používa sa pri posudzovaní režimu materskej školy.",
+      "Tento návod sa týka povinného predprimárneho vzdelávania. Pri dieťati, ktoré ho neplní, si postup overte podľa školského poriadku konkrétnej materskej školy."
+    ],
+    "sources": [
+      {
+        "title": "Ministerstvo školstva – Ospravedlňovanie neprítomnosti dieťaťa v materskej škole",
+        "url": "https://www.minedu.sk/46847-sk/ospravedlnovanie-nepritomnosti-dietata-plniaceho-povinne-predprimarne-vzdelavanie-v-materskej-skole/"
+      },
+      {
+        "title": "Ministerstvo školstva – Aktuálne informácie pre školský rok 2026/2027",
+        "url": "https://www.minedu.sk/aktualne-informacie-august-2026/"
+      }
+    ],
+    "verified": "2026-09-18",
+    "keywords": [
+      "ospravedlnenka",
+      "materská škola",
+      "škôlka",
+      "povinné predprimárne vzdelávanie",
+      "lekárske potvrdenie",
+      "neprítomnosť dieťaťa",
+      "prísnejší režim",
+      "miernejší režim"
+    ],
+    "image": "/assets/fallback/health.svg"
   }
 ]

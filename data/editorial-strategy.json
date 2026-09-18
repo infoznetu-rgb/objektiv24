@@ -136,13 +136,38 @@
       "topic": "Úrady a služby",
       "title": "Zatvorená pobočka alebo úrad: kde overiť náhradné vybavenie",
       "reason": "spája pošty, úrady a dočasné zmeny služieb",
-      "status": "planned"
+      "status": "published",
+      "url": "/poradna/zatvorena-posta-ako-overit-otvaracie-hodiny-a-sluzby/"
     },
     {
       "topic": "Rodina a zdravie",
       "title": "Ospravedlnenky v škôlke: praktický prehľad pravidiel pre rodiča",
       "reason": "evergreen vysvetlenie pre budúce zmeny a regionálne rozdiely",
+      "status": "published",
+      "url": "/poradna/ospravedlnenky-v-materskej-skole-2026-prakticky-prehlad/"
+    },
+    {
+      "topic": "Doprava a regióny",
+      "title": "Uzávera cesty alebo tunela: kde overiť obmedzenia pred cestou",
+      "reason": "evergreen vstup pre krátkodobé uzávery, opravy a výluky; posilní prelinkovanie dopravných aktualít",
       "status": "planned"
     }
-  ]
+  ],
+  "growth": {
+    "phase": 12,
+    "objective": "Budovať organický rast cez tematické clustre, evergreen návody a obojsmerné interné prelinkovanie.",
+    "priorityOrder": [
+      "Peniaze a dávky",
+      "Úrady a služby",
+      "Spotrebiteľ a bezpečnosť",
+      "Doprava a regióny",
+      "Rodina a zdravie"
+    ],
+    "rules": [
+      "Každá praktická aktualita má smerovať aspoň na tematický hub; ak existuje relevantný evergreen návod, aj naň.",
+      "Tematický hub má zobrazovať evergreen návody aj najnovšie aktuality z rovnakej témy.",
+      "Evergreen návod má zobrazovať súvisiace aktuality a odkaz na tematický hub.",
+      "Nový evergreen obsah sa uprednostní v clustri, ktorý má veľa aktualít, ale málo trvalých návodov."
+    ]
+  }
 }
