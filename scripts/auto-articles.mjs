@@ -1,4 +1,6 @@
-import { spawnSync } from "node:child_process";\n\nconst INGEST_URL = "https://bkyappgttwjxakkwycub.supabase.co/functions/v1/github-article-ingest";
+import { spawnSync } from "node:child_process";
+
+const INGEST_URL = "https://bkyappgttwjxakkwycub.supabase.co/functions/v1/github-article-ingest";
 const OIDC_AUDIENCE = "objektiv24-auto-articles";
 const MODEL = process.env.OLLAMA_MODEL || "qwen2.5:3b";
 
