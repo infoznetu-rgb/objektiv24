@@ -375,8 +375,20 @@ async function fetchDbArticles(){
 const staticRaw=JSON.parse(await fs.readFile(path.join(ROOT,"data/articles.json"),"utf8"));
 const staticArticles=staticRaw.map(articleFromStatic);
 const dbArticles=await fetchDbArticles();
+const archivedStaticByTitle=new Map(
+  staticArticles.filter(a=>a.archived).map(a=>[normalizeText(a.title),a])
+);
+const duplicateRedirects=[];
 const bySlug=new Map();
-for(const a of [...dbArticles,...staticArticles]) if(a.slug&&!bySlug.has(a.slug)) bySlug.set(a.slug,a);
+for(const a of dbArticles){
+  const archivedMatch=archivedStaticByTitle.get(normalizeText(a.title));
+  if(archivedMatch){
+    if(a.slug && a.slug!==archivedMatch.slug) duplicateRedirects.push({from:a.slug,to:archivedMatch.slug});
+    continue;
+  }
+  if(a.slug&&!bySlug.has(a.slug)) bySlug.set(a.slug,a);
+}
+for(const a of staticArticles) if(a.slug&&!bySlug.has(a.slug)) bySlug.set(a.slug,a);
 const articles=[...bySlug.values()].sort((a,b)=>Date.parse(b.publishedAt||b.verifiedAt||0)-Date.parse(a.publishedAt||a.verifiedAt||0));
 
 await renderHomepage(articles);
@@ -386,6 +398,10 @@ for(const a of articles){
   await write(path.join("clanky",a.slug,"index.html"),articleHtml(a,related,nextFor(a,articles,related)));
 }
 await write(path.join("clanky","index.html"),archiveHtml(articles));
+
+for(const r of duplicateRedirects){
+  await write(path.join("clanky",r.from,"index.html"),redirectHtml(canonicalFor(r.to)));
+}
 
 for(const a of staticArticles){
   if(!a.legacySourceUrl) continue;
