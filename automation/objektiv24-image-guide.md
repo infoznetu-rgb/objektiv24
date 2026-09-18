@@ -97,3 +97,10 @@ Obrázky nahrané cez Redakciu sa ukladajú do Supabase Storage bucketu `article
 - nemá ALT opis,
 - pri cudzej fotografii nemá zdroj a licenciu,
 - obrázok neprešiel redakčnou kontrolou `image_reviewed=true`.
+
+## Testovací hybridný režim automatických článkov
+Pre automatické publikovanie používaj poradie: (1) reálna licencovaná fotografia, (2) fotorealistická AI ilustrácia iba pri bezpečnej praktickej téme, (3) tematický fallback. AI test je obmedzený na prvých 10 publikovaných článkov s `image_type='ai_illustration'` alebo legacy `ai`; potom AI automatiku nepoužívaj, kým ju redakcia znovu nepotvrdí.
+
+AI je povolená najmä pre rubriky Úrady a služby, Peniaze a práca, Rodina a zdravie, Spotrebiteľ a bezpečnosť a všeobecnú Dopravu a regióny. Zakázaná je pri politike a voľbách, nehodách, kriminalite, tragédiách, konkrétnych zásahoch polície alebo hasičov a citlivých zdravotných udalostiach.
+
+Preferovaný typ v databáze je `image_type='ai_illustration'` (legacy `ai` zostáva podporované). Povinné metadata AI obrázka: `image_credit='Objektív24 / AI ilustrácia'`, `image_license='Interná ilustračná grafika'`, vecný ALT text a `image_reviewed=true`. Verejný web musí zobrazovať označenie **Ilustračný obrázok · AI**.
