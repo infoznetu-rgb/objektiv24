@@ -38,6 +38,7 @@
         '<article class="analytics-panel"><h3>Interakcie · 30 dní</h3><div id="a-clicks" class="analytics-list">Načítavam…</div></article>'+
         '<article class="analytics-panel"><h3>Odkiaľ prišli · 30 dní</h3><div id="a-referrers" class="analytics-list">Načítavam…</div></article>'+
         '<article class="analytics-panel"><h3>Odberový funnel · 30 dní</h3><div id="a-audience" class="analytics-list">Načítavam…</div></article>'+
+        '<article class="analytics-panel"><h3>Core Web Vitals · p75</h3><div id="a-vitals" class="analytics-list">Načítavam prvé reálne merania…</div></article>'+
       '</div>'+
       '<p id="a-note" class="analytics-note"></p>';
     main.prepend(section);
@@ -143,6 +144,8 @@
         '#a-audience'
       );
 
+      renderVitals(data.web_vitals||{});
+
       const qualitySince=data.quality_tracking_since
         ?new Intl.DateTimeFormat('sk-SK',{day:'numeric',month:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(data.quality_tracking_since))
         :'dnešného nasadenia';
@@ -153,12 +156,43 @@
     }catch(error){
       console.error('Secure analytics failed',error);
       note.textContent='Štatistiky sa nepodarilo načítať: '+(error?.message||String(error));
-      ['#a-articles','#a-topics','#a-reading','#a-clicks','#a-referrers','#a-audience'].forEach(sel=>{
+      ['#a-articles','#a-topics','#a-reading','#a-clicks','#a-referrers','#a-audience','#a-vitals'].forEach(sel=>{
         if($(sel))$(sel).innerHTML='<p>Zatiaľ bez dát.</p>';
       });
     }finally{
       if(button)button.disabled=false;
     }
+  }
+
+  function vitalRating(metric,value){
+    if(value===null||value===undefined||!Number.isFinite(Number(value)))return{label:'čakám na dáta',mark:'—'};
+    const n=Number(value);
+    if(metric==='LCP')return n<=2500?{label:'dobré',mark:'✓'}:n<=4000?{label:'treba zlepšiť',mark:'!'}:{label:'slabé',mark:'×'};
+    if(metric==='INP')return n<=200?{label:'dobré',mark:'✓'}:n<=500?{label:'treba zlepšiť',mark:'!'}:{label:'slabé',mark:'×'};
+    return n<=0.1?{label:'dobré',mark:'✓'}:n<=0.25?{label:'treba zlepšiť',mark:'!'}:{label:'slabé',mark:'×'};
+  }
+
+  function renderVitals(vitals){
+    const rows=[];
+    for(const [device,label] of [['mobile','Mobil'],['desktop','Desktop']]){
+      const d=vitals?.[device]||{};
+      const defs=[
+        ['LCP',d.lcp_p75_ms,d.lcp_samples,'ms'],
+        ['INP',d.inp_p75_ms,d.inp_samples,'ms'],
+        ['CLS',d.cls_p75,d.cls_samples,'']
+      ];
+      for(const [metric,value,samples,unit] of defs){
+        const rating=vitalRating(metric,value);
+        const display=value===null||value===undefined||!Number.isFinite(Number(value))
+          ?'—'
+          :(metric==='CLS'?Number(value).toFixed(3):Math.round(Number(value))+' '+unit);
+        rows.push(
+          '<div class="analytics-row"><span class="rank">'+rating.mark+'</span><div><b>'+
+          esc(label+' · '+metric)+'</b><small>'+esc(rating.label)+' · '+Number(samples||0)+' meraní</small></div><strong>'+display+'</strong></div>'
+        );
+      }
+    }
+    $('#a-vitals').innerHTML=rows.join('');
   }
 
   function renderRows(items,sel){
