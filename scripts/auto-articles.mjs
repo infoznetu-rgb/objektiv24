@@ -1,6 +1,6 @@
 const INGEST_URL = "https://bkyappgttwjxakkwycub.supabase.co/functions/v1/github-article-ingest";
 const OIDC_AUDIENCE = "objektiv24-auto-articles";
-const MODEL = process.env.OLLAMA_MODEL || "qwen2.5:1.5b";
+const MODEL = process.env.OLLAMA_MODEL || "qwen2.5:3b";
 
 const SOURCES = [
   {
@@ -290,20 +290,58 @@ Spotrebiteľ a bezpečnosť
   }
   return obj;
 }
-function validArticle(a) {
+function fieldWords(v="") {
+  return norm(v).split(" ").filter(w=>w.length>2);
+}
+function repeatedSentence(v="") {
+  const seen=new Set();
+  for(const s of String(v).split(/[.!?]+/).map(x=>norm(x)).filter(x=>x.length>=45)) {
+    if(seen.has(s)) return true;
+    seen.add(s);
+  }
+  return false;
+}
+function ngramSet(v="",n=4) {
+  const w=fieldWords(v);
+  const out=new Set();
+  for(let i=0;i<=w.length-n;i++) out.add(w.slice(i,i+n).join(" "));
+  return out;
+}
+function overlapRatio(a="",b="") {
+  const A=ngramSet(a), B=ngramSet(b);
+  if(!A.size||!B.size)return 0;
+  let common=0;
+  for(const x of A)if(B.has(x))common++;
+  return common/Math.min(A.size,B.size);
+}
+function numericClaimsSupported(article, sourceText, sourceTitle) {
+  const generated=[
+    article.title,article.intro,article.what_happened,article.what_it_means,article.next_step
+  ].join(" ");
+  const nums=[...generated.matchAll(/\b\d+(?:[.,]\d+)?\b/g)].map(m=>m[0].replace(",","."));
+  const source=norm(sourceText+" "+sourceTitle).replace(/,/g,".");
+  return [...new Set(nums)].every(n=>source.includes(n));
+}
+function validArticle(a, sourceText="", sourceTitle="") {
   if(!a || typeof a!=="object") return false;
   const title=String(a.title||"").trim();
   const intro=String(a.intro||"").trim();
   const happened=String(a.what_happened||"").trim();
   const means=String(a.what_it_means||"").trim();
   const next=String(a.next_step||"").trim();
-  return title.length>=25 && title.length<=105
+  const fields=[intro,happened,means,next];
+  if(!(title.length>=25 && title.length<=105
     && !/\b(a|aj|ale|alebo|do|na|o|od|po|pod|pre|pri|s|so|v|vo|z|za|zo|že)$/i.test(title)
     && !/zamestnávateľi/i.test(title)
     && intro.length>=80 && intro.length<=220
     && happened.length>=250 && happened.length<=520
     && means.length>=180 && means.length<=360
-    && next.length>=100 && next.length<=280;
+    && next.length>=100 && next.length<=280)) return false;
+  if(fields.some(x=>!/[\"”')\]]?[.!?]$/.test(x))) return false;
+  if(fields.some(repeatedSentence)) return false;
+  if(overlapRatio(happened,means)>0.38 || overlapRatio(happened,next)>0.34 || overlapRatio(means,next)>0.42) return false;
+  if(!numericClaimsSupported(a,sourceText,sourceTitle)) return false;
+  return true;
 }
 
 const token = await oidcToken();
@@ -363,7 +401,7 @@ for (const c of candidates) {
       continue;
     }
     const article = await generate(c, body);
-    if (!validArticle(article)) {
+    if (!validArticle(article, body, c.title)) {
       console.log("Model vrátil neúplný článok:", c.title);
       continue;
     }
