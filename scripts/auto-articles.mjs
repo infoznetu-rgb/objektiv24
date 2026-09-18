@@ -193,18 +193,26 @@ Vytvor JSON presne s kľúčmi:
   "image_alt": "vecný alt text pre neutrálnu ilustračnú grafiku",
   "image_search_query": "4-8 anglických slov opisujúcich neutrálnu ilustráciu"
 }`;
-  const ctrl = new AbortController();\n  const timer = setTimeout(()=>ctrl.abort(), 180000);\n  const r = await fetch("http://127.0.0.1:11434/api/chat", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      model: MODEL,
-      stream:false,
-      format:"json",
-      messages:[{role:"system",content:system},{role:"user",content:prompt}],
-      options:{temperature:0.15,num_ctx:6144,num_predict:900}
-    })
-  });
-  clearTimeout(timer);\n  if (!r.ok) throw new Error("Ollama HTTP " + r.status + ": " + await r.text());
+  const ctrl = new AbortController();
+  const timer = setTimeout(()=>ctrl.abort(), 180000);
+  let r;
+  try {
+    r = await fetch("http://127.0.0.1:11434/api/chat", {
+      method:"POST",
+      signal:ctrl.signal,
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model: MODEL,
+        stream:false,
+        format:"json",
+        messages:[{role:"system",content:system},{role:"user",content:prompt}],
+        options:{temperature:0.15,num_ctx:6144,num_predict:900}
+      })
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+  if (!r.ok) throw new Error("Ollama HTTP " + r.status + ": " + await r.text());
   const data = await r.json();
   const raw = data?.message?.content || "";
   const obj = JSON.parse(raw);
