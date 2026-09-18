@@ -37,6 +37,7 @@
         '<article class="analytics-panel"><h3>Dočítanie článkov</h3><div id="a-reading" class="analytics-list">Načítavam…</div></article>'+
         '<article class="analytics-panel"><h3>Interakcie · 30 dní</h3><div id="a-clicks" class="analytics-list">Načítavam…</div></article>'+
         '<article class="analytics-panel"><h3>Odkiaľ prišli · 30 dní</h3><div id="a-referrers" class="analytics-list">Načítavam…</div></article>'+
+        '<article class="analytics-panel"><h3>Odberový funnel · 30 dní</h3><div id="a-audience" class="analytics-list">Načítavam…</div></article>'+
       '</div>'+
       '<p id="a-note" class="analytics-note"></p>';
     main.prepend(section);
@@ -134,6 +135,14 @@
         '#a-referrers'
       );
 
+      renderRows(
+        (data.audience_funnel_30d||[]).map(x=>({
+          label:x.label,
+          value:Number(x.count||0)
+        })),
+        '#a-audience'
+      );
+
       const qualitySince=data.quality_tracking_since
         ?new Intl.DateTimeFormat('sk-SK',{day:'numeric',month:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(data.quality_tracking_since))
         :'dnešného nasadenia';
@@ -144,7 +153,7 @@
     }catch(error){
       console.error('Secure analytics failed',error);
       note.textContent='Štatistiky sa nepodarilo načítať: '+(error?.message||String(error));
-      ['#a-articles','#a-topics','#a-reading','#a-clicks','#a-referrers'].forEach(sel=>{
+      ['#a-articles','#a-topics','#a-reading','#a-clicks','#a-referrers','#a-audience'].forEach(sel=>{
         if($(sel))$(sel).innerHTML='<p>Zatiaľ bez dát.</p>';
       });
     }finally{
