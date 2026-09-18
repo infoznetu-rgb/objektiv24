@@ -1,0 +1,59 @@
+name: Automatické články Objektív24
+
+on:
+  schedule:
+    - cron: "5 * * * *"
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/auto-articles.yml"
+      - "scripts/auto-articles.mjs"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: objektiv24-auto-articles
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      OLLAMA_MODEL: qwen2.5:3b
+      OLLAMA_MODELS: ${{ github.workspace }}/.ollama-models
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Ollama model
+        uses: actions/cache@v4
+        with:
+          path: .ollama-models
+          key: objektiv24-ollama-qwen25-3b-v1
+
+      - name: Install Ollama
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          nohup ollama serve >/tmp/ollama.log 2>&1 &
+          for i in {1..20}; do
+            if curl -fsS http://127.0.0.1:11434/api/tags >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+
+      - name: Prepare Slovak editorial model
+        run: ollama pull "${OLLAMA_MODEL}"
+
+      - name: Generate and publish
+        run: node scripts/auto-articles.mjs
+
+      - name: Ollama diagnostics on failure
+        if: failure()
+        run: |
+          echo "=== Ollama log ==="
+          tail -n 200 /tmp/ollama.log || true
