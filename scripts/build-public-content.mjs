@@ -339,6 +339,17 @@ const sitemapUrls=[
 const sitemap=`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapUrls.map(x=>`  <url><loc>${xml(x.loc)}</loc>${x.lastmod?`<lastmod>${xml(x.lastmod)}</lastmod>`:""}</url>`).join("\n")}\n</urlset>\n`;
 await write("sitemap.xml",sitemap);
 
+const newsCutoff=Date.now()-48*60*60*1000;
+const newsArticles=articles
+  .filter(a=>!a.archived)
+  .filter(a=>{
+    const t=Date.parse(a.publishedAt||a.verifiedAt||"");
+    return Number.isFinite(t) && t>=newsCutoff && t<=Date.now()+60*60*1000;
+  })
+  .slice(0,1000);
+const newsSitemap=`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n${newsArticles.map(a=>`  <url>\n    <loc>${xml(canonicalFor(a.slug))}</loc>\n    <news:news>\n      <news:publication><news:name>Objektív24</news:name><news:language>sk</news:language></news:publication>\n      <news:publication_date>${xml(asDate(a.publishedAt||a.verifiedAt))}</news:publication_date>\n      <news:title>${xml(a.title)}</news:title>\n    </news:news>\n  </url>`).join("\\n")}\n</urlset>\n`;
+await write("news-sitemap.xml",newsSitemap);
+
 const rssItems=articles.filter(a=>!a.archived).slice(0,50).map(a=>{
   const link=canonicalFor(a.slug);
   const d=new Date(a.publishedAt||a.verifiedAt||Date.now());
@@ -347,4 +358,4 @@ const rssItems=articles.filter(a=>!a.archived).slice(0,50).map(a=>{
 const rss=`<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel>\n  <title>Objektív24</title>\n  <link>${SITE}/</link>\n  <description>Správy v súvislostiach. Čo sa deje, čo to znamená pre vás a čo ďalej.</description>\n  <language>sk</language>\n  <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>\n${rssItems}\n</channel></rss>\n`;
 await write("rss.xml",rss);
 
-console.log(`Objektív24 SEO build: ${articles.length} článkov, sitemap a RSS hotové.`);
+console.log(`Objektív24 SEO build: ${articles.length} článkov, sitemap, news sitemap a RSS hotové.`);
