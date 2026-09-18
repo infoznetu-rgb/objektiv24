@@ -22,7 +22,7 @@ const splitLines = v => String(v || "").split(/\r?\n/).map(x=>x.trim()).filter(B
 const splitSteps = v => String(v || "").split(/\n\s*\n|\r?\n/).map(x=>x.trim()).filter(Boolean);
 const cleanSlug = v => String(v || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,110) || "clanok";
 const canonicalFor = slug => `${SITE}/clanky/${encodeURIComponent(slug)}/`;
-const absoluteUrl = v => { try { return new URL(String(v||""),SITE).href; } catch { return String(v||""); } };
+const absoluteUrl = v => { try { return new URL(String(v||""),SITE+"/").href; } catch { return String(v||""); } };
 
 async function publicSupabaseConfig(){
   const app=await fs.readFile(path.join(ROOT,"app.js"),"utf8");
