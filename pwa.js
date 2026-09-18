@@ -9,7 +9,7 @@
 
   // Web Push support. The public VAPID key is intentionally public; the private key stays in Supabase secrets.
   const PUSH_API=SUPABASE_PUBLIC_URL+'/rest/v1/push_subscriptions';
-  const VAPID_PUBLIC_KEY='__VAPID_PUBLIC_KEY__';
+  const VAPID_PUBLIC_KEY='BMYq9N7rzvM-2Jh9IHfE3-F8St1l5KJeVjljyfXXSOX5RcMIrfsQ7TjHqhK6na4RjogySL4nCIlPhD3FIEqAkGY';
   const b64ToBytes=value=>{const pad='='.repeat((4-value.length%4)%4),base=(value+pad).replace(/-/g,'+').replace(/_/g,'/'),raw=atob(base);return Uint8Array.from([...raw].map(ch=>ch.charCodeAt(0)))};
   async function enablePush(){
     if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window))throw new Error('Push not supported');
