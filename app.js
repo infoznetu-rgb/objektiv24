@@ -26,7 +26,8 @@ function renderLatest(){
   const root=document.querySelector(".latest");if(!root)return;
   root.querySelectorAll(".latest-item").forEach(el=>el.remove());
   const note=root.querySelector(".latest-note");
-  const items=state.articles.filter(a=>!a.archived&&a.url).map((a,i)=>({a,i,time:Date.parse(a.published||a.verified||"")||0})).sort((x,y)=>y.time-x.time||x.i-y.i).slice(0,3).map(x=>x.a);
+  const heroUrl=document.querySelector(".hero-content .primary-cta")?.getAttribute("href")||"";
+  const items=state.articles.filter(a=>!a.archived&&a.url).map((a,i)=>({a,i,time:Date.parse(a.published||a.verified||"")||0})).sort((x,y)=>y.time-x.time||x.i-y.i).map(x=>x.a).filter(a=>a.url!==heroUrl).slice(0,3);
   const frag=document.createDocumentFragment();
   items.forEach(a=>{
     const link=document.createElement("a");link.className="latest-item";link.href=a.url;link.dataset.trackEvent="latest_click";link.dataset.trackLabel=a.slug||a.url||"";
