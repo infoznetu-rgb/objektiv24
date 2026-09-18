@@ -1,4 +1,4 @@
-const INGEST_URL = "https://bkyappgttwjxakkwycub.supabase.co/functions/v1/github-article-ingest";
+import { spawnSync } from "node:child_process";\n\nconst INGEST_URL = "https://bkyappgttwjxakkwycub.supabase.co/functions/v1/github-article-ingest";
 const OIDC_AUDIENCE = "objektiv24-auto-articles";
 const MODEL = process.env.OLLAMA_MODEL || "qwen2.5:3b";
 
@@ -424,6 +424,24 @@ ${JSON.stringify(article)}`;
 function fieldWords(v="") {
   return norm(v).split(" ").filter(w=>w.length>2);
 }
+function hunspellIssues(article, sourceText="", sourceTitle="") {
+  const text=[
+    article.title,article.intro,article.what_happened,article.what_it_means,article.next_step
+  ].join("\n");
+  const sourceWords=new Set(fieldWords(String(sourceText)+" "+String(sourceTitle)));
+  const result=spawnSync("hunspell",["-d","sk_SK","-l"],{
+    input:text,
+    encoding:"utf8",
+    timeout:15000,
+    maxBuffer:1024*1024
+  });
+  if(result.error || result.status!==0) return ["spellcheck-unavailable"];
+  const bad=[...new Set(String(result.stdout||"").split(/\r?\n/).map(x=>x.trim()).filter(Boolean))]
+    .filter(w=>w.length>=4)
+    .filter(w=>!sourceWords.has(norm(w)))
+    .filter(w=>!/^[A-ZÁÄČĎÉÍĹĽŇÓÔŔŠŤÚÝŽ]{2,}$/.test(w));
+  return bad.slice(0,8).map(w=>"spell:"+w);
+}
 function repeatedSentence(v="") {
   const seen=new Set();
   for(const s of String(v).split(/[.!?]+/).map(x=>norm(x)).filter(x=>x.length>=45)) {
@@ -528,6 +546,13 @@ function articleIssues(a, sourceText="", sourceTitle="") {
   const next=String(a.next_step||"").trim();
   const fields=[intro,happened,means,next];
   if(/\b(a|aj|ale|alebo|do|na|o|od|po|pod|pre|pri|s|so|v|vo|z|za|zo|že)$/i.test(title)) issues.push("title-incomplete");
+  if(fields.some(x=>/\b[a-záäčďéíĺľňóôŕšťúýž]\.$/i.test(x))) issues.push("suspicious-one-letter-ending");
+  const grammarText=[title,...fields].join(" ");
+  if(/\bnie všetky študenti\b/i.test(grammarText)) issues.push("grammar-studenti-vsetky");
+  if(/\bštudenti\b[^.!?]{0,100}\bnemusí\b/i.test(grammarText)) issues.push("grammar-plural-singular");
+  if(/\bz Sociálny poisťovni\b/i.test(grammarText)) issues.push("grammar-case");
+  if(/\bna nový štúdium\b/i.test(grammarText)) issues.push("grammar-gender");
+  if(/\b(výslovníci|siroti)\b/i.test(grammarText)) issues.push("known-language-error");
   const stems=titleStems(title);
   if(stems.some((s,i)=>stems.indexOf(s)!==i)) issues.push("title-repeated-word-root");
   const allText=[title,...fields].join(" ");
@@ -608,6 +633,11 @@ for (const c of candidates) {
     const article = normalizeFinalArticle(await polishArticle(c, body, draft));
     if (!validArticle(article, body, c.title)) {
       console.log("Jazyková korektúra neprešla QA:", c.title, articleIssues(article,body,c.title).join(","));
+      continue;
+    }
+    const spellingIssues = hunspellIssues(article, body, c.title);
+    if (spellingIssues.length) {
+      console.log("Slovníková QA odmietla:", c.title, spellingIssues.join(" | "));
       continue;
     }
     const finalReview = await reviewArticleLanguage(c, body, article);
