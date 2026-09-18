@@ -23,6 +23,27 @@ const splitSteps = v => String(v || "").split(/\n\s*\n|\r?\n/).map(x=>x.trim()).
 const cleanSlug = v => String(v || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,110) || "clanok";
 const canonicalFor = slug => `${SITE}/clanky/${encodeURIComponent(slug)}/`;
 const absoluteUrl = v => { try { return new URL(String(v||""),SITE+"/").href; } catch { return String(v||""); } };
+const cutAtWord=(v,limit)=>{
+  const s=String(v||"").replace(/\s+/g," ").trim();
+  if(s.length<=limit)return s;
+  const slice=s.slice(0,limit+1);
+  const i=slice.lastIndexOf(" ");
+  return (i>=24?slice.slice(0,i):slice.slice(0,limit)).replace(/[\s,:;–—-]+$/,"").trim();
+};
+const seoTitleFallback=title=>{
+  const t=String(title||"").replace(/\s+/g," ").trim().replace(/[.!?]+$/,"");
+  if(t.length<=60)return t;
+  const first=t.split(/(?<=[.!?])\s+/)[0];
+  if(first.length>=25&&first.length<=60)return first;
+  return cutAtWord(t,60);
+};
+const metaDescriptionFallback=summary=>{
+  const t=String(summary||"").replace(/\s+/g," ").trim();
+  if(t.length<=155)return t;
+  const cut=cutAtWord(t,155);
+  return /[.!?]$/.test(cut)?cut:cut+".";
+};
+
 
 async function publicSupabaseConfig(){
   const app=await fs.readFile(path.join(ROOT,"app.js"),"utf8");
@@ -46,6 +67,8 @@ function articleFromStatic(a){
     slug: a.slug,
     category: a.category || "Slovensko",
     title: a.title || "Bez názvu",
+    seoTitle: a.seoTitle || "",
+    metaDescription: a.metaDescription || "",
     summary: a.summary || "",
     facts: a.facts || a.summary || "",
     meaning: a.meaning || "",
@@ -75,6 +98,8 @@ function articleFromDb(r){
     slug,
     category: r.category || "Slovensko",
     title: r.title || "Bez názvu",
+    seoTitle: r.seo_title || "",
+    metaDescription: r.meta_description || "",
     summary: r.intro || "",
     facts: r.what_happened || r.intro || "",
     meaning: r.what_it_means || "",
@@ -97,6 +122,15 @@ function articleFromDb(r){
   };
 }
 const normalizeText=v=>String(v||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+const seoTitleFor=a=>{
+  const candidate=String(a?.seoTitle||"").replace(/\s+/g," ").trim();
+  return candidate.length>=25&&candidate.length<=70?candidate:seoTitleFallback(a?.title||"Objektív24");
+};
+const metaDescriptionFor=a=>{
+  const candidate=String(a?.metaDescription||"").replace(/\s+/g," ").trim();
+  return candidate.length>=80&&candidate.length<=180?candidate:metaDescriptionFallback(a?.summary||a?.title||"Objektív24");
+};
+
 function topicForArticle(a){
   const s=normalizeText([a?.category,a?.title,a?.summary].join(" "));
   if(/sport|basket|hokej|futbal|tenis|lyz|cyklist/.test(s))return"Šport";
@@ -185,7 +219,7 @@ function schemaFor(a){
     url:canonical,
     mainEntityOfPage:{"@type":"WebPage","@id":canonical},
     headline:a.title,
-    description:a.summary,
+    description:metaDescriptionFor(a),
     articleSection:a.category||topicForArticle(a),
     inLanguage:"sk-SK",
     isAccessibleForFree:true,
@@ -212,6 +246,8 @@ function sourcesHtml(sources){
 }
 function articleHtml(a,related=[],nextArticle=null){
   const canonical = canonicalFor(a.slug);
+  const seoTitle = seoTitleFor(a);
+  const metaDescription = metaDescriptionFor(a);
   const published = asDate(a.publishedAt || a.verifiedAt);
   const modified = asDate(a.modifiedAt || a.publishedAt || a.verifiedAt);
   const verified = dateOnly(a.verifiedAt || a.modifiedAt || a.publishedAt);
@@ -230,8 +266,8 @@ function articleHtml(a,related=[],nextArticle=null){
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,viewport-fit=cover">
-  <title>${esc(a.title)} | Objektív24</title>
-  <meta name="description" content="${esc(a.summary)}">
+  <title>${esc(seoTitle)} | Objektív24</title>
+  <meta name="description" content="${esc(metaDescription)}">
   <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
   <link rel="canonical" href="${canonical}">
   <meta name="theme-color" content="#03080d">
@@ -239,12 +275,12 @@ function articleHtml(a,related=[],nextArticle=null){
   <meta property="og:type" content="article">
   <meta property="og:locale" content="sk_SK">
   <meta property="og:url" content="${canonical}">
-  <meta property="og:title" content="${esc(a.title)}">
-  <meta property="og:description" content="${esc(a.summary)}">
+  <meta property="og:title" content="${esc(seoTitle)}">
+  <meta property="og:description" content="${esc(metaDescription)}">
   ${ogImage}
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="${esc(a.title)}">
-  <meta name="twitter:description" content="${esc(a.summary)}">
+  <meta name="twitter:title" content="${esc(seoTitle)}">
+  <meta name="twitter:description" content="${esc(metaDescription)}">
   ${published ? `<meta property="article:published_time" content="${published}">` : ""}
   ${modified ? `<meta property="article:modified_time" content="${modified}">` : ""}
   <link rel="alternate" type="application/rss+xml" title="Objektív24 RSS" href="/rss.xml">
@@ -365,7 +401,7 @@ async function write(rel,content){
 }
 async function fetchDbArticles(){
   const {url:base,key}=await publicSupabaseConfig();
-  const select="id,title,category,intro,what_happened,what_it_means,next_step,sources,image_url,image_type,image_alt,image_source_url,image_credit,image_license,image_position,slug,published_at,verified_at,updated_at";
+  const select="id,title,seo_title,meta_description,category,intro,what_happened,what_it_means,next_step,sources,image_url,image_type,image_alt,image_source_url,image_credit,image_license,image_position,slug,published_at,verified_at,updated_at";
   const url=`${base}/rest/v1/drafts?state=eq.published&select=${encodeURIComponent(select)}&order=published_at.desc.nullslast,updated_at.desc`;
   const r=await fetch(url,{headers:{apikey:key,Authorization:`Bearer ${key}`}});
   if(!r.ok) throw new Error(`Supabase public articles: ${r.status}`);

@@ -24,7 +24,9 @@
     "sources": [
       "https://www.siea.sk/domacnosti-s-aktivovanymi-ziadostami-sa-mozu-rozhodnut-ci-chcu-vyuzit-podporu-zo-zelenej-solidarity-za-doterajsich-podmienok/"
     ],
-    "migrationStatus": "full"
+    "migrationStatus": "full",
+    "seoTitle": "Zelená solidarita: rozhoduje termín 30. september",
+    "metaDescription": "Domácnosti s aktivovanou žiadosťou si majú skontrolovať, či SIEA dostala potrebné súhlasy na overenie príjmu včas."
   },
   {
     "slug": "solvex-vyplaty",
@@ -52,7 +54,9 @@
       "https://www.colonnade.sk/najnovsie-clanky/upadok-cestovnej-kancelarie-solvex",
       "https://www.teraz.sk/ekonomika/poistovna-colonnade-insurance-odskod/992315-clanok.html"
     ],
-    "migrationStatus": "full"
+    "migrationStatus": "full",
+    "seoTitle": "Solvex: poisťovňa žiada k výplate aj vyhlásenie",
+    "metaDescription": "Pri už nahlásenom nároku si overte, či má poisťovňa všetky potrebné podklady. K dokončeniu výplaty môže chýbať podpísané vyhlásenie."
   },
   {
     "slug": "vakcinacia-lisok",
@@ -79,7 +83,9 @@
     "sources": [
       "https://svps.sk/oznamenie-o-zacati-jesennej-kampane-2026-oralnej-vakcinacie-lisok-proti-besnote/"
     ],
-    "migrationStatus": "full"
+    "migrationStatus": "full",
+    "seoTitle": "Vakcinácia líšok v októbri: návnad sa nedotýkajte",
+    "metaDescription": "Jesenná vakcinácia líšok proti besnote je naplánovaná na október. Návnad sa nedotýkajte a v dotknutých oblastiach sledujte pravidlá pre zvieratá."
   },
   {
     "slug": "malaposta-sala",
@@ -108,7 +114,9 @@
       "https://www.posta.sk/clanky/malaposta-sala-otvorenie",
       "https://www.posta.sk/pobocky-a-balikoboxy"
     ],
-    "migrationStatus": "full"
+    "migrationStatus": "full",
+    "seoTitle": "MaláPOŠTA v Šali-Veči: čo vybavíte a čo nie",
+    "metaDescription": "MaláPOŠTA v Šali-Veči umožňuje vybrané poštové úkony, no nejde o plnohodnotnú pobočku. Pozrite si, ktoré služby sú dostupné a ktoré zatiaľ nie."
   },
   {
     "slug": "sedmak-zakaz",
@@ -132,7 +140,9 @@
       "https://cz.basketball/peter-sedmak-dostal-osmilety-zakaz-cinnosti/a23134",
       "https://www.teraz.sk/sport/byvaly-reprezentant-sedmak-dostal-tre/992187-clanok.html"
     ],
-    "migrationStatus": "full"
+    "migrationStatus": "full",
+    "seoTitle": "Peter Sedmák dostal osemročný zákaz činnosti",
+    "metaDescription": "FIBA podľa Českej basketbalovej federácie uložila Petrovi Sedmákovi osemročný zákaz činnosti. Hráč časť záverov spochybnil a avizoval odvolanie."
   },
   {
     "slug": "zoznam-dlznikov",
@@ -160,7 +170,9 @@
       "https://www.socpoist.sk/nastroje-sluzby/zoznam-dlznikov",
       "https://www.socpoist.sk/socialne-poistenie/platenie-poistneho/cisla-uctov-pobociek-socialnej-poistovne"
     ],
-    "migrationStatus": "full"
+    "migrationStatus": "full",
+    "seoTitle": "Zoznam dlžníkov: nesúlad overte s poisťovňou",
+    "metaDescription": "Sociálna poisťovňa aktualizovala zoznam dlžníkov. Ak údaje nesedia, pred ďalšou úhradou si overte evidenciu a priradenie platieb s pobočkou."
   },
   {
     "slug": "sms-vratka",
@@ -187,7 +199,9 @@
     "sources": [
       "https://www.financnasprava.sk/sk/pre-media/novinky/archiv-noviniek/detail-novinky/_sms-podvod-202609-ts/bc"
     ],
-    "migrationStatus": "full"
+    "migrationStatus": "full",
+    "seoTitle": "Podvodná SMS sľubuje vratku 450 eur. Neklikajte na odkaz",
+    "metaDescription": "Finančná správa varuje pred SMS, ktoré sľubujú vratku 450 eur a vedú na podvodný odkaz. Citlivé údaje cez takúto správu nezadávajte."
   },
   {
     "slug": "materske-elektronicky",
@@ -216,7 +230,9 @@
       "https://www.ezdravotnictvo.sk/sk/sluzby-etehotenska-knizka/-/display/wAOn8IRUctuu/content/id/4591905",
       "https://www.socpoist.sk/kontakty/informacno-poradenske-centrum"
     ],
-    "migrationStatus": "full"
+    "migrationStatus": "full",
+    "seoTitle": "Materské elektronicky: overte si systém u lekára",
+    "metaDescription": "Elektronické vybavenie materského sa zavádza postupne. Overte si u lekára a v Sociálnej poisťovni, či už systém používate a či treba niečo doložiť."
   },
   {
     "slug": "ziar-urad-15-september",
@@ -244,7 +260,9 @@
     "sources": [
       "https://www.ziar.sk/board.php?BoardID=5367&work=board_detail"
     ],
-    "migrationStatus": "full"
+    "migrationStatus": "full",
+    "seoTitle": "Mestský úrad Žiar nad Hronom: 15. septembra zatvorený",
+    "metaDescription": "Mestský úrad v Žiari nad Hronom bol 15. septembra 2026 zatvorený. Jednodňová informácia zostáva zachovaná v archíve Objektív24."
   },
   {
     "slug": "15-september-praca",
@@ -273,6 +291,8 @@
       "https://www.ip.gov.sk/aktuality/sviatky-8-maj-15-september-2026-z-pohladu-pracovneho-prava.html",
       "https://www.slov-lex.sk/ezbierky/pravne-predpisy/SK/ZZ/1993/241/"
     ],
-    "migrationStatus": "full"
+    "migrationStatus": "full",
+    "seoTitle": "15. september 2026 nie je dňom pracovného pokoja",
+    "metaDescription": "Podľa zákona nie je 15. september 2026 dňom pracovného pokoja. Pri práci rozhoduje rozvrh zmien; sviatok však zostáva relevantný pre odmeňovanie."
   }
 ]
