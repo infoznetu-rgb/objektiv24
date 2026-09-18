@@ -12,7 +12,9 @@
     return'';
   }
   function shortLabel(row){
+    const image=String(row.image_url||'');
     let base='Ilustračná fotografia';
+    if(/\/assets\/fallback\//i.test(image))return'Ilustračná grafika';
     if(row.image_type==='ai')base='Ilustračný obrázok · AI';
     else if(row.image_type==='own')base='Vlastná fotografia';
     else if(row.image_type==='official')base='Oficiálny obrázok';
