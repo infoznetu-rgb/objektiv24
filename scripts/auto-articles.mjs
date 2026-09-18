@@ -47,6 +47,13 @@ const SOURCES = [
     accept: (u) => /soi\.sk\/novinky\/[^/?#]+/i.test(u),
   },
   {
+    name: "Štátna veterinárna a potravinová správa",
+    type: "html",
+    url: "https://svps.sk/category/aktuality/",
+    accept: (u) => /^https:\/\/svps\.sk\/(?!category\/|tag\/|author\/|wp-content\/|$)[^/?#]+\/?$/i.test(u),
+    limit: 12,
+  },
+  {
     name: "Slovenská obchodná inšpekcia",
     type: "direct",
     url: "https://www.soi.sk/novinky/upozornenie-pre-spotrebitelov-na-predaj-zajazdov-na-webovej-stranke-www-novatours-sk",
@@ -60,7 +67,16 @@ const PRACTICAL = [
   "výluka","oprava","diaľnic","cest","premáv","povinn","poisten","dôchod","dávk",
   "daň","prizn","platb","zamest","služb","pobočk","úrad","doklad","elektron",
   "podvod","bezpeč","spotreb","reklam","výpadok","odstávk","septembr","októbr",
-  "odklad","poplat","žiados","registr","karta","vlak","autobus","tunel","uzáver"
+  "odklad","poplat","žiados","registr","karta","vlak","autobus","tunel","uzáver",
+  "výrobok","varovan","vakcin","besnot","stiahnut","výživn"
+];
+const PRIORITY_SIGNALS=[
+  {weight:4,terms:["termín","lehota","do konca","najneskôr","od 1.","do 30."]},
+  {weight:4,terms:["podvod","phishing","nevyhovujúci výrobok","stiahnutie výrobku","varovanie"]},
+  {weight:3,terms:["dôchod","dávk","poisten","sociálna poisťovňa","daň","prizn","szčo","výživné"]},
+  {weight:3,terms:["výpadok","odstávk","zatvor","pobočk","úrad","pošta"]},
+  {weight:3,terms:["vakcin","besnot","zdravotné upozornenie"]},
+  {weight:2,terms:["uzáver","výluka","tunel","diaľnic","oprava","obmedz"]}
 ];
 const POLITICAL = [
   "voľby","volieb","parlament","politická strana","koalícia","opozícia",
@@ -68,7 +84,8 @@ const POLITICAL = [
 ];
 const LOW_VALUE = [
   "nelegáln","nelegaln","cigare","pašer","paser","zaistil","zadržal","zadrzal",
-  "krimin","trestn","zásah colní","zasah colni","drogy","hazard"
+  "krimin","trestn","zásah colní","zasah colni","drogy","hazard",
+  "správa z úradnej kontroly","voľné pracovné miesto","voľné pracovné miesta"
 ];
 
 function decode(s="") {
@@ -126,6 +143,9 @@ function score(title, desc="") {
   if (LOW_VALUE.some(k=>t.includes(norm(k)))) return -80;
   let n = 0;
   for (const k of PRACTICAL) if (t.includes(norm(k))) n++;
+  for (const group of PRIORITY_SIGNALS) {
+    if (group.terms.some(k=>t.includes(norm(k)))) n += group.weight;
+  }
   return n;
 }
 function absUrl(href, base) {
@@ -745,9 +765,14 @@ console.log("Po filtroch zostalo kandidátov:", candidates.length);
 
 let published = 0;
 let attempts = 0;
+const publishedBySource=new Map();
 const maxToPublish = Math.min(5, Math.max(0, dailyCap - (status.published_last_24h || 0)));
 for (const c of candidates) {
   if (published >= maxToPublish || attempts >= 10) break;
+  if ((publishedBySource.get(c.sourceName)||0) >= 2) {
+    console.log("Zdroj má v tomto behu už dva publikované články:",c.sourceName);
+    continue;
+  }
   try {
     const page = await fetchText(c.link);
     c.link = page.finalUrl || c.link;
@@ -817,6 +842,7 @@ for (const c of candidates) {
     });
     if (result.published) {
       published++;
+      publishedBySource.set(c.sourceName,(publishedBySource.get(c.sourceName)||0)+1);
       console.log("PUBLIKOVANÉ:", result.article?.title, result.public_url);
     } else {
       console.log("NEPUBLIKOVANÉ:", c.title, result.reason || result);
