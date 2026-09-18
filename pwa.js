@@ -3,7 +3,7 @@
   window.__objektiv24PwaLoaded=true;
   if(document.querySelector('link[rel="manifest"]')===null){const m=document.createElement('link');m.rel='manifest';m.href='/manifest.webmanifest';document.head.appendChild(m)}
   if(document.querySelector('link[rel="apple-touch-icon"]')===null){const i=document.createElement('link');i.rel='apple-touch-icon';i.href='/assets/app-icon-192.svg?v=20260918-2';document.head.appendChild(i)}
-  if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js?v=19',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js?v=20',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
   const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true,ua=navigator.userAgent||'',isIOS=/iphone|ipad|ipod/i.test(ua),isAndroid=/android/i.test(ua),isMobile=isIOS||isAndroid,isChrome=/chrome|crios/i.test(ua)&&!/edg|opr|opera/i.test(ua),isInApp=/wv|FBAN|FBAV|Instagram|WhatsApp|Messenger/i.test(ua);
   const dismissKey='objektiv24_mobile_panel_dismissed_until_v15';let deferredPrompt=null,shown=false,dockTimer=null;
   const track=type=>{if(typeof window.objektiv24Track==='function')window.objektiv24Track(type)};
@@ -48,7 +48,7 @@
   }
 
   async function getPushState(){
-    if(!isMobile||!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window))return 'unsupported';
+    if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window))return 'unsupported';
     if(Notification.permission==='denied')return 'blocked';
     try{
       const reg=await navigator.serviceWorker.ready;
@@ -73,15 +73,21 @@
   function dock(){if(!isMobile)return null;let el=document.querySelector('#pwa-install-dock');if(el)return el;el=document.createElement('button');el.type='button';el.id='pwa-install-dock';el.className='pwa-dock';el.innerHTML='<span>'+(standalone?'🔔':'📱')+' Objektív24</span>';el.hidden=true;el.onclick=()=>openCard(true);document.body.appendChild(el);return el}
   function showDock(){const d=dock();if(isMobile&&d)d.hidden=false}
   function dismiss(el){el.hidden=true;localStorage.setItem(dismissKey,String(Date.now()+7*864e5));track('install_dismissed');showDock()}
-  function fallbackHelp(){if(isIOS)return 'V Safari klepnite na Zdieľať a potom na „Pridať na plochu“.';if(isAndroid&&isInApp)return 'Otvorte stránku v Chrome a potom zvoľte „Pridať na plochu“ alebo „Nainštalovať aplikáciu“.';if(isAndroid&&isChrome)return 'V Chrome otvorte menu ⋮ a zvoľte „Pridať na plochu“ alebo „Nainštalovať aplikáciu“.';if(isAndroid)return 'Otvorte túto stránku v Chrome a v menu ⋮ zvoľte „Pridať na plochu“.';return 'V menu prehliadača vyhľadajte „Nainštalovať aplikáciu“.'}
+  function fallbackHelp(){if(isIOS)return 'V Safari klepnite na Zdieľať a potom na „Pridať na plochu“.';if(isAndroid&&isInApp)return 'Otvorte stránku v Chrome a potom zvoľte „Pridať na plochu“ alebo „Nainštalovať aplikáciu“.';if(isAndroid&&isChrome)return 'V Chrome otvorte menu ⋮ a zvoľte „Pridať na plochu“ alebo „Nainštalovať aplikáciu“.';if(isAndroid)return 'Otvorte túto stránku v Chrome a v menu ⋮ zvoľte „Pridať na plochu“.';if(/edg/i.test(ua))return 'V Edge kliknite vpravo v adresnom riadku na ikonu aplikácie, prípadne otvorte menu … → Aplikácie → Nainštalovať Objektív24.';if(/chrome/i.test(ua))return 'V Chrome kliknite vpravo v adresnom riadku na ikonu inštalácie aplikácie. Ak ju nevidíte, otvorte menu ⋮ a vyhľadajte možnosť nainštalovať stránku ako aplikáciu.';return 'V menu prehliadača vyhľadajte možnosť „Nainštalovať aplikáciu“ alebo „Pridať na plochu“.'}
   async function openCard(manual=false){
     const d=dock();if(d)d.hidden=true;
     const el=card();
     const canInstall=!standalone&&!!deferredPrompt;
     const installDone=standalone;
     const help=installDone||canInstall?'':'<p class="pwa-help" hidden>'+fallbackHelp()+'</p>';
+    const deviceTitle=isMobile?'Objektív24 v mobile':'Objektív24 v počítači';
+    const deviceIcon=isMobile?'📱':'💻';
+    const installText=installDone
+      ?'Aplikácia je práve otvorená v nainštalovanom režime.'
+      :(isMobile?'Rýchly prístup priamo z plochy telefónu.':'Nainštalujte Objektív24 ako samostatnú aplikáciu s ikonou na ploche alebo v ponuke Štart.');
+    const installLabel=canInstall?(isMobile?'Pridať':'Nainštalovať'):'Postup';
 
-    el.innerHTML='<div class="pwa-card-head"><div><strong>Objektív24 v mobile</strong><p>Aplikácia a upozornenia na jednom mieste. <span style="opacity:.55">v17</span></p></div><button class="pwa-card-close" type="button" aria-label="Zavrieť">×</button></div><div class="pwa-setting-list"><div class="pwa-setting-row"><span class="pwa-setting-icon" aria-hidden="true">📱</span><span class="pwa-setting-copy"><b>Aplikácia</b><small>'+(installDone?'Aplikácia je práve otvorená v nainštalovanom režime.':'Rýchly prístup priamo z plochy telefónu.')+'</small></span>'+(installDone?'<button class="pwa-setting-action secondary" type="button" disabled>Otvorená ✓</button>':(canInstall?'<button class="pwa-setting-action pwa-install" type="button">Pridať</button>':'<button class="pwa-setting-action secondary pwa-install-help" type="button">Postup</button>'))+'</div><div class="pwa-setting-row"><span class="pwa-setting-icon" aria-hidden="true">🔔</span><span class="pwa-setting-copy"><b>Upozornenia</b><small id="pwa-push-copy">Overujem skutočný stav odberu…</small></span><button id="pwa-push-action" class="pwa-setting-action secondary" type="button" disabled>Overujem…</button></div></div>'+help;
+    el.innerHTML='<div class="pwa-card-head"><div><strong>'+deviceTitle+'</strong><p>Aplikácia a upozornenia na jednom mieste. <span style="opacity:.55">v20</span></p></div><button class="pwa-card-close" type="button" aria-label="Zavrieť">×</button></div><div class="pwa-setting-list"><div class="pwa-setting-row"><span class="pwa-setting-icon" aria-hidden="true">'+deviceIcon+'</span><span class="pwa-setting-copy"><b>Aplikácia</b><small>'+installText+'</small></span>'+(installDone?'<button class="pwa-setting-action secondary" type="button" disabled>Otvorená ✓</button>':(canInstall?'<button class="pwa-setting-action pwa-install" type="button">'+installLabel+'</button>':'<button class="pwa-setting-action secondary pwa-install-help" type="button">'+installLabel+'</button>'))+'</div><div class="pwa-setting-row"><span class="pwa-setting-icon" aria-hidden="true">🔔</span><span class="pwa-setting-copy"><b>Upozornenia</b><small id="pwa-push-copy">Overujem skutočný stav odberu…</small></span><button id="pwa-push-action" class="pwa-setting-action secondary" type="button" disabled>Overujem…</button></div></div>'+help;
 
     el.hidden=false;
     el.classList.toggle('pwa-attention',isMobile&&!manual);
