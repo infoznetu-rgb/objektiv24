@@ -295,6 +295,81 @@ Spotrebiteľ a bezpečnosť
   }
   return obj;
 }
+async function polishArticle(candidate, sourceBody, draft) {
+  const schema = {
+    type: "object",
+    additionalProperties: false,
+    required: [
+      "title","category","intro","what_happened","what_it_means",
+      "next_step","image_alt","image_search_query"
+    ],
+    properties: {
+      title: { type:"string", minLength:25, maxLength:105 },
+      category: {
+        type:"string",
+        enum:[
+          "Slovensko","Peniaze a práca","Doprava a regióny","Úrady a služby",
+          "Rodina a zdravie","Spotrebiteľ a bezpečnosť","Šport"
+        ]
+      },
+      intro: { type:"string", minLength:90, maxLength:190 },
+      what_happened: { type:"string", minLength:280, maxLength:430 },
+      what_it_means: { type:"string", minLength:190, maxLength:310 },
+      next_step: { type:"string", minLength:110, maxLength:230 },
+      image_alt: { type:"string", minLength:40, maxLength:140 },
+      image_search_query: { type:"string", minLength:12, maxLength:90 }
+    }
+  };
+
+  const system = [
+    "Si jazykový editor slovenského spravodajského webu Objektív24.",
+    "Uprav iba dodaný návrh. Nepridávaj žiadny nový fakt, číslo, dátum, podmienku ani tvrdenie.",
+    "Zachovaj presný vecný význam zdroja a všetky čísla.",
+    "Oprav gramatiku, skloňovanie, slovosled a neprirodzené formulácie.",
+    "Píš prirodzenou súčasnou slovenčinou, krátko, vecne a bez marketingových alebo PR superlatívov.",
+    "Vyhni sa formuláciám ako pohodlné, moderné, významné, revolučné alebo skvelé, ak nejde o nevyhnutný fakt.",
+    "Každá sekcia musí mať inú úlohu: what_happened opisuje fakt, what_it_means praktický dopad a next_step konkrétny krok.",
+    "Nevytváraj politické hodnotenie ani individuálnu právnu, finančnú či zdravotnú radu.",
+    "Pri elektronických portáloch, pobočkách, vybavovaní žiadostí a službách štátnej inštitúcie preferuj rubriku Úrady a služby.",
+    "Vráť iba JSON podľa schémy."
+  ].join(" ");
+
+  const prompt = `OFICIÁLNY PODKLAD
+Inštitúcia: ${candidate.sourceName}
+Zdrojový titulok: ${candidate.title}
+URL: ${candidate.link}
+Výňatok zo zdroja:
+${sourceBody.slice(0,3200)}
+
+NÁVRH NA JAZYKOVÚ KOREKTÚRU:
+${JSON.stringify(draft)}
+
+Uprav návrh do profesionálnej redakčnej slovenčiny. Nemeň fakty ani čísla.`;
+
+  const ctrl = new AbortController();
+  const timer = setTimeout(()=>ctrl.abort(), 180000);
+  let response;
+  try {
+    response = await fetch("http://127.0.0.1:11434/api/chat", {
+      method:"POST",
+      signal:ctrl.signal,
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model: MODEL,
+        stream:false,
+        format:schema,
+        messages:[{role:"system",content:system},{role:"user",content:prompt}],
+        options:{temperature:0.03,num_ctx:4096,num_predict:720}
+      })
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+  if(!response.ok) throw new Error("Jazyková korektúra Ollama HTTP "+response.status+": "+await response.text());
+  const data=await response.json();
+  return JSON.parse(String(data?.message?.content||"").trim());
+}
+
 function fieldWords(v="") {
   return norm(v).split(" ").filter(w=>w.length>2);
 }
@@ -405,9 +480,14 @@ for (const c of candidates) {
       continue;
     }
     attempts++;
-    const article = await generate(c, body);
+    const draft = await generate(c, body);
+    if (!validArticle(draft, body, c.title)) {
+      console.log("Prvý návrh neprešiel QA:", c.title);
+      continue;
+    }
+    const article = await polishArticle(c, body, draft);
     if (!validArticle(article, body, c.title)) {
-      console.log("Model vrátil neúplný článok:", c.title);
+      console.log("Jazyková korektúra neprešla QA:", c.title);
       continue;
     }
     const result = await ingest(token, {
