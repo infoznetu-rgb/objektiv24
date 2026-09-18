@@ -1,0 +1,131 @@
+name: Objektív24 Edge Function watchdog
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/edge-watch.yml"
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: objektiv24-edge-watch
+  cancel-in-progress: true
+
+jobs:
+  edge-watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      BASE_URL: https://bkyappgttwjxakkwycub.supabase.co/functions/v1
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Probe critical Edge Functions
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          failures=""
+
+          probe() {
+            name="$1"
+            method="$2"
+            path="$3"
+            expected="$4"
+            body="${5:-}"
+            origin="${6:-}"
+
+            args=(
+              --silent
+              --show-error
+              --location
+              --connect-timeout 10
+              --max-time 30
+              --retry 2
+              --retry-delay 2
+              --output "/tmp/${name}.body"
+              --write-out "%{http_code}"
+              --request "$method"
+            )
+
+            if [ -n "$origin" ]; then
+              args+=(--header "Origin: $origin")
+            fi
+
+            if [ -n "$body" ]; then
+              args+=(--header "Content-Type: application/json" --data "$body")
+            fi
+
+            code="$(curl "${args[@]}" "$BASE_URL/$path" || true)"
+
+            if [[ ! "$code" =~ ^($expected)$ ]]; then
+              failures+="${name}: expected HTTP ${expected}, got ${code:-curl-error}"$'\n'
+            else
+              echo "OK ${name}: HTTP $code"
+            fi
+          }
+
+          # Deep enough to verify runtime + internal auth configuration without sending a push.
+          probe "send-push-notification" "POST" "send-push-notification" "401" "{}"
+
+          # Executes function code and validates request handling without creating a subscription.
+          probe "push-subscribe" "POST" "push-subscribe" "400" "{}" "https://objektiv24.sk"
+
+          # Executes the ingest function runtime but stops before OIDC verification.
+          probe "github-article-ingest" "GET" "github-article-ingest" "405"
+
+          # JWT gateway protection should remain active for editor-only HeyGen functions.
+          probe "heygen-render" "POST" "heygen-render" "401|403" "{}"
+          probe "heygen-status" "POST" "heygen-status" "401|403" "{}"
+
+          TITLE="🚨 Objektív24: Edge Function watchdog zlyhal"
+
+          issue_number="$(
+            gh issue list               --repo "$GITHUB_REPOSITORY"               --state open               --limit 100               --json number,title               --jq '.[] | select(.title == "🚨 Objektív24: Edge Function watchdog zlyhal") | .number'               | head -n 1
+          )"
+
+          if [ -n "$failures" ]; then
+            BODY="$(cat <<EOF
+          Automatický Edge Function watchdog zachytil problém.
+
+          ```
+          $failures
+          ```
+
+          Kontrola: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+
+          Incident zostane otvorený, kým nasledujúca hodinová kontrola úspešne neprejde.
+          EOF
+          )"
+
+            if [ -n "$issue_number" ]; then
+              gh issue comment "$issue_number" --repo "$GITHUB_REPOSITORY" --body "$BODY"
+            else
+              gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body "$BODY"
+            fi
+
+            echo "::error::Edge Function watchdog failed"
+            printf "%s" "$failures"
+            exit 1
+          fi
+
+          if [ -n "$issue_number" ]; then
+            BODY="$(cat <<EOF
+          ✅ Edge Function watchdog je opäť zelený.
+
+          Kontrola: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+
+          Automatický monitoring incident uzatvára.
+          EOF
+          )"
+            gh issue comment "$issue_number" --repo "$GITHUB_REPOSITORY" --body "$BODY"
+            gh issue close "$issue_number" --repo "$GITHUB_REPOSITORY" --reason completed
+          fi
+
+          echo "All Objektív24 Edge Function probes passed."
