@@ -76,9 +76,16 @@ function fnv1a(str){
   return h>>>0;
 }
 
-function fingerprint(text){
+function fingerprint(text,raw=""){
   const words=normalizedWords(text);
-  if(words.length<35)throw new Error("too little readable content ("+words.length+" words)");
+  if(words.length<35){
+    return {
+      hash:crypto.createHash("sha256").update(String(raw).replace(/\s+/g," ").slice(0,1_000_000)).digest("hex"),
+      word_count:words.length,
+      shingles:[],
+      availability_only:true
+    };
+  }
   const hashes=new Set();
   const width=4;
   for(let i=0;i<=words.length-width;i++){
@@ -128,7 +135,7 @@ async function fetchSnapshot(url){
     });
     if(!r.ok)throw new Error("HTTP "+r.status);
     const raw=await r.text();
-    const fp=fingerprint(readableText(raw));
+    const fp=fingerprint(readableText(raw),raw);
     return {
       url,
       final_url:r.url||url,
@@ -183,6 +190,7 @@ async function checkReview(token,review){
   const checked=[];
   const changed=[];
   const errors=[];
+  let baselineRefresh=false;
 
   for(const current of snapshots){
     if(current.status!=="ok"){
@@ -201,19 +209,32 @@ async function checkReview(token,review){
       checked.push({
         url:current.url,
         status:"ok",
-        note:resolvedAccepted
-          ?"Zdroj je dostupný; po redakčnom potvrdení sa prijíma nový kontrolný odtlačok."
-          :"Zdroj je dostupný; vytvára sa prvý kontrolný odtlačok.",
+        note:current.shingles.length===0
+          ?"Zdroj odpovedá HTTP 200, ale jeho obsah je dynamicky vykreslený; automat sleduje dostupnosť, nie text."
+          :resolvedAccepted
+            ?"Zdroj je dostupný; po redakčnom potvrdení sa prijíma nový kontrolný odtlačok."
+            :"Zdroj je dostupný; vytvára sa prvý kontrolný odtlačok.",
+        http_status:current.http_status
+      });
+      continue;
+    }
+
+    if(current.shingles.length===0){
+      checked.push({
+        url:current.url,
+        status:"ok",
+        note:"Zdroj odpovedá HTTP 200, ale jeho obsah je dynamicky vykreslený; automat sleduje dostupnosť, nie text.",
         http_status:current.http_status
       });
       continue;
     }
 
     if(previous.status!=="ok"||!Array.isArray(previous.shingles)||!previous.shingles.length){
+      baselineRefresh=true;
       checked.push({
         url:current.url,
         status:"ok",
-        note:"Zdroj je dostupný; obnovuje sa chýbajúci kontrolný odtlačok.",
+        note:"Zdroj je dostupný; vytvára sa textový kontrolný odtlačok.",
         http_status:current.http_status
       });
       continue;
@@ -274,7 +295,7 @@ async function checkReview(token,review){
   }else{
     status="ok";
     consecutiveErrors=0;
-    acceptBaseline=baselineMissing||resolvedAccepted||baselineRows.length!==urls.length;
+    acceptBaseline=baselineMissing||resolvedAccepted||baselineRefresh||baselineRows.length!==urls.length;
   }
 
   const result=await api(token,{
