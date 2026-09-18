@@ -2,4 +2,3 @@ User-agent: *
 Allow: /
 
 Sitemap: https://objektiv24.sk/sitemap.xml
-Sitemap: https://objektiv24.sk/news-sitemap.xml
