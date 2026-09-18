@@ -62,7 +62,7 @@ jobs:
 
       - name: QA repair smoke test
         env:
-          QA_RETRY_SOURCE_URL: https://www.soi.sk/novinky/upozornenie-pre-spotrebitelov-na-predaj-zajazdov-na-webovej-stranke-www-novatours-sk
+          QA_RETRY_SOURCE_URL: https://socpoist.sk/news/pozor-na-podvodne-videa-socialna-poistovna-od-vas-cez-facebook-neziada-osobne-udaje
           QA_DRY_RUN: "1"
         run: node scripts/auto-articles.mjs
 
