@@ -4,7 +4,10 @@ const INGEST_URL = "https://bkyappgttwjxakkwycub.supabase.co/functions/v1/github
 const OIDC_AUDIENCE = "objektiv24-auto-articles";
 const MODEL = process.env.OLLAMA_MODEL || "qwen2.5:3b";
 const QA_RETRY_SOURCE_URL = String(process.env.QA_RETRY_SOURCE_URL || "").trim();
+const QA_RETRY_SOURCE_NAME = String(process.env.QA_RETRY_SOURCE_NAME || "").trim();
+const QA_RETRY_SOURCE_TITLE = String(process.env.QA_RETRY_SOURCE_TITLE || "").trim();
 const QA_DRY_RUN = process.env.QA_DRY_RUN === "1";
+const QA_FORCE_REPAIR_FIXTURE = process.env.QA_FORCE_REPAIR_FIXTURE === "1";
 
 const SOURCES = [
   {
@@ -249,6 +252,10 @@ async function ingest(token, payload) {
   return data;
 }
 async function recordRejected(candidate, reason) {
+  if (QA_DRY_RUN) {
+    console.log("QA dry-run: odmietnutie sa do databázy nezapisuje:", String(reason || "").slice(0,240));
+    return;
+  }
   try {
     const rejectToken = await oidcToken();
     await ingest(rejectToken, {
@@ -860,6 +867,17 @@ candidates = [...unique.values()].sort((a,b)=>b.score-a.score);
 if (QA_RETRY_SOURCE_URL) {
   const wanted=canonicalUrl(QA_RETRY_SOURCE_URL);
   candidates=candidates.filter(x=>canonicalUrl(x.link)===wanted);
+  if (!candidates.length && QA_RETRY_SOURCE_TITLE) {
+    candidates=[{
+      sourceName:QA_RETRY_SOURCE_NAME || "QA smoke test",
+      title:QA_RETRY_SOURCE_TITLE,
+      description:"",
+      link:QA_RETRY_SOURCE_URL,
+      pubDate:"",
+      score:999
+    }];
+    console.log("QA dry-run: historický oficiálny zdroj bol zaradený priamo mimo aktuálneho feedu.");
+  }
   console.log("QA dry-run kandidátov:", candidates.length, wanted);
 } else {
   console.log("Po filtroch zostalo kandidátov:", candidates.length);
@@ -888,6 +906,11 @@ for (const c of candidates) {
     }
     attempts++;
     let draft = await generate(c, body);
+    if (QA_DRY_RUN && QA_FORCE_REPAIR_FIXTURE) {
+      const introBase=String(draft.intro||"").replace(/[.!?]\s*$/,"").trim().slice(0,195);
+      draft={...draft,intro:introBase+" 987654321."};
+      console.log("QA smoke fixture: do návrhu bol zámerne vložený nepodložený číselný údaj.");
+    }
     let draftIssues = basicArticleIssues(draft, body, c.title);
     if (draftIssues.length) {
       console.log("Prvý návrh neprešiel faktickou/štrukturálnou kontrolou; skúšam jednu cielenú opravu:", c.title, draftIssues.join(","));

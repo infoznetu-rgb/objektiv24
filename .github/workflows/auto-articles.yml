@@ -63,7 +63,10 @@ jobs:
       - name: QA repair smoke test
         env:
           QA_RETRY_SOURCE_URL: https://socpoist.sk/news/pozor-na-podvodne-videa-socialna-poistovna-od-vas-cez-facebook-neziada-osobne-udaje
+          QA_RETRY_SOURCE_NAME: Sociálna poisťovňa
+          QA_RETRY_SOURCE_TITLE: "Pozor na podvodné videá: Sociálna poisťovňa od vás cez Facebook nežiada osobné údaje"
           QA_DRY_RUN: "1"
+          QA_FORCE_REPAIR_FIXTURE: "1"
         run: node scripts/auto-articles.mjs
 
       - name: Ollama diagnostics on failure
