@@ -59,6 +59,36 @@ function norm(s="") {
   return s.toLocaleLowerCase("sk").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
     .replace(/[^a-z0-9]+/g," ").trim();
 }
+function canonicalUrl(raw="") {
+  try {
+    const u = new URL(raw);
+    u.hostname = u.hostname.toLowerCase().replace(/^www\./,"");
+    u.hash = "";
+    if (u.pathname.length > 1) u.pathname = u.pathname.replace(/\/+$/,"");
+    return u.toString();
+  } catch {
+    return String(raw).replace(/^https?:\/\/www\./i,"https://").replace(/\/+$/,"");
+  }
+}
+const TITLE_STOP = new Set([
+  "a","aj","ale","alebo","aby","ako","do","na","za","z","zo","v","vo","od","pre","pri",
+  "sa","si","je","su","bol","bola","boli","bude","budu","ma","maju","mat","o","k","ku",
+  "po","pod","nad","cez","medzi","bez","ktory","ktora","ktore","ich","jej","jeho","tento",
+  "tato","toto","cast","konca","roku","dnes","novy","nova","nove"
+]);
+function titleStems(s="") {
+  return norm(s).split(" ")
+    .filter(w=>w.length>=4 && !TITLE_STOP.has(w))
+    .map(w=>w.length>=6?w.slice(0,6):w);
+}
+function likelyDuplicate(a="", b="") {
+  const aa=new Set(titleStems(a)), bb=new Set(titleStems(b));
+  if(!aa.size||!bb.size)return false;
+  let common=0;
+  for(const x of aa)if(bb.has(x))common++;
+  const dice=(2*common)/(aa.size+bb.size);
+  return common>=3 && dice>=0.30;
+}
 function score(title, desc="") {
   const t = norm(title + " " + desc);
   if (POLITICAL.some(k=>t.includes(norm(k)))) return -100;
@@ -261,12 +291,19 @@ Spotrebiteľ a bezpečnosť
   return obj;
 }
 function validArticle(a) {
-  return a && typeof a === "object"
-    && String(a.title||"").trim().length >= 25
-    && String(a.intro||"").trim().length >= 80
-    && String(a.what_happened||"").trim().length >= 250
-    && String(a.what_it_means||"").trim().length >= 180
-    && String(a.next_step||"").trim().length >= 100;
+  if(!a || typeof a!=="object") return false;
+  const title=String(a.title||"").trim();
+  const intro=String(a.intro||"").trim();
+  const happened=String(a.what_happened||"").trim();
+  const means=String(a.what_it_means||"").trim();
+  const next=String(a.next_step||"").trim();
+  return title.length>=25 && title.length<=105
+    && !/\b(a|aj|ale|alebo|do|na|o|od|po|pod|pre|pri|s|so|v|vo|z|za|zo|že)$/i.test(title)
+    && !/zamestnávateľi/i.test(title)
+    && intro.length>=80 && intro.length<=220
+    && happened.length>=250 && happened.length<=520
+    && means.length>=180 && means.length<=360
+    && next.length>=100 && next.length<=280;
 }
 
 const token = await oidcToken();
@@ -276,8 +313,11 @@ if ((status.published_last_24h || 0) >= 8) {
   console.log("Denný limit je naplnený; tento beh nič nevydá.");
   process.exit(0);
 }
-const knownSources = new Set(status.known_sources || []);
-const knownTitles = new Set((status.recent_titles || []).map(norm));
+const knownSources = new Set(
+  [...(status.known_sources||[]), ...(status.recent_source_urls||[])].map(canonicalUrl)
+);
+const recentTitles = status.recent_titles || [];
+const knownTitles = new Set(recentTitles.map(norm));
 
 let candidates = [];
 for (const source of SOURCES) {
@@ -293,10 +333,15 @@ for (const source of SOURCES) {
 
 const unique = new Map();
 for (const c of candidates) {
-  if (!c.link || knownSources.has(c.link) || knownTitles.has(norm(c.title)) || !isFresh(c.pubDate)) continue;
+  const cu=canonicalUrl(c.link);
+  if (!c.link || knownSources.has(cu) || knownTitles.has(norm(c.title)) || !isFresh(c.pubDate)) continue;
+  if (recentTitles.some(t=>likelyDuplicate(c.title,t))) {
+    console.log("Pred generovaním preskočená významová duplicita:", c.title);
+    continue;
+  }
   const s = score(c.title, c.description);
   if (s <= 0) continue;
-  const key = c.link.replace(/\/$/,"");
+  const key = cu;
   if (!unique.has(key)) unique.set(key, {...c, score:s});
 }
 candidates = [...unique.values()].sort((a,b)=>b.score-a.score);
@@ -311,7 +356,7 @@ for (const c of candidates) {
   try {
     const page = await fetchText(c.link);
     c.link = page.finalUrl || c.link;
-    if (knownSources.has(c.link)) continue;
+    if (knownSources.has(canonicalUrl(c.link))) continue;
     const body = articleText(page.text);
     if (body.length < 700) {
       console.log("Preskočené pre málo textu:", c.title);
