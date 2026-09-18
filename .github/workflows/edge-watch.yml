@@ -79,6 +79,7 @@ jobs:
           # JWT gateway protection should remain active for editor-only HeyGen functions.
           probe "heygen-render" "POST" "heygen-render" "401|403" "{}"
           probe "heygen-status" "POST" "heygen-status" "401|403" "{}"
+          probe "editor-health" "POST" "editor-health" "401|403" "{}"
 
           TITLE="🚨 Objektív24: Edge Function watchdog zlyhal"
 

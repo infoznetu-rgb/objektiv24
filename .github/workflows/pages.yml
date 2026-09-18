@@ -49,6 +49,9 @@ jobs:
           );
           NODE
 
+      - name: Validate editor health script
+        run: node --check redakcia-health.js
+
       - name: Validate generated public content
         run: node scripts/validate-public-build.mjs
 

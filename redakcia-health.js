@@ -98,8 +98,23 @@
 
     let internal = null;
     try {
-      const { data, error } = await client.rpc("get_editor_health_status");
-      if (error) throw error;
+      const { data: sessionData, error: sessionError } = await client.auth.getSession();
+      if (sessionError) throw sessionError;
+      const accessToken = sessionData?.session?.access_token;
+      if (!accessToken) throw new Error("Editor session is not available.");
+
+      const response = await fetch(SUPABASE_URL + "/functions/v1/editor-health", {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_PUBLISHABLE_KEY,
+          Authorization: "Bearer " + accessToken,
+          "Content-Type": "application/json"
+        },
+        body: "{}",
+        cache: "no-store"
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data?.error || ("HTTP " + response.status));
       internal = data || {};
       const unresolved = Boolean(internal.push_has_unresolved_error);
       const pushState = unresolved ? "warning" : "ok";
