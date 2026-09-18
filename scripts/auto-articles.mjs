@@ -306,7 +306,7 @@ Spotrebiteľ a bezpečnosť
   };
 
   const ctrl = new AbortController();
-  const timer = setTimeout(()=>ctrl.abort(), 180000);
+  const timer = setTimeout(()=>ctrl.abort(), 300000);
   let r;
   try {
     r = await fetch("http://127.0.0.1:11434/api/chat", {
@@ -391,7 +391,7 @@ ${JSON.stringify(draft)}
 Uprav návrh do profesionálnej redakčnej slovenčiny. Nemeň fakty ani čísla.`;
 
   const ctrl = new AbortController();
-  const timer = setTimeout(()=>ctrl.abort(), 180000);
+  const timer = setTimeout(()=>ctrl.abort(), 300000);
   let response;
   try {
     response = await fetch("http://127.0.0.1:11434/api/chat", {
@@ -450,7 +450,7 @@ FINÁLNY ČLÁNOK:
 ${JSON.stringify(article)}`;
 
   const ctrl=new AbortController();
-  const timer=setTimeout(()=>ctrl.abort(),120000);
+  const timer=setTimeout(()=>ctrl.abort(),300000);
   let response;
   try {
     response=await fetch("http://127.0.0.1:11434/api/chat",{
