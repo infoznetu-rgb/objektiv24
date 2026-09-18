@@ -89,7 +89,7 @@ function schemaFor(a){
   const canonical = canonicalFor(a.slug);
   const author = a.author && a.author !== "Objektív24"
     ? {"@type":"Person","name":a.author}
-    : {"@type":"Organization","name":"Objektív24","url":SITE+"/"};
+    : {"@type":"Organization","name":"Objektív24","url":SITE+"/","logo":{"@type":"ImageObject","url":SITE+"/assets/app-icon.svg"}};
   const data = {
     "@context":"https://schema.org",
     "@type":"NewsArticle",
