@@ -1,6 +1,10 @@
 name: Objektiv24 encrypted Supabase backup
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/supabase-backup.yml"
   schedule:
     - cron: "30 2 * * *"
   workflow_dispatch:
