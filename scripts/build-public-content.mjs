@@ -67,8 +67,11 @@ function articleFromStatic(a){
   };
 }
 function articleFromDb(r){
+  const slug=r.slug || cleanSlug(r.title);
+  const rawImage=r.image_url || "";
+  const image=/^data:image\/jpeg;base64,/i.test(rawImage) && slug ? `/assets/legacy/${slug}.jpg` : rawImage;
   return {
-    slug: r.slug || cleanSlug(r.title),
+    slug,
     category: r.category || "Slovensko",
     title: r.title || "Bez názvu",
     summary: r.intro || "",
@@ -78,7 +81,7 @@ function articleFromDb(r){
     contact: "",
     watch: "",
     sources: splitLines(r.sources),
-    image: r.image_url || "",
+    image,
     imageAlt: r.image_alt || r.title || "",
     imageType: r.image_type || "",
     imageCredit: r.image_credit || "",
