@@ -11,6 +11,12 @@ const asDate = v => {
   const d = new Date(v);
   return Number.isNaN(d.getTime()) ? "" : d.toISOString();
 };
+const latestTimestamp=(...values)=>{
+  const valid=values.map(v=>({v,t:Date.parse(v||"")})).filter(x=>Number.isFinite(x.t));
+  if(!valid.length)return"";
+  valid.sort((a,b)=>b.t-a.t);
+  return valid[0].v;
+};
 const dateOnly = v => asDate(v).slice(0,10);
 const splitLines = v => String(v || "").split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
 const splitSteps = v => String(v || "").split(/\n\s*\n|\r?\n/).map(x=>x.trim()).filter(Boolean);
@@ -80,7 +86,7 @@ function articleFromDb(r){
     author: "Objektív24",
     publishedAt: r.published_at || r.updated_at || "",
     verifiedAt: r.verified_at || r.updated_at || "",
-    modifiedAt: r.updated_at || r.published_at || "",
+    modifiedAt: latestTimestamp(r.updated_at,r.verified_at,r.published_at),
     archived: false,
     legacySourceUrl: ""
   };
