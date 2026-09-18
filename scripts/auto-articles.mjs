@@ -1,6 +1,6 @@
 const INGEST_URL = "https://bkyappgttwjxakkwycub.supabase.co/functions/v1/github-article-ingest";
 const OIDC_AUDIENCE = "objektiv24-auto-articles";
-const MODEL = process.env.OLLAMA_MODEL || "qwen2.5:3b";
+const MODEL = process.env.OLLAMA_MODEL || "qwen2.5:1.5b";
 
 const SOURCES = [
   {
@@ -193,7 +193,7 @@ Vytvor JSON presne s kľúčmi:
   "image_alt": "vecný alt text pre neutrálnu ilustračnú grafiku",
   "image_search_query": "4-8 anglických slov opisujúcich neutrálnu ilustráciu"
 }`;
-  const r = await fetch("http://127.0.0.1:11434/api/chat", {
+  const ctrl = new AbortController();\n  const timer = setTimeout(()=>ctrl.abort(), 180000);\n  const r = await fetch("http://127.0.0.1:11434/api/chat", {
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({
@@ -201,10 +201,10 @@ Vytvor JSON presne s kľúčmi:
       stream:false,
       format:"json",
       messages:[{role:"system",content:system},{role:"user",content:prompt}],
-      options:{temperature:0.15,num_ctx:8192}
+      options:{temperature:0.15,num_ctx:6144,num_predict:900}
     })
   });
-  if (!r.ok) throw new Error("Ollama HTTP " + r.status + ": " + await r.text());
+  clearTimeout(timer);\n  if (!r.ok) throw new Error("Ollama HTTP " + r.status + ": " + await r.text());
   const data = await r.json();
   const raw = data?.message?.content || "";
   const obj = JSON.parse(raw);
@@ -254,9 +254,9 @@ console.log("Po filtroch zostalo kandidátov:", candidates.length);
 
 let published = 0;
 let attempts = 0;
-const maxToPublish = Math.min(2, Math.max(0, 8 - (status.published_last_24h || 0)));
+const maxToPublish = Math.min(1, Math.max(0, 8 - (status.published_last_24h || 0)));
 for (const c of candidates) {
-  if (published >= maxToPublish || attempts >= 6) break;
+  if (published >= maxToPublish || attempts >= 4) break;
   attempts++;
   try {
     const page = await fetchText(c.link);
