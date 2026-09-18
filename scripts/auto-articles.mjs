@@ -373,19 +373,27 @@ async function reviewArticleLanguage(candidate, sourceBody, article) {
   const schema = {
     type:"object",
     additionalProperties:false,
-    required:["ok","issues"],
+    required:["ok","title_ok","intro_ok","what_happened_ok","what_it_means_ok","next_step_ok","issues"],
     properties:{
       ok:{type:"boolean"},
-      issues:{type:"array",items:{type:"string"},maxItems:8}
+      title_ok:{type:"boolean"},
+      intro_ok:{type:"boolean"},
+      what_happened_ok:{type:"boolean"},
+      what_it_means_ok:{type:"boolean"},
+      next_step_ok:{type:"boolean"},
+      issues:{type:"array",items:{type:"string"},maxItems:10}
     }
   };
   const system = [
     "Si prísny finálny jazykový editor slovenského spravodajského webu Objektív24.",
     "Nič neprepisuj. Iba rozhodni, či je text bezpečné publikovať.",
-    "Zamietni text pri gramatickej chybe, nespisovnom alebo useknutom slove, nedokončenej vete, neprirodzenej formulácii, tautológii alebo zbytočnom opakovaní.",
+    "Skontroluj osobitne titulok, intro, what_happened, what_it_means a next_step.",
+    "Každé pole označ true iba vtedy, ak je celé napísané prirodzenou, spisovnou a gramaticky správnou slovenčinou.",
+    "Zamietni text pri nesprávnom páde, rode, čísle alebo zhode podmetu s prísudkom, pri nespisovnom či vymyslenom slove, useknutom slove, nedokončenej vete, neprirodzenej formulácii, tautológii alebo opakovaní.",
     "Zamietni text aj vtedy, ak jazyková korektúra zmenila vecný význam, číslo, dátum, podmienku alebo pridala tvrdenie, ktoré nie je v oficiálnom zdroji.",
     "Zamietni marketingový alebo PR jazyk. Titulok musí byť prirodzený, úplný a bez opakovania rovnakého slovného koreňa.",
-    "Ak nájdeš čo i len jednu vážnu chybu, nastav ok=false a stručne ju pomenuj v issues.",
+    "Celkové ok smie byť true iba vtedy, keď sú title_ok, intro_ok, what_happened_ok, what_it_means_ok aj next_step_ok všetky true a issues je prázdne.",
+    "Ak nájdeš chybu, cituj v issues krátky chybný úsek alebo presne pomenuj problém.",
     "Vráť iba JSON podľa schémy."
   ].join(" ");
   const prompt = `OFICIÁLNY ZDROJ
@@ -641,7 +649,17 @@ for (const c of candidates) {
       continue;
     }
     const finalReview = await reviewArticleLanguage(c, body, article);
-    if (!finalReview?.ok) {
+    const finalReviewOk = Boolean(
+      finalReview?.ok &&
+      finalReview?.title_ok &&
+      finalReview?.intro_ok &&
+      finalReview?.what_happened_ok &&
+      finalReview?.what_it_means_ok &&
+      finalReview?.next_step_ok &&
+      Array.isArray(finalReview?.issues) &&
+      finalReview.issues.length===0
+    );
+    if (!finalReviewOk) {
       console.log("Finálna jazyková QA odmietla:", c.title, (finalReview?.issues||[]).join(" | "));
       continue;
     }
