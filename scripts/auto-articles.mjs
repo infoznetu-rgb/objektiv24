@@ -242,6 +242,20 @@ async function recordRejected(candidate, reason) {
     console.warn("Nepodarilo sa zapísať QA odmietnutie:", candidate.title, e.message || e);
   }
 }
+function parseModelJson(raw, label="model") {
+  const text=String(raw||"").trim();
+  try {
+    return JSON.parse(text);
+  } catch (firstError) {
+    const first=text.indexOf("{");
+    const last=text.lastIndexOf("}");
+    if(first>=0 && last>first) {
+      try { return JSON.parse(text.slice(first,last+1)); } catch {}
+    }
+    throw new Error(label+" returned invalid or truncated JSON: "+(firstError?.message||firstError));
+  }
+}
+
 async function generate(candidate, sourceBody) {
   const system = [
     "Si redaktor slovenského praktického spravodajského webu Objektív24.",
@@ -318,7 +332,7 @@ Spotrebiteľ a bezpečnosť
         stream:false,
         format:schema,
         messages:[{role:"system",content:system},{role:"user",content:prompt}],
-        options:{temperature:0.05,num_ctx:4096,num_predict:700}
+        options:{temperature:0.05,num_ctx:4096,num_predict:1200}
       })
     });
   } finally {
@@ -327,17 +341,7 @@ Spotrebiteľ a bezpečnosť
   if (!r.ok) throw new Error("Ollama HTTP " + r.status + ": " + await r.text());
 
   const data = await r.json();
-  const raw = String(data?.message?.content || "").trim();
-  let obj;
-  try {
-    obj = JSON.parse(raw);
-  } catch (e) {
-    const first = raw.indexOf("{");
-    const last = raw.lastIndexOf("}");
-    if (first >= 0 && last > first) obj = JSON.parse(raw.slice(first,last+1));
-    else throw e;
-  }
-  return obj;
+  return parseModelJson(data?.message?.content, "generation");
 }
 async function polishArticle(candidate, sourceBody, draft) {
   const schema = {
@@ -403,7 +407,7 @@ Uprav návrh do profesionálnej redakčnej slovenčiny. Nemeň fakty ani čísla
         stream:false,
         format:schema,
         messages:[{role:"system",content:system},{role:"user",content:prompt}],
-        options:{temperature:0.03,num_ctx:4096,num_predict:720}
+        options:{temperature:0.03,num_ctx:4096,num_predict:1200}
       })
     });
   } finally {
@@ -411,7 +415,7 @@ Uprav návrh do profesionálnej redakčnej slovenčiny. Nemeň fakty ani čísla
   }
   if(!response.ok) throw new Error("Jazyková korektúra Ollama HTTP "+response.status+": "+await response.text());
   const data=await response.json();
-  return JSON.parse(String(data?.message?.content||"").trim());
+  return parseModelJson(data?.message?.content, "language polish");
 }
 async function reviewArticleLanguage(candidate, sourceBody, article) {
   const schema = {
@@ -462,7 +466,7 @@ ${JSON.stringify(article)}`;
         stream:false,
         format:schema,
         messages:[{role:"system",content:system},{role:"user",content:prompt}],
-        options:{temperature:0,num_ctx:4096,num_predict:220}
+        options:{temperature:0,num_ctx:4096,num_predict:400}
       })
     });
   } finally {
@@ -470,7 +474,7 @@ ${JSON.stringify(article)}`;
   }
   if(!response.ok) throw new Error("Finálna jazyková QA Ollama HTTP "+response.status+": "+await response.text());
   const data=await response.json();
-  return JSON.parse(String(data?.message?.content||"").trim());
+  return parseModelJson(data?.message?.content, "final language review");
 }
 
 function fieldWords(v="") {
