@@ -57,7 +57,8 @@
       "variabilný symbol",
       "špecifický symbol",
       "sociálna poisťovňa"
-    ]
+    ],
+    "image": "/assets/fallback/money.svg"
   },
   {
     "slug": "szco-povinne-socialne-poistenie-2026",
@@ -117,7 +118,8 @@
       "1. júl",
       "1. október",
       "daňové priznanie"
-    ]
+    ],
+    "image": "/assets/fallback/services.svg"
   },
   {
     "slug": "danove-priznanie-po-odklade-kontrolny-zoznam",
@@ -181,7 +183,8 @@
       "30. september",
       "daň",
       "opravné priznanie"
-    ]
+    ],
+    "image": "/assets/fallback/money.svg"
   },
   {
     "slug": "podvodna-sms-od-uradu-ako-ju-rozoznat",
@@ -238,6 +241,7 @@
       "banka",
       "citlivé údaje",
       "podvod"
-    ]
+    ],
+    "image": "/assets/fallback/consumer.svg"
   }
 ]
