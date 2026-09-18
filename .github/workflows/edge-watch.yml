@@ -1,6 +1,10 @@
 name: Objektív24 Edge Function watchdog
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/edge-watch.yml"
   schedule:
     - cron: "17 * * * *"
   workflow_dispatch:
@@ -81,6 +85,7 @@ jobs:
           probe "heygen-status" "POST" "heygen-status" "401|403" "{}"
           probe "editor-health" "POST" "editor-health" "401|403" "{}"
           probe "editor-analytics" "POST" "editor-analytics" "401|403" "{}"
+          probe "editorial-qa" "POST" "editorial-qa" "401|403" "{}"
 
           TITLE="🚨 Objektív24: Edge Function watchdog zlyhal"
 
