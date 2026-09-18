@@ -615,7 +615,8 @@ for (const c of candidates) {
       console.log("Finálna jazyková QA odmietla:", c.title, (finalReview?.issues||[]).join(" | "));
       continue;
     }
-    const result = await ingest(token, {
+    const publishToken = await oidcToken();
+    const result = await ingest(publishToken, {
       action:"publish",
       article:{
         ...article,
