@@ -37,7 +37,14 @@
     document.body.appendChild(button);
   }
 
-  function addBackToTop(){if(document.querySelector('#back-to-top'))return;const button=document.createElement('button');button.type='button';button.id='back-to-top';button.className='back-to-top';button.setAttribute('aria-label','Vrátiť obsah na začiatok');button.innerHTML='<span class="back-to-top-arrow" aria-hidden="true">↑</span><span>Na začiatok</span>';const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;const update=()=>button.classList.toggle('is-visible',window.scrollY>600);button.addEventListener('click',()=>window.scrollTo({top:0,left:0,behavior:reduceMotion?'auto':'smooth'}));window.addEventListener('scroll',update,{passive:true});document.body.appendChild(button);update()}
+  function addBackToTop(){
+    if(document.querySelector('[data-back-to-top],#back-to-top'))return;
+    if(document.querySelector('script[src*="back-to-top.js"]'))return;
+    const s=document.createElement('script');
+    s.src='/back-to-top.js?v=2';
+    s.defer=true;
+    document.head.appendChild(s);
+  }
   function addEditorLink(){document.querySelectorAll('.nav-inner').forEach(nav=>{if(nav.querySelector('.editor-link'))return;const a=document.createElement('a');a.href='redakcia.html';a.className='editor-link';a.textContent='Redakcia';const motto=nav.querySelector('.nav-motto');motto?nav.insertBefore(a,motto):nav.appendChild(a)})}
   function addMenuLink(){document.querySelectorAll('.nav-inner').forEach(nav=>{if(nav.querySelector('.pwa-install-link'))return;const a=document.createElement('a');a.href='#';a.className='pwa-install-link';a.textContent=standalone?'Objektív24 '+(isMobile?'v mobile':'v počítači')+' ✓':'Objektív24 '+(isMobile?'v mobile':'v počítači');a.addEventListener('click',e=>{e.preventDefault();openCard(true)});const motto=nav.querySelector('.nav-motto');motto?nav.insertBefore(a,motto):nav.appendChild(a)})}
   function card(){let el=document.querySelector('#pwa-install-card');if(el)return el;el=document.createElement('aside');el.id='pwa-install-card';el.className='pwa-card';el.hidden=true;document.body.appendChild(el);return el}
