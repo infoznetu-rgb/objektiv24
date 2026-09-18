@@ -39,6 +39,10 @@ jobs:
             echo "::error::Missing GitHub Actions secret BACKUP_PASSPHRASE"
             exit 1
           fi
+          if [[ "$SUPABASE_DB_URL" == *"[YOUR-PASSWORD]"* || "$SUPABASE_DB_URL" == *"%5BYOUR-PASSWORD%5D"* ]]; then
+            echo "::error::SUPABASE_DB_URL still contains the [YOUR-PASSWORD] placeholder. Replace it with the actual database password."
+            exit 1
+          fi
 
       - name: Set backup timestamp
         id: meta
