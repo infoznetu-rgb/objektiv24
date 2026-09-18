@@ -32,6 +32,7 @@
         area.remove();
       }
       announce("Odkaz bol skopírovaný.");
+      window.objektiv24Track?.("copy_link");
       if(copyButton){
         const old=copyButton.textContent;
         copyButton.textContent="✓ Skopírované";
@@ -48,6 +49,7 @@
     if(navigator.share){
       try{
         await navigator.share({title:title(),text:description(),url:canonical()});
+        window.objektiv24Track?.("share_click");
         announce("Zdieľanie otvorené.");
       }catch(error){
         if(error?.name!=="AbortError")await copyUrl();
