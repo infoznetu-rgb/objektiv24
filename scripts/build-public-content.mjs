@@ -415,7 +415,7 @@ function homepageCard(a){
   const url=homepageArticleUrl(a);
   return `<article class="article-card"><a class="article-image-wrap" href="${url}" aria-label="${esc(a.title)}">${image}</a><div class="article-body"><span class="eyebrow">${esc(a.category)}</span><h3>${esc(a.title)}</h3><p>${esc(a.summary)}</p><div class="article-meta"><span>${date?`Overené ${esc(date)}`:"Objektív24"}</span><a href="${url}">Čítať ďalej →</a></div></div></article>`;
 }
-async function renderHomepage(articles){
+async function renderHomepage(articles,strategy){
   const active=articles.filter(a=>!a.archived&&a.slug);
   if(!active.length)return;
   const latest=active[0];
@@ -432,9 +432,61 @@ async function renderHomepage(articles){
   home=replaceBuildBlock(home,"BREAKING",breaking);
   home=replaceBuildBlock(home,"HERO",heroBlock);
   home=replaceBuildBlock(home,"GRID",cards.map(homepageCard).join(""));
+  home=replaceBuildBlock(home,"DEADLINES",homepageDeadlinesHtml(strategy,articles));
   home=home.replace(/<strong id="issued-count">[^<]*<\/strong>/,`<strong id="issued-count">${articles.length}</strong>`);
   home=home.replace(/<small id="active-count">[^<]*<\/small>/,`<small id="active-count">Aktuálne: ${active.length}</small>`);
   await write("index.html",home);
+}
+
+
+function strategyDeadlines(strategy,articles){
+  const bySlug=new Map(articles.map(a=>[a.slug,a]));
+  const now=new Date();
+  const today=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate());
+  const max=today+120*864e5;
+  return (Array.isArray(strategy?.upcoming)?strategy.upcoming:[])
+    .map(x=>{
+      const t=Date.parse(String(x.date||"")+"T12:00:00Z");
+      return {...x,t,article:bySlug.get(x.slug)||null};
+    })
+    .filter(x=>Number.isFinite(x.t)&&x.t>=today&&x.t<=max)
+    .sort((a,b)=>a.t-b.t||String(a.label).localeCompare(String(b.label),"sk"));
+}
+function skDeadlineDate(iso){
+  const d=new Date(String(iso)+"T12:00:00Z");
+  return Number.isNaN(d.getTime())?String(iso):new Intl.DateTimeFormat("sk-SK",{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}).format(d);
+}
+function daysUntil(iso){
+  const d=Date.parse(String(iso)+"T00:00:00Z");
+  const now=new Date(),today=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate());
+  return Number.isFinite(d)?Math.round((d-today)/864e5):null;
+}
+function deadlineStatus(item){
+  const n=daysUntil(item.date);
+  if(n===0)return"Dnes";
+  if(n===1)return"Zajtra";
+  if(n!=null&&n>1&&n<=7)return"O "+n+" dní";
+  return skDeadlineDate(item.date);
+}
+function deadlineCard(item){
+  const url=item.article?canonicalFor(item.article.slug):(item.slug?canonicalFor(item.slug):"/terminy/");
+  return `<article class="article-card"><div class="article-body"><span class="eyebrow">${esc(deadlineStatus(item))}</span><h3>${esc(item.label||item.article?.title||"Dôležitý termín")}</h3><p>${esc(item.article?.summary||"Skontrolujte podmienky, dátum overenia a pôvodný zdroj pred tým, než budete konať.")}</p><div class="article-meta"><span>${esc(skDeadlineDate(item.date))}</span><a href="${esc(url)}">Čo treba vedieť →</a></div></div></article>`;
+}
+function deadlinesPageHtml(strategy,articles){
+  const items=strategyDeadlines(strategy,articles);
+  const canonical=SITE+"/terminy/";
+  const cards=items.map(deadlineCard).join("");
+  const itemList=items.map((x,i)=>({"@type":"ListItem","position":i+1,"name":x.label,"url":x.article?canonicalFor(x.article.slug):canonical}));
+  const schema={"@context":"https://schema.org","@graph":[
+    {"@type":"CollectionPage","@id":canonical+"#page","name":"Dôležité termíny | Objektív24","description":"Blížiace sa praktické termíny z článkov Objektív24 na jednom mieste.","url":canonical,"isPartOf":{"@id":SITE+"/#website"}},
+    {"@type":"ItemList","itemListElement":itemList}
+  ]};
+  return `<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dôležité termíny: čo treba stihnúť a dokedy</title><meta name="description" content="Blížiace sa termíny z praktických správ Objektív24: dane, dávky, úrady, doprava a ďalšie povinnosti s odkazom na overené podrobnosti."><meta name="robots" content="index,follow,max-image-preview:large"><link rel="canonical" href="${canonical}"><link rel="icon" href="/assets/app-icon.svg?v=20260918-2" type="image/svg+xml"><script type="application/ld+json">${JSON.stringify(schema).replace(/</g,"\\u003c")}</script><link rel="stylesheet" href="/styles.css?v=20260918-seo1"><script src="/analytics.js?v=4" defer></script><script src="/pwa.js?v=20" defer></script><script src="/back-to-top.js?v=2" defer></script></head><body><header class="site-header"><div class="topbar container"><a class="brand" href="/"><span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span><small>FAKTY · KONTEXT · ĽUDIA</small></a></div></header><main class="discover container" style="padding-top:56px"><div class="section-row big"><div><span class="section-kicker">PRAKTICKÝ KALENDÁR</span><h1 style="font-size:clamp(2.4rem,4vw,4.3rem);letter-spacing:-.055em">Dôležité termíny</h1><p style="max-width:820px;color:var(--muted);font-size:1.05rem;line-height:1.7">Na jednom mieste sú termíny, ktoré sa objavili v overených článkoch Objektív24. Pred podaním, platbou alebo návštevou úradu si otvorte príslušný článok a skontrolujte dátum overenia a pôvodný zdroj.</p></div><a href="/temy/">Témy →</a></div><section style="margin:28px 0 34px;padding:22px 24px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.025)"><strong>Čo tu patrí:</strong><p style="margin:8px 0 0;color:var(--muted);line-height:1.65">Lehoty na podanie a platbu, začiatok účinnosti praktickej zmeny, koniec časovo obmedzenej služby a ďalšie dátumy, pri ktorých môže zmeškanie ovplyvniť peniaze, vybavenie alebo cestovanie.</p></section><div class="articles-grid">${cards||'<p>Momentálne neevidujeme žiadny blížiaci sa termín.</p>'}</div></main><footer class="site-footer"><div class="container footer-grid"><div><a class="brand" href="/"><span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span></a><p>Fakty. Kontext. Ľudia.</p></div><div class="footer-links"><a href="/clanky/">Všetky články</a><a href="/temy/">Témy</a><a href="/ako-pracujeme.html">Ako pracujeme</a></div><p class="copyright">© 2026 Objektív24.</p></div></footer></body></html>`;
+}
+function homepageDeadlinesHtml(strategy,articles){
+  const items=strategyDeadlines(strategy,articles).slice(0,4);
+  if(!items.length)return"";
+  return `<section class="discover container reveal" aria-labelledby="deadlines-heading" style="padding-top:34px;padding-bottom:14px"><div class="section-row big"><div><span class="section-kicker">TERMÍNY, KTORÉ SA BLÍŽIA</span><h2 id="deadlines-heading">Čo si postrážiť</h2></div><a href="/terminy/">Všetky termíny →</a></div><div class="articles-grid" style="margin-top:22px">${items.map(deadlineCard).join("")}</div></section>`;
 }
 
 function archiveHtml(articles){
@@ -480,6 +532,7 @@ async function fetchDbArticles(){
 }
 
 const staticRaw=JSON.parse(await fs.readFile(path.join(ROOT,"data/articles.json"),"utf8"));
+const strategy=JSON.parse(await fs.readFile(path.join(ROOT,"data/editorial-strategy.json"),"utf8"));
 const staticArticles=staticRaw.map(articleFromStatic);
 const dbArticles=await fetchDbArticles();
 const archivedStaticByTitle=new Map(
@@ -498,7 +551,7 @@ for(const a of dbArticles){
 for(const a of staticArticles) if(a.slug&&!bySlug.has(a.slug)) bySlug.set(a.slug,a);
 const articles=[...bySlug.values()].sort((a,b)=>Date.parse(b.publishedAt||b.verifiedAt||0)-Date.parse(a.publishedAt||a.verifiedAt||0));
 
-await renderHomepage(articles);
+await renderHomepage(articles,strategy);
 
 for(const a of articles){
   const related=relatedFor(a,articles);
@@ -510,6 +563,7 @@ for(const hub of TOPIC_HUBS){
   const items=hubItems(hub,articles);
   if(items.length) await write(path.join("temy",hub.slug,"index.html"),topicHubHtml(hub,items));
 }
+await write(path.join("terminy","index.html"),deadlinesPageHtml(strategy,articles));
 
 for(const r of duplicateRedirects){
   await write(path.join("clanky",r.from,"index.html"),redirectHtml(canonicalFor(r.to)));
@@ -536,6 +590,7 @@ const sitemapUrls=[
   {loc:SITE+"/",lastmod:contentLastmod},
   {loc:SITE+"/clanky/",lastmod:contentLastmod},
   {loc:SITE+"/temy/",lastmod:contentLastmod},
+  {loc:SITE+"/terminy/",lastmod:strategy.updated?asDate(strategy.updated+"T00:00:00Z"):contentLastmod},
   ...topicSitemapUrls,
   {loc:SITE+"/ako-pracujeme.html"},
   {loc:SITE+"/kontakt.html"},
