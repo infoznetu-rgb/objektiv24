@@ -46,6 +46,13 @@ const SOURCES = [
     url: "https://feeds.feedburner.com/soisk?format=xml",
     accept: (u) => /soi\.sk\/novinky\/[^/?#]+/i.test(u),
   },
+  {
+    name: "Slovenská obchodná inšpekcia",
+    type: "direct",
+    url: "https://www.soi.sk/novinky/upozornenie-pre-spotrebitelov-na-predaj-zajazdov-na-webovej-stranke-www-novatours-sk",
+    title: "Upozornenie pre spotrebiteľov na predaj zájazdov na webovej stránke www.novatours.sk",
+    pubDate: "2026-09-18",
+  },
 ];
 
 const PRACTICAL = [
@@ -631,8 +638,19 @@ const knownTitles = new Set(recentTitles.map(norm));
 let candidates = [];
 for (const source of SOURCES) {
   try {
-    const { text } = await fetchText(source.url);
-    const found = source.type === "rss" ? parseRss(text, source) : parseHtmlLinks(text, source);
+    let found;
+    if (source.type === "direct") {
+      found = [{
+        sourceName: source.name,
+        title: source.title,
+        description: "",
+        link: source.url,
+        pubDate: source.pubDate || "",
+      }];
+    } else {
+      const { text } = await fetchText(source.url);
+      found = source.type === "rss" ? parseRss(text, source) : parseHtmlLinks(text, source);
+    }
     console.log(source.name + ": nájdených kandidátov " + found.length);
     candidates.push(...found);
   } catch (e) {
