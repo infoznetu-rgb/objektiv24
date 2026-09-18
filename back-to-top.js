@@ -1,5 +1,5 @@
 (() => {
-  if (document.querySelector('[data-back-to-top]')) return;
+  if (document.querySelector('[data-back-to-top],#back-to-top,.back-to-top')) return;
 
   const style = document.createElement('style');
   style.textContent = `
