@@ -1,0 +1,98 @@
+name: Objektív24 resilience alerts
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/resilience-alerts.yml"
+  workflow_run:
+    workflows:
+      - "Objektiv24 encrypted Supabase backup"
+      - "Automatické články Objektív24"
+    types:
+      - completed
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  resilience-alert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open or resolve resilience incident
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          RUN_NUMBER: ${{ github.event.workflow_run.run_number }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ "$EVENT_NAME" = "push" ]; then
+            gh issue list --repo "$GITHUB_REPOSITORY" --state open --limit 1 >/dev/null
+            echo "Resilience alert workflow self-test OK."
+            exit 0
+          fi
+
+          case "$WORKFLOW_NAME" in
+            "Objektiv24 encrypted Supabase backup")
+              TITLE="🚨 Objektív24: denná záloha zlyhala"
+              LABEL="denná záloha"
+              ;;
+            "Automatické články Objektív24")
+              TITLE="🚨 Objektív24: automatické články zlyhali"
+              LABEL="automatické články"
+              ;;
+            *)
+              echo "Workflow '$WORKFLOW_NAME' sa nemonitoruje."
+              exit 0
+              ;;
+          esac
+
+          issue_number="$(
+            gh issue list               --repo "$GITHUB_REPOSITORY"               --state open               --limit 100               --json number,title               --jq ".[] | select(.title == \"$TITLE\") | .number"               | head -n 1
+          )"
+
+          if [ "$CONCLUSION" != "success" ]; then
+            BODY="$(cat <<EOF
+          Automatický monitoring zachytil problém: **$LABEL**.
+
+          - Výsledok: **$CONCLUSION**
+          - Workflow: **$WORKFLOW_NAME**
+          - Run: **#$RUN_NUMBER**
+          - Commit: `$HEAD_SHA`
+          - Detail: $RUN_URL
+
+          Incident zostane otvorený, kým nasledujúci beh úspešne neprejde.
+          EOF
+          )"
+
+            if [ -n "$issue_number" ]; then
+              gh issue comment "$issue_number" --repo "$GITHUB_REPOSITORY" --body "$BODY"
+            else
+              gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body "$BODY"
+            fi
+            exit 0
+          fi
+
+          if [ -n "$issue_number" ]; then
+            BODY="$(cat <<EOF
+          ✅ **$LABEL** je opäť v poriadku.
+
+          Úspešný workflow run: **#$RUN_NUMBER**
+          Commit: `$HEAD_SHA`
+          Detail: $RUN_URL
+
+          Automatický monitoring incident uzatvára.
+          EOF
+          )"
+            gh issue comment "$issue_number" --repo "$GITHUB_REPOSITORY" --body "$BODY"
+            gh issue close "$issue_number" --repo "$GITHUB_REPOSITORY" --reason completed
+          fi
+
+          echo "Resilience alert processing completed."
