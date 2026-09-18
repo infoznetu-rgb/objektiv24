@@ -266,7 +266,7 @@ function articleHtml(a,related=[],nextArticle=null){
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,viewport-fit=cover">
-  <title>${esc(seoTitle)} | Objektív24</title>
+  <title>${esc(seoTitle)}</title>
   <meta name="description" content="${esc(metaDescription)}">
   <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
   <link rel="canonical" href="${canonical}">
