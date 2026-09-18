@@ -79,3 +79,25 @@ textarea{resize:vertical;line-height:1.5}input[type="file"]{width:100%;border:1p
 }
 .publish-button:hover{filter:brightness(.96)}
 .publish-button:disabled{opacity:.55;cursor:wait}
+
+
+/* System health — editor-only status panel */
+.system-health{margin:0 0 34px;padding:22px;border:1px solid #cfd3d8;border-radius:16px;background:#fff;box-shadow:0 8px 28px rgba(22,27,33,.04)}
+.system-health-head{display:flex;justify-content:space-between;align-items:flex-start;gap:22px}
+.system-health-kicker{margin:0 0 7px;color:#69717b;font-size:.68rem;font-weight:900;letter-spacing:.15em}
+.system-health h2{margin:0;font-size:1.35rem;letter-spacing:-.02em}
+.system-health-head p:last-child{margin:7px 0 0;color:#737984;font-size:.82rem;line-height:1.45}
+.system-health-head button{border:1px solid #c6cad0;background:#f8f8f9;color:#31343a;border-radius:999px;padding:9px 13px;font-weight:750;cursor:pointer;white-space:nowrap}
+.system-health-head button:disabled{opacity:.55;cursor:wait}
+.system-health-dot{color:#9aa0a8}.system-health[data-state="ok"] .system-health-dot{color:#24a35a}.system-health[data-state="warning"] .system-health-dot{color:#d39116}.system-health[data-state="error"] .system-health-dot{color:#d84343}
+.system-health-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:18px}
+.health-card{border:1px solid #e0e2e6;border-radius:12px;padding:14px;background:#fafafb;min-width:0}
+.health-card span{display:block;color:#787e87;font-size:.62rem;font-weight:900;letter-spacing:.09em}
+.health-card strong{display:block;margin:7px 0 5px;font-size:.92rem;color:#33373d}
+.health-card small{display:block;color:#7c828b;font-size:.7rem;line-height:1.4}
+.health-card[data-state="ok"]{border-color:#b9dfc7;background:#f5fbf7}.health-card[data-state="ok"] strong{color:#247746}
+.health-card[data-state="warning"]{border-color:#ecd39d;background:#fffaf0}.health-card[data-state="warning"] strong{color:#936414}
+.health-card[data-state="error"]{border-color:#e8b2b2;background:#fff6f6}.health-card[data-state="error"] strong{color:#a73535}
+.system-health-meta{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;color:#7a8089;font-size:.7rem}
+@media(max-width:1050px){.system-health-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.system-health{padding:17px}.system-health-head{display:block}.system-health-head button{margin-top:14px}.system-health-grid{grid-template-columns:1fr}}
