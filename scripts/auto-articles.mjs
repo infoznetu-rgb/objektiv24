@@ -130,7 +130,7 @@ function articleText(html) {
     .replace(/<form\b[\s\S]*?<\/form>/gi," ")
     .replace(/<(br|p|div|section|article|li|h1|h2|h3)[^>]*>/gi,"\n");
   s = stripTags(s).replace(/\s+/g," ").trim();
-  return s.slice(0, 14000);
+  return s.slice(0, 6500);
 }
 function isFresh(pubDate) {
   if (!pubDate) return true;
@@ -194,7 +194,7 @@ Vytvor JSON presne s kľúčmi:
   "image_search_query": "4-8 anglických slov opisujúcich neutrálnu ilustráciu"
 }`;
   const ctrl = new AbortController();
-  const timer = setTimeout(()=>ctrl.abort(), 180000);
+  const timer = setTimeout(()=>ctrl.abort(), 90000);
   let r;
   try {
     r = await fetch("http://127.0.0.1:11434/api/chat", {
@@ -206,7 +206,7 @@ Vytvor JSON presne s kľúčmi:
         stream:false,
         format:"json",
         messages:[{role:"system",content:system},{role:"user",content:prompt}],
-        options:{temperature:0.15,num_ctx:6144,num_predict:900}
+        options:{temperature:0.12,num_ctx:4096,num_predict:700}
       })
     });
   } finally {
@@ -264,7 +264,7 @@ let published = 0;
 let attempts = 0;
 const maxToPublish = Math.min(1, Math.max(0, 8 - (status.published_last_24h || 0)));
 for (const c of candidates) {
-  if (published >= maxToPublish || attempts >= 4) break;
+  if (published >= maxToPublish || attempts >= 2) break;
   attempts++;
   try {
     const page = await fetchText(c.link);
