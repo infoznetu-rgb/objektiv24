@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,viewport-fit=cover">
   <meta name="description" id="meta-description" content="Objektív24 — správy v súvislostiach.">\n  <meta name="robots" content="noindex,follow">
   <title id="page-title">Článok | Objektív24</title>
+  <script>
+    (()=>{const p=new URLSearchParams(location.search),slug=(p.get("slug")||"").trim();if(!slug||!/^[a-z0-9-]{1,120}$/i.test(slug))return;const target="/clanky/"+encodeURIComponent(slug)+"/",link=document.createElement("link");link.rel="canonical";link.href=new URL(target,location.origin).href;document.head.appendChild(link);location.replace(target)})();
+  </script>
   <meta name="theme-color" content="#03080d">
   <meta property="og:site_name" content="Objektív24">
   <meta property="og:type" content="article">
@@ -48,18 +51,18 @@
 <body>
   <header class="site-header">
     <div class="topbar container">
-      <a class="brand" href="/index.html" aria-label="Objektív24 domov">
+      <a class="brand" href="/" aria-label="Objektív24 domov">
         <span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span>
       </a>
       <span class="brand-tagline">Správy v súvislostiach.</span>
-      <a class="help-link" href="/index.html#pomoc">Nájsť pomoc <span aria-hidden="true">↗</span></a>
+      <a class="help-link" href="/#pomoc">Nájsť pomoc <span aria-hidden="true">↗</span></a>
     </div>
     <nav class="nav-wrap" aria-label="Hlavná navigácia">
       <div class="container nav-inner">
-        <a href="/index.html#clanky">Vydané články</a>
+        <a href="/#clanky">Vydané články</a>
         <a href="kontakt.html">Kontakt</a>
-        <a href="/index.html#suvislosti">Správy v súvislostiach</a>
-        <a href="/index.html#pomoc">Praktické informácie</a>
+        <a href="/#suvislosti">Správy v súvislostiach</a>
+        <a href="/#pomoc">Praktické informácie</a>
         <a href="ako-pracujeme.html">Ako pracujeme</a>
         <span class="nav-motto">Slovensko. Zrozumiteľne.</span>
       </div>
@@ -75,11 +78,11 @@
   <footer class="site-footer">
     <div class="container footer-grid">
       <div>
-        <a class="brand" href="/index.html"><span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span></a>
+        <a class="brand" href="/"><span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span></a>
         <p>Čo sa deje. Čo to znamená pre vás. Čo ďalej.</p>
       </div>
       <div class="footer-links">
-        <a href="/index.html#clanky">Všetky články</a>
+        <a href="/#clanky">Všetky články</a>
         <a href="ako-pracujeme.html">Ako pracujeme</a>
         <a href="kontakt.html">Kontakt</a>
       </div>
