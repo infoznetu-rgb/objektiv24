@@ -28,6 +28,11 @@ const SOURCES = [
     url: "https://ndsas.sk/aktuality",
     accept: (u) => /ndsas\.sk\/aktuality\//i.test(u),
   },
+  {
+    name: "Slovensko.sk",
+    type: "rss",
+    url: "https://www.slovensko.sk/sk/rss/oznamy",
+  },
 ];
 
 const PRACTICAL = [
@@ -582,7 +587,8 @@ function validArticle(a, sourceText="", sourceTitle="") {
 const token = await oidcToken();
 const status = await ingest(token, { action:"status" });
 console.log("Objektív24 status:", JSON.stringify(status));
-if ((status.published_last_24h || 0) >= 12) {
+const dailyCap = Math.max(1, Number(status.daily_cap) || 8);
+if ((status.published_last_24h || 0) >= dailyCap) {
   console.log("Denný limit je naplnený; tento beh nič nevydá.");
   process.exit(0);
 }
@@ -622,7 +628,7 @@ console.log("Po filtroch zostalo kandidátov:", candidates.length);
 
 let published = 0;
 let attempts = 0;
-const maxToPublish = Math.min(3, Math.max(0, 12 - (status.published_last_24h || 0)));
+const maxToPublish = Math.min(3, Math.max(0, dailyCap - (status.published_last_24h || 0)));
 for (const c of candidates) {
   if (published >= maxToPublish || attempts >= 6) break;
   try {
