@@ -85,6 +85,37 @@ function articleFromDb(r){
     legacySourceUrl: ""
   };
 }
+const normalizeText=v=>String(v||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+function topicForArticle(a){
+  const s=normalizeText([a?.category,a?.title,a?.summary].join(" "));
+  if(/sport|basket|hokej|futbal|tenis|lyz|cyklist/.test(s))return"Šport";
+  if(/doprava|tunel|dialnic|cest|uzaver|vlak|autobus|premav|region|kraj|obec|mesto|levo|liptov|zilinsk/.test(s))return"Doprava a regióny";
+  if(/peniaz|praca|zamest|socialn|davk|poist|dan|eur|solidarit|dlznik|vyplat/.test(s))return"Peniaze a práca";
+  if(/rodin|skol|skolk|zdrav|matersk|lekar|vakcin|besnot|diet|pacient/.test(s))return"Rodina a zdravie";
+  if(/urad|posta|slovensko\.sk|sluzb|doklad|pobock|sipo/.test(s))return"Úrady a služby";
+  if(/spotrebit|podvod|sms|internet|bezpec|nakup|reklamac|phishing|cestovn/.test(s))return"Spotrebiteľ a bezpečnosť";
+  return"Slovensko";
+}
+const relatedStop=new Set(["ktory","ktora","ktore","tento","tato","dnes","zajtra","slovensko","objektiv24","uz","sa","si","na","do","od","pri","pre","a","v","vo","z","zo","je","su","o","aj","ako","co"]);
+function relatedTokens(a){
+  return [...new Set(normalizeText([a?.title,a?.category].join(" ")).replace(/[^a-z0-9 ]+/g," ").split(/\s+/).filter(x=>x.length>3&&!relatedStop.has(x)))];
+}
+function relatedFor(a,all){
+  const own=new Set(relatedTokens(a)),group=topicForArticle(a);
+  return all.filter(b=>b.slug!==a.slug&&!b.archived).map(b=>{
+    let score=0;
+    if(topicForArticle(b)===group)score+=6;
+    if(normalizeText(b.category)===normalizeText(a.category))score+=5;
+    for(const t of relatedTokens(b))if(own.has(t))score+=2;
+    const age=Math.abs(Date.parse(a.publishedAt||0)-Date.parse(b.publishedAt||0));
+    if(Number.isFinite(age)&&age<7*864e5)score+=1;
+    return{b,score};
+  }).sort((x,y)=>y.score-x.score||Date.parse(y.b.publishedAt||0)-Date.parse(x.b.publishedAt||0)).slice(0,3).map(x=>x.b);
+}
+function relatedHtml(items){
+  if(!items.length)return"";
+  return `<section class="article-related" aria-labelledby="related-heading"><div class="article-related-head"><span class="section-kicker">POKRAČUJTE V ČÍTANÍ</span><h2 id="related-heading">Súvisiace články</h2></div><div class="article-related-grid">${items.map(b=>`<article class="article-related-card"><a href="/clanky/${encodeURIComponent(b.slug)}/">${b.image?`<img src="${esc(b.image)}" alt="${esc(b.imageAlt||b.title)}" loading="lazy" decoding="async">`:""}<span class="eyebrow">${esc(topicForArticle(b))}</span><h3>${esc(b.title)}</h3><p>${esc(b.summary)}</p><strong>Čítať ďalej →</strong></a></article>`).join("")}</div></section>`;
+}
 function schemaFor(a){
   const canonical = canonicalFor(a.slug);
   const author = a.author && a.author !== "Objektív24"
@@ -113,7 +144,7 @@ function sourcesHtml(sources){
   if (!sources.length) return "";
   return `<section><p class="overline">ZDROJE A PODKLADY</p><ul class="article-sources">${sources.map(u=>`<li><a href="${esc(u)}" rel="noopener noreferrer">${esc(hostLabel(u))} ↗</a></li>`).join("")}</ul></section>`;
 }
-function articleHtml(a){
+function articleHtml(a,related=[]){
   const canonical = canonicalFor(a.slug);
   const published = asDate(a.publishedAt || a.verifiedAt);
   const modified = asDate(a.modifiedAt || a.publishedAt || a.verifiedAt);
@@ -122,6 +153,7 @@ function articleHtml(a){
   const steps = a.steps.length ? `<section><p class="overline">ČO UROBIŤ AKO PRVÉ</p><ol class="article-steps">${a.steps.map(s=>`<li>${esc(s)}</li>`).join("")}</ol></section>` : "";
   const watch = a.watch ? `<section class="watch-section"><p class="overline">NA ČO SI DAŤ POZOR</p><p>${esc(a.watch)}</p></section>` : "";
   const contact = a.contact ? `<section><p class="overline">KAM SA OBRÁTIŤ</p><p>${esc(a.contact)}</p></section>` : "";
+  const relatedBlock = relatedHtml(related);
   const archive = a.archived ? '<div class="article-archive-banner"><strong>Archív:</strong> táto informácia bola viazaná na už uplynutý termín. Pred konaním si overte aktuálny stav.</div>' : "";
   const ogImage = a.image ? `<meta property="og:image" content="${esc(a.image)}"><meta name="twitter:image" content="${esc(a.image)}">` : "";
   return `<!doctype html>
@@ -149,7 +181,7 @@ function articleHtml(a){
   <link rel="alternate" type="application/rss+xml" title="Objektív24 RSS" href="/rss.xml">
   <link rel="icon" href="/assets/app-icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css?v=20260918-seo1">
-  <style>html,body{max-width:100%;overflow-x:hidden}.article-page,.article-detail,.article-detail-header,.article-detail-grid,.article-detail-copy{min-width:0;max-width:100%}.article-detail-header h1{overflow-wrap:break-word}.article-detail-image{max-width:100%;overflow:hidden}.article-detail-image img{display:block;width:100%;height:auto;max-height:680px;aspect-ratio:16/9;object-fit:cover}@media(max-width:800px){.site-header .topbar{width:calc(100% - 32px);min-width:0;gap:12px}.site-header .help-link{display:none}.site-header .nav-wrap{display:none}.article-page{padding-top:28px}.article-detail.container{width:calc(100% - 32px);margin-inline:auto}.article-detail-header h1{font-size:clamp(2.15rem,9.5vw,3.25rem)!important;line-height:1.02!important;letter-spacing:-.045em!important;margin:18px 0 20px!important}.article-detail-grid{grid-template-columns:minmax(0,1fr)!important;gap:22px!important;margin-top:30px!important}.article-detail-image img{max-height:none;aspect-ratio:16/10}}@media(max-width:480px){.site-header .topbar,.article-detail.container{width:calc(100% - 24px)}.article-detail-header h1{font-size:clamp(2rem,10vw,2.7rem)!important;line-height:1.04!important}.article-detail-image img{aspect-ratio:4/3}}</style>
+  <style>html,body{max-width:100%;overflow-x:hidden}.article-page,.article-detail,.article-detail-header,.article-detail-grid,.article-detail-copy{min-width:0;max-width:100%}.article-detail-header h1{overflow-wrap:break-word}.article-detail-image{max-width:100%;overflow:hidden}.article-detail-image img{display:block;width:100%;height:auto;max-height:680px;aspect-ratio:16/9;object-fit:cover}@media(max-width:800px){.site-header .topbar{width:calc(100% - 32px);min-width:0;gap:12px}.site-header .help-link{display:none}.site-header .nav-wrap{display:none}.article-page{padding-top:28px}.article-detail.container{width:calc(100% - 32px);margin-inline:auto}.article-detail-header h1{font-size:clamp(2.15rem,9.5vw,3.25rem)!important;line-height:1.02!important;letter-spacing:-.045em!important;margin:18px 0 20px!important}.article-detail-grid{grid-template-columns:minmax(0,1fr)!important;gap:22px!important;margin-top:30px!important}.article-detail-image img{max-height:none;aspect-ratio:16/10}}@media(max-width:480px){.site-header .topbar,.article-detail.container{width:calc(100% - 24px)}.article-detail-header h1{font-size:clamp(2rem,10vw,2.7rem)!important;line-height:1.04!important}.article-detail-image img{aspect-ratio:4/3}}.article-related{margin:64px 0 18px;padding-top:34px;border-top:1px solid var(--line)}.article-related-head h2{font-size:clamp(2rem,4vw,3.4rem);letter-spacing:-.055em;margin:10px 0 24px}.article-related-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.article-related-card{min-width:0;border:1px solid var(--line);border-radius:20px;overflow:hidden;background:linear-gradient(160deg,rgba(13,29,39,.86),rgba(6,16,23,.86))}.article-related-card>a{display:flex;height:100%;flex-direction:column;text-decoration:none;padding-bottom:18px}.article-related-card img{width:100%;aspect-ratio:16/9;object-fit:cover}.article-related-card .eyebrow{align-self:flex-start;margin:16px 18px 0}.article-related-card h3{font-size:1.1rem;line-height:1.15;margin:13px 18px 8px}.article-related-card p{color:var(--muted);font-size:.84rem;margin:0 18px 14px}.article-related-card strong{color:var(--accent);font-size:.82rem;margin:auto 18px 0}@media(max-width:800px){.article-related-grid{grid-template-columns:1fr}.article-related-card>a{display:grid;grid-template-columns:120px 1fr;grid-template-rows:auto auto 1fr auto;padding:0}.article-related-card img{grid-row:1/5;width:120px;height:100%;aspect-ratio:auto}.article-related-card .eyebrow{margin:14px 14px 0}.article-related-card h3{margin:10px 14px 6px}.article-related-card p{margin:0 14px 8px}.article-related-card strong{margin:0 14px 14px}}</style>
   <script type="application/ld+json">${schemaFor(a)}</script>
   <script src="/analytics.js?v=3" defer></script>
   <script src="/pwa.js?v=4" defer></script>
@@ -189,6 +221,7 @@ function articleHtml(a){
           <div class="article-side-card"><span class="eyebrow">ZDROJE</span><p>Pri praktických a časovo citlivých témach uvádzame použité podklady priamo v článku.</p></div>
         </aside>
       </div>
+      ${relatedBlock}
     </article>
   </main>
   <footer class="site-footer"><div class="container footer-grid"><div><a class="brand" href="/"><span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span></a><p>Čo sa deje. Čo to znamená pre vás. Čo ďalej.</p></div><div class="footer-links"><a href="/clanky/">Všetky články</a><a href="/ako-pracujeme.html">Ako pracujeme</a><a href="/kontakt.html">Kontakt</a></div><p class="copyright">© 2026 Objektív24. Nie sme štátny úrad ani jeho oficiálny partner.</p></div></footer>
@@ -223,7 +256,7 @@ const bySlug=new Map();
 for(const a of [...dbArticles,...staticArticles]) if(a.slug&&!bySlug.has(a.slug)) bySlug.set(a.slug,a);
 const articles=[...bySlug.values()].sort((a,b)=>Date.parse(b.publishedAt||b.verifiedAt||0)-Date.parse(a.publishedAt||a.verifiedAt||0));
 
-for(const a of articles) await write(path.join("clanky",a.slug,"index.html"),articleHtml(a));
+for(const a of articles) await write(path.join("clanky",a.slug,"index.html"),articleHtml(a,relatedFor(a,articles)));
 await write(path.join("clanky","index.html"),archiveHtml(articles));
 
 for(const a of staticArticles){
