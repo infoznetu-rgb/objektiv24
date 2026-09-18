@@ -402,41 +402,48 @@ function numericClaimsSupported(article, sourceText, sourceTitle) {
   const source=norm(sourceText+" "+sourceTitle).replace(/,/g,".");
   return [...new Set(nums)].every(n=>source.includes(n));
 }
-function basicArticleValid(a, sourceText="", sourceTitle="") {
-  if(!a || typeof a!=="object") return false;
+function basicArticleIssues(a, sourceText="", sourceTitle="") {
+  const issues=[];
+  if(!a || typeof a!=="object") return ["not-object"];
   const title=String(a.title||"").trim();
   const intro=String(a.intro||"").trim();
   const happened=String(a.what_happened||"").trim();
   const means=String(a.what_it_means||"").trim();
   const next=String(a.next_step||"").trim();
-  if(!(title.length>=25 && title.length<=105
-    && intro.length>=80 && intro.length<=220
-    && happened.length>=250 && happened.length<=520
-    && means.length>=180 && means.length<=360
-    && next.length>=100 && next.length<=280)) return false;
-  return numericClaimsSupported(a,sourceText,sourceTitle);
+  if(title.length<25||title.length>105) issues.push("title-length:"+title.length);
+  if(intro.length<80||intro.length>220) issues.push("intro-length:"+intro.length);
+  if(happened.length<250||happened.length>520) issues.push("what_happened-length:"+happened.length);
+  if(means.length<180||means.length>360) issues.push("what_it_means-length:"+means.length);
+  if(next.length<100||next.length>280) issues.push("next_step-length:"+next.length);
+  if(!numericClaimsSupported(a,sourceText,sourceTitle)) issues.push("unsupported-number");
+  return issues;
+}
+function basicArticleValid(a, sourceText="", sourceTitle="") {
+  return basicArticleIssues(a,sourceText,sourceTitle).length===0;
 }
 
-function validArticle(a, sourceText="", sourceTitle="") {
-  if(!a || typeof a!=="object") return false;
+function articleIssues(a, sourceText="", sourceTitle="") {
+  const issues=basicArticleIssues(a,sourceText,sourceTitle);
+  if(issues.length) return issues;
   const title=String(a.title||"").trim();
   const intro=String(a.intro||"").trim();
   const happened=String(a.what_happened||"").trim();
   const means=String(a.what_it_means||"").trim();
   const next=String(a.next_step||"").trim();
   const fields=[intro,happened,means,next];
-  if(!(title.length>=25 && title.length<=105
-    && !/\b(a|aj|ale|alebo|do|na|o|od|po|pod|pre|pri|s|so|v|vo|z|za|zo|že)$/i.test(title)
-    && !/zamestnávateľi/i.test(title)
-    && intro.length>=80 && intro.length<=220
-    && happened.length>=250 && happened.length<=520
-    && means.length>=180 && means.length<=360
-    && next.length>=100 && next.length<=280)) return false;
-  if(fields.some(x=>!/[\"”')\]]?[.!?]$/.test(x))) return false;
-  if(fields.some(repeatedSentence)) return false;
-  if(overlapRatio(happened,means)>0.38 || overlapRatio(happened,next)>0.34 || overlapRatio(means,next)>0.42) return false;
-  if(!numericClaimsSupported(a,sourceText,sourceTitle)) return false;
-  return true;
+  if(/\b(a|aj|ale|alebo|do|na|o|od|po|pod|pre|pri|s|so|v|vo|z|za|zo|že)$/i.test(title)) issues.push("title-incomplete");
+  const allText=[title,...fields].join(" ");
+  if(/\b(časťe|vstúpíkom|zamestnávateľi|významné výsledkom|v príprave na novú právnu úpravu vznikla)\b/i.test(allText)) issues.push("known-language-error");
+  if(/\b(pohodlné|revolučné|skvelé)\b/i.test(allText)) issues.push("marketing-language");
+  fields.forEach((x,i)=>{if(!/["”')\]]?[.!?]$/.test(x)) issues.push("unfinished-field-"+i)});
+  fields.forEach((x,i)=>{if(repeatedSentence(x)) issues.push("repeated-sentence-"+i)});
+  if(overlapRatio(happened,means)>0.38) issues.push("overlap-happened-means");
+  if(overlapRatio(happened,next)>0.34) issues.push("overlap-happened-next");
+  if(overlapRatio(means,next)>0.42) issues.push("overlap-means-next");
+  return issues;
+}
+function validArticle(a, sourceText="", sourceTitle="") {
+  return articleIssues(a,sourceText,sourceTitle).length===0;
 }
 
 const token = await oidcToken();
@@ -497,12 +504,12 @@ for (const c of candidates) {
     attempts++;
     const draft = await generate(c, body);
     if (!basicArticleValid(draft, body, c.title)) {
-      console.log("Prvý návrh neprešiel faktickou/štrukturálnou kontrolou:", c.title);
+      console.log("Prvý návrh neprešiel faktickou/štrukturálnou kontrolou:", c.title, basicArticleIssues(draft,body,c.title).join(","));
       continue;
     }
     const article = await polishArticle(c, body, draft);
     if (!validArticle(article, body, c.title)) {
-      console.log("Jazyková korektúra neprešla QA:", c.title);
+      console.log("Jazyková korektúra neprešla QA:", c.title, articleIssues(article,body,c.title).join(","));
       continue;
     }
     const result = await ingest(token, {
