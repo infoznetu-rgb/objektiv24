@@ -284,6 +284,11 @@ async function generate(candidate, sourceBody) {
     "Nepreberaj vety zo zdroja doslovne; preformuluj ich vlastnými slovami.",
     "Nevytváraj politické ani volebné články.",
     "Píš vecne, zrozumiteľne, bez clickbaitu a bez individuálnej právnej, finančnej či zdravotnej rady.",
+    "Každé číslo, dátum, percento, suma, lehota a počet musí byť priamo v zdroji. Zachovaj jeho význam a neprevádzaj slovne uvedený mesiac na číslo ani naopak.",
+    "Nevypočítavaj nové čísla, nesčítavaj, nezaokrúhľuj a nevytváraj odhady.",
+    "Používaj iba bežné spisovné slovenské slová. Ak si pri slove neistý, zvoľ jednoduchšiu formuláciu.",
+    "Žiadna veta nesmie končiť osamotenou jednopísmenovou predložkou alebo spojkou.",
+    "Sekcie sa nesmú opakovať: what_happened opisuje fakt, what_it_means vysvetlí praktický dopad a next_step uvedie konkrétny ďalší krok.",
     "Dodrž presné minimálne a maximálne dĺžky. Nevkladaj žiadne ďalšie kľúče ani komentár."
   ].join(" ");
 
@@ -296,7 +301,10 @@ Popis: ${candidate.description || ""}
 Text stránky:
 ${sourceBody}
 
-Vytvor stručný praktický článok. Dĺžky:
+Vytvor stručný praktický článok.
+Dôležité: čísla a dátumy používaj iba vtedy, keď sú priamo v texte vyššie, a ponechaj ich v prirodzenom tvare zo zdroja. Nevytváraj žiadny nový číselný údaj.
+
+Dĺžky:
 - title 25-105 znakov
 - intro 90-180 znakov
 - what_happened 280-420 znakov
@@ -394,6 +402,9 @@ async function polishArticle(candidate, sourceBody, draft) {
     "Uprav iba dodaný návrh. Nepridávaj žiadny nový fakt, číslo, dátum, podmienku ani tvrdenie.",
     "Zachovaj presný vecný význam zdroja a všetky čísla.",
     "Oprav gramatiku, skloňovanie, slovosled a neprirodzené formulácie.",
+    "Ak návrh obsahuje nezvyčajné alebo neisté slovo, nahraď ho jednoduchým bežným slovenským výrazom bez zmeny faktu.",
+    "Nenechaj vetu skončiť jednopísmenovou predložkou alebo spojkou a nikdy neodovzdaj useknutú vetu.",
+    "Čísla, dátumy, percentá, sumy a lehoty zachovaj iba vtedy, ak sú priamo v oficiálnom podklade; nič neprepočítavaj ani nepreformátuj na nový číselný údaj.",
     "Píš prirodzenou súčasnou slovenčinou, krátko, vecne a bez marketingových alebo PR superlatívov.",
     "Vyhni sa formuláciám ako pohodlné, moderné, významné, revolučné alebo skvelé, ak nejde o nevyhnutný fakt.",
     "Každá sekcia musí mať inú úlohu: what_happened opisuje fakt, what_it_means praktický dopad a next_step konkrétny krok.",
@@ -437,6 +448,88 @@ Uprav návrh do profesionálnej redakčnej slovenčiny. Nemeň fakty ani čísla
   const data=await response.json();
   return parseModelJson(data?.message?.content, "language polish");
 }
+async function repairArticleOnce(candidate, sourceBody, article, issues, stage="QA") {
+  const schema = {
+    type: "object",
+    additionalProperties: false,
+    required: [
+      "title","category","intro","what_happened","what_it_means",
+      "next_step","image_alt","image_search_query"
+    ],
+    properties: {
+      title: { type:"string", minLength:25, maxLength:105 },
+      category: {
+        type:"string",
+        enum:[
+          "Slovensko","Peniaze a práca","Doprava a regióny","Úrady a služby",
+          "Rodina a zdravie","Spotrebiteľ a bezpečnosť","Šport"
+        ]
+      },
+      intro: { type:"string", minLength:80, maxLength:220 },
+      what_happened: { type:"string", minLength:250, maxLength:520 },
+      what_it_means: { type:"string", minLength:180, maxLength:360 },
+      next_step: { type:"string", minLength:100, maxLength:280 },
+      image_alt: { type:"string", minLength:40, maxLength:140 },
+      image_search_query: { type:"string", minLength:12, maxLength:90 }
+    }
+  };
+
+  const sourceNumbers=extractNumericClaims(String(sourceBody)+" "+String(candidate.title||""));
+  const system = [
+    "Si opravný redaktor slovenského spravodajského webu Objektív24.",
+    "Dostaneš článok, oficiálny zdroj a presný zoznam chýb z automatického QA.",
+    "Oprav iba uvedené chyby a neoslabuj faktickú presnosť.",
+    "Nepridávaj nový fakt, číslo, dátum, percento, sumu, lehotu, meno, podmienku ani interpretáciu.",
+    "Ak QA hlási unsupported-number, odstráň nepodložený číselný údaj alebo ho nahraď nečíselnou formuláciou, ktorá nemení význam. Nevymýšľaj náhradné číslo.",
+    "Ak QA hlási spell:, nahraď chybné slovo jednoduchým bežným slovenským výrazom; nevymýšľaj odborný termín.",
+    "Ak QA hlási suspicious-one-letter-ending alebo unfinished-field, prepíš celú poslednú vetu daného poľa do úplnej prirodzenej vety.",
+    "Ak QA hlási repeated alebo overlap, odstráň opakovanie a zachovaj rozdielne úlohy sekcií.",
+    "Čísla a dátumy zo zdroja neprepočítavaj a nepreformátuj spôsobom, ktorý vytvorí nový číselný údaj.",
+    "Výsledok musí zostať prirodzenou, spisovnou slovenčinou a všetky polia musia byť úplné.",
+    "Vráť iba JSON podľa schémy."
+  ].join(" ");
+
+  const prompt = `FÁZA OPRAVY: ${stage}
+QA CHYBY:
+${(issues||[]).map(x=>"- "+x).join("\n")}
+
+ČÍSELNÉ HODNOTY ROZPOZNANÉ V ZDROJI:
+${sourceNumbers.length ? sourceNumbers.join(", ") : "žiadne"}
+
+OFICIÁLNY ZDROJ:
+Inštitúcia: ${candidate.sourceName}
+Titulok zdroja: ${candidate.title}
+URL: ${candidate.link}
+Text:
+${sourceBody.slice(0,3600)}
+
+ČLÁNOK NA OPRAVU:
+${JSON.stringify(article)}
+
+Oprav len chyby uvedené vyššie. Fakty a význam zachovaj.`;
+
+  const ctrl=new AbortController();
+  const timer=setTimeout(()=>ctrl.abort(),300000);
+  let response;
+  try{
+    response=await fetch("http://127.0.0.1:11434/api/chat",{
+      method:"POST",
+      signal:ctrl.signal,
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:MODEL,
+        stream:false,
+        format:schema,
+        messages:[{role:"system",content:system},{role:"user",content:prompt}],
+        options:{temperature:0,num_ctx:4096,num_predict:1200}
+      })
+    });
+  }finally{clearTimeout(timer);}
+  if(!response.ok)throw new Error("QA repair Ollama HTTP "+response.status+": "+await response.text());
+  const data=await response.json();
+  return normalizeFinalArticle(parseModelJson(data?.message?.content,"QA repair"));
+}
+
 async function reviewArticleLanguage(candidate, sourceBody, article) {
   const schema = {
     type:"object",
@@ -765,6 +858,7 @@ console.log("Po filtroch zostalo kandidátov:", candidates.length);
 
 let published = 0;
 let attempts = 0;
+let repairedCandidates = 0;
 const publishedBySource=new Map();
 const maxToPublish = Math.min(5, Math.max(0, dailyCap - (status.published_last_24h || 0)));
 for (const c of candidates) {
@@ -783,26 +877,39 @@ for (const c of candidates) {
       continue;
     }
     attempts++;
-    const draft = await generate(c, body);
-    const draftIssues = basicArticleIssues(draft, body, c.title);
+    let draft = await generate(c, body);
+    let draftIssues = basicArticleIssues(draft, body, c.title);
     if (draftIssues.length) {
-      console.log("Prvý návrh neprešiel faktickou/štrukturálnou kontrolou:", c.title, draftIssues.join(","));
-      await recordRejected(c, "first-stage QA: " + draftIssues.join(","));
-      continue;
+      console.log("Prvý návrh neprešiel faktickou/štrukturálnou kontrolou; skúšam jednu cielenú opravu:", c.title, draftIssues.join(","));
+      repairedCandidates++;
+      draft = await repairArticleOnce(c, body, draft, draftIssues, "first-stage QA");
+      draftIssues = basicArticleIssues(draft, body, c.title);
+      if (draftIssues.length) {
+        console.log("Opravený prvý návrh stále neprešiel:", c.title, draftIssues.join(","));
+        await recordRejected(c, "first-stage QA after repair: " + draftIssues.join(","));
+        continue;
+      }
     }
-    const article = normalizeFinalArticle(await polishArticle(c, body, draft));
-    const polishedIssues = articleIssues(article, body, c.title);
-    if (polishedIssues.length) {
-      console.log("Jazyková korektúra neprešla QA:", c.title, polishedIssues.join(","));
-      await recordRejected(c, "polished QA: " + polishedIssues.join(","));
-      continue;
+
+    let article = normalizeFinalArticle(await polishArticle(c, body, draft));
+    let polishedIssues = articleIssues(article, body, c.title);
+    let spellingIssues = hunspellIssues(article, body, c.title);
+    const repairIssues=[...new Set([...polishedIssues,...spellingIssues])];
+
+    if (repairIssues.length) {
+      console.log("Finálny text má opraviteľné QA chyby; skúšam jednu cielenú opravu:", c.title, repairIssues.join(" | "));
+      repairedCandidates++;
+      article = await repairArticleOnce(c, body, article, repairIssues, "polished/dictionary QA");
+      polishedIssues = articleIssues(article, body, c.title);
+      spellingIssues = hunspellIssues(article, body, c.title);
+      const afterRepair=[...new Set([...polishedIssues,...spellingIssues])];
+      if (afterRepair.length) {
+        console.log("Text po opravnom pokuse stále neprešiel QA:", c.title, afterRepair.join(" | "));
+        await recordRejected(c, "QA after repair: " + afterRepair.join(" | "));
+        continue;
+      }
     }
-    const spellingIssues = hunspellIssues(article, body, c.title);
-    if (spellingIssues.length) {
-      console.log("Slovníková QA odmietla:", c.title, spellingIssues.join(" | "));
-      await recordRejected(c, "dictionary QA: " + spellingIssues.join(" | "));
-      continue;
-    }
+
     const finalReview = await reviewArticleLanguage(c, body, article);
     const finalReviewOk = Boolean(
       finalReview?.ok &&
@@ -851,4 +958,4 @@ for (const c of candidates) {
     console.warn("Kandidát zlyhal:", c.title, e.message || e);
   }
 }
-console.log("Beh dokončený. Publikované:", published, "Pokusy:", attempts);
+console.log("Beh dokončený. Publikované:", published, "Pokusy:", attempts, "Cielené opravy:", repairedCandidates);
