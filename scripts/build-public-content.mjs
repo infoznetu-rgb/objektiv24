@@ -132,15 +132,58 @@ const metaDescriptionFor=a=>{
 };
 
 function topicForArticle(a){
-  const s=normalizeText([a?.category,a?.title,a?.summary].join(" "));
+  const category=normalizeText(a?.category||"");
+  if(/sport/.test(category))return"Šport";
+  if(/doprava|region/.test(category))return"Doprava a regióny";
+  if(/peniaz|praca|davk/.test(category))return"Peniaze a práca";
+  if(/rodin|zdrav/.test(category))return"Rodina a zdravie";
+  if(/urad|sluzb/.test(category))return"Úrady a služby";
+  if(/spotrebit|bezpec|internet/.test(category))return"Spotrebiteľ a bezpečnosť";
+  const s=normalizeText([a?.title,a?.summary].join(" "));
   if(/sport|basket|hokej|futbal|tenis|lyz|cyklist/.test(s))return"Šport";
-  if(/doprava|tunel|dialnic|cest|uzaver|vlak|autobus|premav|region|kraj|obec|mesto|levo|liptov|zilinsk/.test(s))return"Doprava a regióny";
+  if(/urad|posta|slovensko\.sk|sluzb|doklad|pobock|sipo/.test(s))return"Úrady a služby";
   if(/peniaz|praca|zamest|socialn|davk|poist|dan|eur|solidarit|dlznik|vyplat/.test(s))return"Peniaze a práca";
   if(/rodin|skol|skolk|zdrav|matersk|lekar|vakcin|besnot|diet|pacient/.test(s))return"Rodina a zdravie";
-  if(/urad|posta|slovensko\.sk|sluzb|doklad|pobock|sipo/.test(s))return"Úrady a služby";
   if(/spotrebit|podvod|sms|internet|bezpec|nakup|reklamac|phishing|cestovn/.test(s))return"Spotrebiteľ a bezpečnosť";
+  if(/doprava|tunel|dialnic|cest|uzaver|vlak|autobus|premav|region|kraj|obec|levo|liptov|zilinsk/.test(s))return"Doprava a regióny";
   return"Slovensko";
 }
+const TOPIC_HUBS=[
+  {
+    slug:"peniaze-a-davky",topic:"Peniaze a práca",name:"Peniaze a dávky",
+    title:"Peniaze a dávky: dôchodky, dane a termíny",
+    description:"Praktické informácie o dôchodkoch, dávkach, Sociálnej poisťovni, daniach, SZČO a termínoch, ktoré môžu ovplyvniť vaše peniaze."
+  },
+  {
+    slug:"urady-a-sluzby",topic:"Úrady a služby",name:"Úrady a služby",
+    title:"Úrady a služby: čo vybaviť a dokedy",
+    description:"Zmeny na úradoch, poštách a vo verejných službách. Termíny, dostupnosť pobočiek a konkrétne kroky, ktoré si treba skontrolovať."
+  },
+  {
+    slug:"doprava-a-regiony",topic:"Doprava a regióny",name:"Doprava a regióny",
+    title:"Doprava a regióny: uzávery, opravy a zmeny",
+    description:"Uzávery, opravy ciest, tunely, verejná doprava a regionálne zmeny s praktickým dopadom na cestovanie."
+  },
+  {
+    slug:"rodina-a-zdravie",topic:"Rodina a zdravie",name:"Rodina a zdravie",
+    title:"Rodina a zdravie: pravidlá, školy a dávky",
+    description:"Praktické zmeny pre rodičov a rodiny, školské pravidlá, zdravotné upozornenia a informácie, pri ktorých záleží na termíne."
+  },
+  {
+    slug:"spotrebitel-a-bezpecnost",topic:"Spotrebiteľ a bezpečnosť",name:"Spotrebiteľ a bezpečnosť",
+    title:"Spotrebiteľ a bezpečnosť: podvody a vaše práva",
+    description:"Spotrebiteľské upozornenia, podvodné správy, reklamácie, odškodnenia a bezpečnostné informácie s konkrétnym ďalším krokom."
+  },
+  {
+    slug:"sport",topic:"Šport",name:"Šport",
+    title:"Šport: overené správy a súvislosti",
+    description:"Overené športové správy Objektív24 s dôrazom na zdroje, kontext a jasné oddelenie faktov od stanovísk."
+  }
+];
+const HUB_BY_TOPIC=new Map(TOPIC_HUBS.map(h=>[h.topic,h]));
+const hubForArticle=a=>HUB_BY_TOPIC.get(topicForArticle(a))||null;
+const hubUrl=h=>SITE+"/temy/"+encodeURIComponent(h.slug)+"/";
+const hubItems=(h,articles)=>articles.filter(a=>!a.archived&&hubForArticle(a)?.slug===h.slug);
 const relatedStop=new Set(["ktory","ktora","ktore","tento","tato","dnes","zajtra","slovensko","objektiv24","uz","sa","si","na","do","od","pri","pre","a","v","vo","z","zo","je","su","o","aj","ako","co"]);
 function relatedTokens(a){
   return [...new Set(normalizeText([a?.title,a?.category].join(" ")).replace(/[^a-z0-9 ]+/g," ").split(/\s+/).filter(x=>x.length>3&&!relatedStop.has(x)))];
@@ -229,12 +272,13 @@ function schemaFor(a){
     publisher:{"@id":orgId}
   };
   if(a.image) article.image=[absoluteUrl(a.image)];
+  const hub=hubForArticle(a);
   const breadcrumb={
     "@type":"BreadcrumbList",
     "@id":canonical+"#breadcrumb",
     itemListElement:[
       {"@type":"ListItem","position":1,"name":"Objektív24","item":SITE+"/"},
-      {"@type":"ListItem","position":2,"name":"Všetky články","item":SITE+"/clanky/"},
+      {"@type":"ListItem","position":2,"name":hub?hub.name:"Všetky články","item":hub?hubUrl(hub):SITE+"/clanky/"},
       {"@type":"ListItem","position":3,"name":a.title,"item":canonical}
     ]
   };
@@ -312,7 +356,7 @@ function articleHtml(a,related=[],nextArticle=null){
       <a class="article-back" href="/clanky/">← Všetky články</a>
       ${archive}
       <header class="article-detail-header">
-        <span class="eyebrow">${esc(a.category)}</span>
+        ${hubForArticle(a)?`<a class="eyebrow" href="/temy/${encodeURIComponent(hubForArticle(a).slug)}/">${esc(a.category)}</a>`:`<span class="eyebrow">${esc(a.category)}</span>`}
         <h1>${esc(a.title)}</h1>
         <p class="article-lead">${esc(a.summary)}</p>
         <div class="article-detail-meta"><span>${verified ? "Podklady overené "+esc(verified) : "Objektív24"}</span><span>${esc(a.author || "Objektív24")}</span><span>⌛ ${readMins} min čítania</span></div>
@@ -391,6 +435,27 @@ function archiveHtml(articles){
   const cards=articles.filter(a=>!a.archived).map(a=>`<article class="article-card"><a class="article-image-wrap" href="/clanky/${encodeURIComponent(a.slug)}/">${a.image?`<img class="article-visual" src="${esc(a.image)}" alt="${esc(a.imageAlt||a.title)}" loading="lazy">`:'<div class="article-visual article-visual-placeholder"></div>'}</a><div class="article-body"><span class="eyebrow">${esc(a.category)}</span><h3>${esc(a.title)}</h3><p>${esc(a.summary)}</p><div class="article-meta"><span>${dateOnly(a.verifiedAt||a.publishedAt) ? "Overené "+dateOnly(a.verifiedAt||a.publishedAt) : "Objektív24"}</span><a href="/clanky/${encodeURIComponent(a.slug)}/">Čítať ďalej →</a></div></div></article>`).join("");
   return `<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Všetky články a praktické správy | Objektív24</title><meta name="description" content="Prehľad všetkých vydaných článkov Objektív24: praktické správy, termíny, doprava, úrady, peniaze a ďalšie dôležité témy zo Slovenska."><meta name="robots" content="index,follow,max-image-preview:large"><link rel="canonical" href="${SITE}/clanky/"><link rel="icon" href="/assets/app-icon.svg?v=20260918-2" type="image/svg+xml"><script type="application/ld+json">${JSON.stringify({"@context":"https://schema.org","@type":"CollectionPage","name":"Všetky články Objektív24","url":SITE+"/clanky/","isPartOf":{"@type":"WebSite","name":"Objektív24","url":SITE+"/"}})}</script><link rel="stylesheet" href="/styles.css?v=20260918-seo1"><script src="/analytics.js?v=4" defer></script><script src="/pwa.js?v=20" defer></script><script src="/back-to-top.js?v=2" defer></script></head><body><header class="site-header"><div class="topbar container"><a class="brand" href="/"><span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span><small>FAKTY · KONTEXT · ĽUDIA</small></a></div></header><main class="discover container" style="padding-top:56px"><div class="section-row big"><div><span class="section-kicker">ARCHÍV A AKTUÁLNE ČLÁNKY</span><h1 style="font-size:clamp(2.4rem,4vw,4.35rem);letter-spacing:-.06em">Všetky články</h1></div><a href="/">← Domov</a></div><div class="articles-grid" style="margin-top:32px">${cards}</div></main><footer class="site-footer"><div class="container footer-grid"><div><a class="brand" href="/"><span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span></a><p>Fakty. Kontext. Ľudia.</p></div><div class="footer-links"><a href="/kontakt.html">Kontakt</a><a href="/ako-pracujeme.html">Ako pracujeme</a></div><p class="copyright">© 2026 Objektív24.</p></div></footer></body></html>`;
 }
+function collectionCard(a){
+  return `<article class="article-card"><a class="article-image-wrap" href="/clanky/${encodeURIComponent(a.slug)}/">${a.image?`<img class="article-visual" src="${esc(a.image)}" alt="${esc(a.imageAlt||a.title)}" loading="lazy" decoding="async">`:'<div class="article-visual article-visual-placeholder"></div>'}</a><div class="article-body"><span class="eyebrow">${esc(topicForArticle(a))}</span><h3>${esc(a.title)}</h3><p>${esc(a.summary)}</p><div class="article-meta"><span>${dateOnly(a.verifiedAt||a.publishedAt)?"Overené "+dateOnly(a.verifiedAt||a.publishedAt):"Objektív24"}</span><a href="/clanky/${encodeURIComponent(a.slug)}/">Čítať ďalej →</a></div></div></article>`;
+}
+function topicHubHtml(hub,items){
+  const canonical=hubUrl(hub);
+  const cards=items.map(collectionCard).join("");
+  const itemList=items.slice(0,30).map((a,i)=>({"@type":"ListItem","position":i+1,"url":canonicalFor(a.slug),"name":a.title}));
+  const schema={"@context":"https://schema.org","@graph":[
+    {"@type":"CollectionPage","@id":canonical+"#page","name":hub.title,"description":hub.description,"url":canonical,"isPartOf":{"@id":SITE+"/#website"}},
+    {"@type":"ItemList","itemListElement":itemList}
+  ]};
+  return `<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(hub.title)}</title><meta name="description" content="${esc(hub.description)}"><meta name="robots" content="index,follow,max-image-preview:large"><link rel="canonical" href="${canonical}"><link rel="icon" href="/assets/app-icon.svg?v=20260918-2" type="image/svg+xml"><script type="application/ld+json">${JSON.stringify(schema).replace(/</g,"\\u003c")}</script><link rel="stylesheet" href="/styles.css?v=20260918-seo1"><script src="/analytics.js?v=4" defer></script><script src="/pwa.js?v=20" defer></script><script src="/back-to-top.js?v=2" defer></script></head><body><header class="site-header"><div class="topbar container"><a class="brand" href="/"><span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span><small>FAKTY · KONTEXT · ĽUDIA</small></a></div></header><main class="discover container" style="padding-top:56px"><div class="section-row big"><div><span class="section-kicker">TÉMA</span><h1 style="font-size:clamp(2.35rem,4vw,4.2rem);letter-spacing:-.055em">${esc(hub.name)}</h1><p style="max-width:760px;color:var(--muted);font-size:1.05rem;line-height:1.65">${esc(hub.description)}</p></div><a href="/temy/">Všetky témy →</a></div><div class="articles-grid" style="margin-top:32px">${cards}</div></main><footer class="site-footer"><div class="container footer-grid"><div><a class="brand" href="/"><span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span></a><p>Fakty. Kontext. Ľudia.</p></div><div class="footer-links"><a href="/clanky/">Všetky články</a><a href="/ako-pracujeme.html">Ako pracujeme</a><a href="/kontakt.html">Kontakt</a></div><p class="copyright">© 2026 Objektív24.</p></div></footer></body></html>`;
+}
+function topicsIndexHtml(articles){
+  const hubs=TOPIC_HUBS.map(h=>({h,items:hubItems(h,articles)})).filter(x=>x.items.length);
+  const cards=hubs.map(({h,items})=>`<article class="article-card"><div class="article-body"><span class="eyebrow">${items.length} ${items.length===1?"článok":"článkov"}</span><h2 style="margin:10px 0 12px;font-size:1.55rem"><a href="/temy/${encodeURIComponent(h.slug)}/" style="text-decoration:none">${esc(h.name)}</a></h2><p>${esc(h.description)}</p><div class="article-meta"><span>Najnovšie: ${esc(items[0]?.title||"—")}</span><a href="/temy/${encodeURIComponent(h.slug)}/">Otvoriť tému →</a></div></div></article>`).join("");
+  const canonical=SITE+"/temy/";
+  const schema={"@context":"https://schema.org","@type":"CollectionPage","name":"Témy Objektív24","description":"Tematické prehľady praktických správ Objektív24.","url":canonical,"isPartOf":{"@id":SITE+"/#website"}};
+  return `<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Témy: praktické správy podľa oblasti</title><meta name="description" content="Prehľady praktických správ Objektív24 podľa tém: peniaze a dávky, úrady, doprava, rodina, spotrebiteľ a šport."><meta name="robots" content="index,follow,max-image-preview:large"><link rel="canonical" href="${canonical}"><link rel="icon" href="/assets/app-icon.svg?v=20260918-2" type="image/svg+xml"><script type="application/ld+json">${JSON.stringify(schema).replace(/</g,"\\u003c")}</script><link rel="stylesheet" href="/styles.css?v=20260918-seo1"><script src="/analytics.js?v=4" defer></script><script src="/pwa.js?v=20" defer></script><script src="/back-to-top.js?v=2" defer></script></head><body><header class="site-header"><div class="topbar container"><a class="brand" href="/"><span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span><small>FAKTY · KONTEXT · ĽUDIA</small></a></div></header><main class="discover container" style="padding-top:56px"><div class="section-row big"><div><span class="section-kicker">PREHĽADY</span><h1 style="font-size:clamp(2.5rem,4vw,4.4rem);letter-spacing:-.06em">Témy</h1><p style="max-width:760px;color:var(--muted);font-size:1.05rem;line-height:1.65">Namiesto nekonečného feedu si vyberte oblasť, ktorú práve potrebujete riešiť.</p></div><a href="/clanky/">Všetky články →</a></div><div class="articles-grid" style="margin-top:32px">${cards}</div></main><footer class="site-footer"><div class="container footer-grid"><div><a class="brand" href="/"><span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span></a><p>Fakty. Kontext. Ľudia.</p></div><div class="footer-links"><a href="/clanky/">Všetky články</a><a href="/ako-pracujeme.html">Ako pracujeme</a><a href="/kontakt.html">Kontakt</a></div><p class="copyright">© 2026 Objektív24.</p></div></footer></body></html>`;
+}
+
 function redirectHtml(target){
   return `<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="robots" content="noindex,follow"><link rel="canonical" href="${esc(target)}"><meta http-equiv="refresh" content="0;url=${esc(target)}"><title>Presmerovanie | Objektív24</title><script>location.replace(${JSON.stringify(target)})</script></head><body><p>Článok má novú adresu. <a href="${esc(target)}">Pokračovať →</a></p></body></html>`;
 }
@@ -434,6 +499,11 @@ for(const a of articles){
   await write(path.join("clanky",a.slug,"index.html"),articleHtml(a,related,nextFor(a,articles,related)));
 }
 await write(path.join("clanky","index.html"),archiveHtml(articles));
+await write(path.join("temy","index.html"),topicsIndexHtml(articles));
+for(const hub of TOPIC_HUBS){
+  const items=hubItems(hub,articles);
+  if(items.length) await write(path.join("temy",hub.slug,"index.html"),topicHubHtml(hub,items));
+}
 
 for(const r of duplicateRedirects){
   await write(path.join("clanky",r.from,"index.html"),redirectHtml(canonicalFor(r.to)));
@@ -452,9 +522,15 @@ for(const a of staticArticles){
 }
 
 const contentLastmod=asDate(latestTimestamp(...articles.map(a=>a.modifiedAt||a.publishedAt||a.verifiedAt)))||new Date().toISOString();
+const topicSitemapUrls=TOPIC_HUBS.map(h=>({h,items:hubItems(h,articles)})).filter(x=>x.items.length).map(({h,items})=>({
+  loc:hubUrl(h),
+  lastmod:asDate(latestTimestamp(...items.map(a=>a.modifiedAt||a.publishedAt||a.verifiedAt)))
+}));
 const sitemapUrls=[
   {loc:SITE+"/",lastmod:contentLastmod},
   {loc:SITE+"/clanky/",lastmod:contentLastmod},
+  {loc:SITE+"/temy/",lastmod:contentLastmod},
+  ...topicSitemapUrls,
   {loc:SITE+"/ako-pracujeme.html"},
   {loc:SITE+"/kontakt.html"},
   ...articles.map(a=>({loc:canonicalFor(a.slug),lastmod:asDate(a.modifiedAt||a.publishedAt||a.verifiedAt)}))
