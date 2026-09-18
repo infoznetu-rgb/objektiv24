@@ -1,10 +1,6 @@
 name: Objektív24 resilience alerts
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/resilience-alerts.yml"
   workflow_run:
     workflows:
       - "Objektiv24 encrypted Supabase backup"
@@ -32,12 +28,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
-          if [ "$EVENT_NAME" = "push" ]; then
-            gh issue list --repo "$GITHUB_REPOSITORY" --state open --limit 1 >/dev/null
-            echo "Resilience alert workflow self-test OK."
-            exit 0
-          fi
 
           case "$WORKFLOW_NAME" in
             "Objektiv24 encrypted Supabase backup")
