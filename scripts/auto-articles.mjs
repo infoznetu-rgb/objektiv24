@@ -477,6 +477,65 @@ ${JSON.stringify(article)}`;
   return parseModelJson(data?.message?.content, "final language review");
 }
 
+async function generateSeoMetadata(article) {
+  const schema={
+    type:"object",
+    additionalProperties:false,
+    required:["seo_title","meta_description"],
+    properties:{
+      seo_title:{type:"string",minLength:30,maxLength:60},
+      meta_description:{type:"string",minLength:110,maxLength:155}
+    }
+  };
+  const system=[
+    "Si SEO editor slovenského praktického spravodajského webu Objektív24.",
+    "Vytvor SEO title a meta description iba z faktov vo finálnom článku. Nepridávaj nový fakt, číslo, dátum ani podmienku.",
+    "SEO title má byť prirodzený, konkrétny, bez clickbaitu a bez názvu Objektív24; cieľ je 35 až 58 znakov.",
+    "Meta description má stručne vysvetliť praktický význam článku, bez marketingu a bez výzvy typu kliknite.",
+    "Dôležitú inštitúciu, termín alebo predmet témy zachovaj, ak sú pre vyhľadávanie podstatné.",
+    "Vráť iba JSON podľa schémy."
+  ].join(" ");
+  const prompt=`FINÁLNY ČLÁNOK:
+${JSON.stringify({
+    title:article.title,
+    category:article.category,
+    intro:article.intro,
+    what_happened:article.what_happened,
+    what_it_means:article.what_it_means,
+    next_step:article.next_step
+  })}
+
+Vytvor samostatný SEO title a meta description. H1 sa nemení.`;
+  const ctrl=new AbortController();
+  const timer=setTimeout(()=>ctrl.abort(),300000);
+  let response;
+  try{
+    response=await fetch("http://127.0.0.1:11434/api/chat",{
+      method:"POST",signal:ctrl.signal,headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:MODEL,stream:false,format:schema,
+        messages:[{role:"system",content:system},{role:"user",content:prompt}],
+        options:{temperature:0.02,num_ctx:3072,num_predict:300}
+      })
+    });
+  }finally{clearTimeout(timer);}
+  if(!response.ok)throw new Error("SEO metadata Ollama HTTP "+response.status+": "+await response.text());
+  const data=await response.json();
+  return parseModelJson(data?.message?.content,"SEO metadata");
+}
+function seoMetadataIssues(seo,article){
+  const issues=[];
+  const title=String(seo?.seo_title||"").replace(/\s+/g," ").trim().replace(/[.!?]+$/,"");
+  const meta=String(seo?.meta_description||"").replace(/\s+/g," ").trim();
+  if(title.length<25||title.length>65)issues.push("seo-title-length:"+title.length);
+  if(meta.length<100||meta.length>165)issues.push("meta-description-length:"+meta.length);
+  if(/\b(a|aj|ale|alebo|do|na|o|od|po|pod|pre|pri|s|so|v|vo|z|za|zo|že)$/i.test(title))issues.push("seo-title-incomplete");
+  const source=[article.title,article.intro,article.what_happened,article.what_it_means,article.next_step].join(" ");
+  const sourceClaims=new Set(extractNumericClaims(source));
+  for(const n of extractNumericClaims(title+" "+meta))if(!sourceClaims.has(n))issues.push("seo-unsupported-number:"+n);
+  return issues;
+}
+
 function fieldWords(v="") {
   return norm(v).split(" ").filter(w=>w.length>2);
 }
@@ -736,6 +795,16 @@ for (const c of candidates) {
       await recordRejected(c, "final language QA: " + finalIssues);
       continue;
     }
+    const seo = await generateSeoMetadata(article);
+    const seoIssues=seoMetadataIssues(seo,article);
+    if(seoIssues.length){
+      console.log("SEO metadata neprešli QA:",c.title,seoIssues.join(","));
+      await recordRejected(c,"SEO metadata QA: "+seoIssues.join(","));
+      continue;
+    }
+    article.seo_title=String(seo.seo_title||"").replace(/\s+/g," ").trim().replace(/[.!?]+$/,"");
+    article.meta_description=String(seo.meta_description||"").replace(/\s+/g," ").trim();
+
     const publishToken = await oidcToken();
     const result = await ingest(publishToken, {
       action:"publish",
