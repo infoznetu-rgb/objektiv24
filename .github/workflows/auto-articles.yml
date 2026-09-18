@@ -52,6 +52,11 @@ jobs:
       - name: Prepare Slovak editorial model
         run: ollama pull "${OLLAMA_MODEL}"
 
+      - name: Install Slovak spell checker
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y hunspell hunspell-sk
+
       - name: Generate and publish
         run: node scripts/auto-articles.mjs
 
