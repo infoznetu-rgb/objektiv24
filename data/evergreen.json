@@ -1,0 +1,243 @@
+[
+  {
+    "slug": "socialna-poistovna-dlh-ako-overit-a-sparovat-platbu",
+    "topic": "Peniaze a práca",
+    "category": "Sociálna poisťovňa",
+    "title": "Dlh v Sociálnej poisťovni: ako overiť záznam a spárovanie platby",
+    "seoTitle": "Dlh v Sociálnej poisťovni: čo skontrolovať",
+    "metaDescription": "Ste v zozname dlžníkov Sociálnej poisťovne? Overte si registráciu, obdobie, platbu a identifikačné symboly skôr, než sumu zaplatíte znova.",
+    "summary": "Záznam v zozname dlžníkov nemusí znamenať iba nezaplatené poistné. Problém môže súvisieť aj s chýbajúcim výkazom alebo nesprávne priradenou platbou.",
+    "audience": "SZČO, zamestnávatelia a dobrovoľne poistené osoby, ktoré sa našli v zozname dlžníkov alebo majú pochybnosť, či bola platba správne priradená.",
+    "why": "Cieľom nie je zaplatiť tú istú sumu druhýkrát, ale najprv zistiť, z akej registrácie a obdobia záznam vznikol.",
+    "checklist": [
+      "Vyhľadajte sa v zozname dlžníkov a všimnite si, pri akej registrácii a období sa problém zobrazuje.",
+      "Skontrolujte bankový výpis: sumu, dátum úhrady, účet príslušnej pobočky a identifikačné symboly platby.",
+      "Porovnajte variabilný symbol s číslom odvádzateľa a špecifický symbol s obdobím alebo rozhodnutím.",
+      "Ak platba odišla, ale záznam zostáva, kontaktujte príslušnú pobočku a pripravte si doklad o úhrade.",
+      "Ak máte preplatok v jednej registrácii a nedoplatok v inej, opýtajte sa Sociálnej poisťovne na možnosť preúčtovania."
+    ],
+    "sections": [
+      {
+        "heading": "Čo znamená zoznam dlžníkov",
+        "body": "Sociálna poisťovňa zverejňuje v zozname nielen subjekty s evidovanou dlžnou sumou, ale aj niektorých zamestnávateľov alebo zahraničné SZČO s nesplnenou vykazovacou či oznamovacou povinnosťou. Samotný zoznam má informatívny charakter. Preto si pred ďalšou platbou treba overiť dôvod záznamu."
+      },
+      {
+        "heading": "Najčastejší problém: platba odišla, ale nesedí evidencia",
+        "body": "Pri poistnom je dôležité, aby bola platba správne identifikovaná. Sociálna poisťovňa vyžaduje správny variabilný a špecifický symbol. Ak platba nie je správne označená, poisťovňa ju môže zaevidovať inak, než platiteľ očakáva, a následne môže vzniknúť nesúlad v evidencii."
+      },
+      {
+        "heading": "Ako postupovať pri nesúlade",
+        "body": "Pripravte si bankový výpis alebo potvrdenie o platbe a údaje k registrácii, ktorej sa záznam týka. Následne kontaktujte príslušnú pobočku Sociálnej poisťovne. Ak poisťovňa potvrdí, že záznam vznikol pre nespárovanú platbu alebo inú evidenčnú chybu, môže ho po vyriešení odstrániť."
+      },
+      {
+        "heading": "Kedy má zmysel potvrdenie o bezdlžnosti",
+        "body": "Ak ste dlh medzičasom uhradili a potrebujete preukázať aktuálny stav skôr, než sa verejný zoznam znovu aktualizuje, Sociálna poisťovňa uvádza možnosť požiadať pobočku o potvrdenie."
+      }
+    ],
+    "warnings": [
+      "Neplaťte tú istú sumu druhýkrát iba preto, že sa záznam stále zobrazuje; najprv si overte obdobie a spárovanie platby.",
+      "Zoznam dlžníkov nie je náhradou za individuálne potvrdenie Sociálnej poisťovne o stave účtu."
+    ],
+    "sources": [
+      {
+        "title": "Sociálna poisťovňa – Zoznam dlžníkov",
+        "url": "https://www.socpoist.sk/nastroje-sluzby/zoznam-dlznikov"
+      },
+      {
+        "title": "Sociálna poisťovňa – Ako sa nestať dlžníkom",
+        "url": "https://socpoist.sk/en/node/5022"
+      }
+    ],
+    "verified": "2026-09-18",
+    "keywords": [
+      "zoznam dlžníkov",
+      "dlh",
+      "nedoplatok",
+      "platba",
+      "variabilný symbol",
+      "špecifický symbol",
+      "sociálna poisťovňa"
+    ]
+  },
+  {
+    "slug": "szco-povinne-socialne-poistenie-2026",
+    "topic": "Peniaze a práca",
+    "category": "SZČO",
+    "title": "SZČO a povinné sociálne poistenie v roku 2026: čo si overiť",
+    "seoTitle": "SZČO a sociálne poistenie v roku 2026",
+    "metaDescription": "Pravidlá povinného sociálneho poistenia SZČO sa v roku 2026 zmenili. Pozrite si, čo ovplyvňuje vznik poistenia a kedy čakať oznámenie.",
+    "summary": "Od júla 2026 platia nové pravidlá pre povinné sociálne poistenie SZČO. Rozhodovať môže príjem za rok 2025, termín daňového priznania aj to, kedy vzniklo alebo znovu vzniklo oprávnenie podnikať.",
+    "audience": "Živnostníci a iné SZČO, ktorí si potrebujú overiť, či im v roku 2026 vzniká, pokračuje alebo zaniká povinné sociálne poistenie.",
+    "why": "Po zmene pravidiel nestačí automaticky používať postup z minulých rokov. Pri rôznych situáciách môže byť rozhodujúci iný dátum alebo test.",
+    "checklist": [
+      "Zistite, či ste podali daňové priznanie za rok 2025 a aký príjem z podnikania a inej samostatnej zárobkovej činnosti ste v ňom uviedli.",
+      "Skontrolujte, či ste mali riadnu alebo predĺženú lehotu na podanie daňového priznania.",
+      "Ak ste činnosť začali alebo obnovili v roku 2026, overte si aj pravidlá viazané na dátum vzniku alebo obnovenia oprávnenia.",
+      "Počkajte na oznámenie Sociálnej poisťovne o vzniku alebo zániku poistenia, vymeriavacom základe a výške poistného.",
+      "Ak oznámenie nepríde ani po lehote, ktorú uvádza Sociálna poisťovňa, kontaktujte ju a nechajte si stav posúdiť."
+    ],
+    "sections": [
+      {
+        "heading": "Čo sa od júla 2026 zmenilo",
+        "body": "Sociálna poisťovňa uvádza, že od 1. júla 2026 sa zmenili pravidlá posudzovania vzniku a zániku povinného poistenia SZČO aj výpočtu vymeriavacieho základu. Preto treba pri posudzovaní situácie vychádzať z aktuálnych pravidiel pre rok 2026, nie zo starších hraníc."
+      },
+      {
+        "heading": "Príjem za rok 2025 a hranica pre rok 2026",
+        "body": "Pri posudzovaní na základe daňového priznania za rok 2025 Sociálna poisťovňa uvádza hranicu príjmu 2 876,90 eura. Povinné poistenie vzniká pri príjme vyššom ako táto suma, ak sú splnené aj ostatné podmienky konkrétnej situácie. Do príjmu sa pritom berú príjmy z podnikania a inej samostatnej zárobkovej činnosti bez odpočítania výdavkov."
+      },
+      {
+        "heading": "Riadny termín verzus odklad daňového priznania",
+        "body": "Pri posudzovaní podľa daňového priznania Sociálna poisťovňa rozlišuje 1. júl a 1. október, ak mala SZČO predĺženú lehotu na podanie daňového priznania. Pri novom alebo obnovenom oprávnení však môžu platiť ďalšie pravidlá vrátane šesťmesačného mechanizmu, preto sa nedá každý prípad zredukovať iba na jednu hranicu príjmu."
+      },
+      {
+        "heading": "Čo vám má oznámiť Sociálna poisťovňa",
+        "body": "Ak povinné poistenie vznikne alebo zanikne, Sociálna poisťovňa má SZČO oznámiť túto skutočnosť. Pri vzniku poistenia oznamuje aj vymeriavací základ, výšku poistného, splatnosť a údaje potrebné na platbu. Pri nejasnej situácii je bezpečnejšie vychádzať z individuálneho oznámenia alebo si stav overiť priamo v Sociálnej poisťovni."
+      }
+    ],
+    "warnings": [
+      "Neaplikujte hranicu 2 876,90 eura mechanicky na každý prípad SZČO; pri novom alebo obnovenom podnikaní môžu rozhodovať ďalšie pravidlá.",
+      "Výšku poistného neposielajte podľa starého trvalého príkazu bez kontroly aktuálneho oznámenia alebo kalkulačky Sociálnej poisťovne."
+    ],
+    "sources": [
+      {
+        "title": "Sociálna poisťovňa – Odkedy mi vznikne povinnosť platiť poistné",
+        "url": "https://www.socpoist.sk/kto-som/zivnostnik-szco/prihlasit-sa-ako-szco-odkedy-mi-vznikne-povinnost-platit-poistne"
+      },
+      {
+        "title": "Sociálna poisťovňa – Kalkulačka poistného SZČO od 1. 7. 2026",
+        "url": "https://www.socpoist.sk/nastroje-sluzby/kalkulacky/kalkulacky-pre-szco/kalkulacka-na-informativny-vypocet-poistneho-pre-5"
+      }
+    ],
+    "verified": "2026-09-18",
+    "keywords": [
+      "szčo",
+      "živnostník",
+      "sociálne poistenie",
+      "poistné",
+      "1. júl",
+      "1. október",
+      "daňové priznanie"
+    ]
+  },
+  {
+    "slug": "danove-priznanie-po-odklade-kontrolny-zoznam",
+    "topic": "Peniaze a práca",
+    "category": "Dane",
+    "title": "Daňové priznanie po odklade: kontrolný zoznam pred podaním a platbou",
+    "seoTitle": "Daňové priznanie po odklade: kontrolný zoznam",
+    "metaDescription": "Predĺžená lehota je zároveň lehotou na podanie priznania aj zaplatenie dane. Skontrolujte si termín, formulár, úhradu a prípadnú opravu.",
+    "summary": "Ak ste si predĺžili lehotu na daňové priznanie, nová lehota nie je iba termínom na odoslanie formulára. V tej istej lehote je spravidla splatná aj daň.",
+    "audience": "Fyzické osoby a podnikatelia, ktorí si oznámením predĺžili lehotu na podanie daňového priznania a chcú si pred termínom overiť základné kroky.",
+    "why": "Najčastejší praktický problém je sústrediť sa iba na odoslanie priznania a zabudnúť, že predĺžená lehota je zároveň dôležitá pre zaplatenie dane.",
+    "checklist": [
+      "Overte si presný dátum predĺženej lehoty vo svojom oznámení alebo v osobnej internetovej zóne.",
+      "Skontrolujte, že používate správny formulár a zdaňovacie obdobie.",
+      "Pred odoslaním skontrolujte príjmy, uplatnené výdavky, poistné a ďalšie údaje, ktoré ovplyvňujú daň.",
+      "Ak priznanie podávate elektronicky, overte si, že bolo skutočne odoslané a prijaté.",
+      "Vypočítanú daň zaplaťte najneskôr v deň svojej predĺženej lehoty; použite správny účet a identifikáciu platby.",
+      "Ak pred uplynutím lehoty nájdete chybu v už podanom priznaní, overte si, či máte podať opravné priznanie."
+    ],
+    "sections": [
+      {
+        "heading": "Predĺžená lehota je nový rozhodujúci termín",
+        "body": "Finančná správa uvádza, že ak si daňovník platne predĺži lehotu, v tejto novej lehote podáva daňové priznanie a zároveň je v nej splatná daň. Presný termín preto závisí od oznámenia konkrétneho daňovníka."
+      },
+      {
+        "heading": "Kedy môže byť lehota až do 30. septembra",
+        "body": "Oznámenie umožňuje predĺžiť lehotu najviac o tri celé kalendárne mesiace; dlhšie predĺženie je viazané na zákonné podmienky, napríklad zdaniteľné príjmy zo zdrojov v zahraničí. Pri roku 2025 Finančná správa uvádza v daňovom kalendári aj termín 30. septembra 2026 pre daňovníkov, ktorí majú takto predĺženú lehotu."
+      },
+      {
+        "heading": "Opravné alebo dodatočné priznanie",
+        "body": "Ak chybu zistíte ešte pred uplynutím svojej predĺženej lehoty, Finančná správa uvádza možnosť podať opravné daňové priznanie. Po uplynutí lehoty sa už podľa charakteru chyby môže používať dodatočné daňové priznanie."
+      },
+      {
+        "heading": "Po odoslaní si odložte potvrdenia",
+        "body": "Odložte si potvrdenie o elektronickom podaní a doklad o úhrade dane. Ak sa neskôr objaví nesúlad, viete preukázať dátum odoslania aj platby bez toho, aby ste sa spoliehali iba na vlastnú evidenciu."
+      }
+    ],
+    "warnings": [
+      "Termín 30. september neplatí automaticky pre každého, kto si predĺžil lehotu; rozhodujúce je vaše platné oznámenie a zákonné podmienky.",
+      "Ak si nie ste istí, či podať opravné alebo dodatočné priznanie, overte si postup vo Finančnej správe podľa toho, či už vaša lehota uplynula."
+    ],
+    "sources": [
+      {
+        "title": "Finančná správa – Daňový kalendár",
+        "url": "https://www.financnasprava.sk/sk/elektronicke-sluzby/verejne-sluzby/danovy-kalendar"
+      },
+      {
+        "title": "Finančná správa – Opravné daňové priznanie",
+        "url": "https://podpora.financnasprava.sk/493723-Opravn%C3%A9--da%C5%88ov%C3%A9--priznanie"
+      },
+      {
+        "title": "Finančná správa – Oznámenie o predĺžení lehoty",
+        "url": "https://pfseform.financnasprava.sk/Formulare/eFormVzor/DP/form.548.html"
+      }
+    ],
+    "verified": "2026-09-18",
+    "keywords": [
+      "daňové priznanie",
+      "odklad",
+      "predĺžená lehota",
+      "30. september",
+      "daň",
+      "opravné priznanie"
+    ]
+  },
+  {
+    "slug": "podvodna-sms-od-uradu-ako-ju-rozoznat",
+    "topic": "Spotrebiteľ a bezpečnosť",
+    "category": "Bezpečnosť",
+    "title": "Podvodná SMS v mene úradu: ako ju rozoznať a čo urobiť",
+    "seoTitle": "Podvodná SMS v mene úradu: čo urobiť",
+    "metaDescription": "SMS s vratkou alebo výzvou na zadanie bankových údajov môže byť podvod. Neklikajte na odkaz a informáciu si overte cez oficiálny portál.",
+    "summary": "Podvodníci používajú mená dôveryhodných inštitúcií a menia sumy aj odkazy. Bezpečný postup je rovnaký: neotvárať odkaz zo správy a údajný nárok overiť cez oficiálny kanál.",
+    "audience": "Každý, kto dostane SMS alebo správu, ktorá sa tvári ako oznámenie od úradu, banky alebo verejnej inštitúcie a žiada kliknúť na odkaz či zadať citlivé údaje.",
+    "why": "Obsah podvodných kampaní sa mení, ale varovné znaky zostávajú podobné. Preto má zmysel poznať postup, ktorý funguje aj pri ďalšej vlne podvodov.",
+    "checklist": [
+      "Na odkaz v podozrivej SMS neklikajte a na správu nereagujte.",
+      "Nezadávajte prihlasovacie, osobné ani platobné údaje cez stránku otvorenú z takejto správy.",
+      "Údajný preplatok, vratku alebo povinnosť si overte priamym otvorením oficiálneho portálu inštitúcie.",
+      "Skontrolujte doménu stránky; názov inštitúcie v texte SMS nie je dôkaz pravosti.",
+      "Správu označte ako spam alebo podvod a odstráňte ju.",
+      "Ak ste už zadali bankové údaje alebo prihlasovacie údaje, bezodkladne kontaktujte banku a podľa situácie políciu."
+    ],
+    "sections": [
+      {
+        "heading": "Najsilnejší varovný znak: odkaz na získanie peňazí",
+        "body": "Finančná správa v septembri 2026 upozornila na SMS s údajným nárokom na vratku 450 eur. Zároveň zdôraznila, že suma aj použitý odkaz sa môžu meniť. Preto nie je dôležité zapamätať si jednu konkrétnu sumu, ale spôsob útoku."
+      },
+      {
+        "heading": "Ako si informáciu overiť bezpečne",
+        "body": "Namiesto kliknutia na odkaz zo správy otvorte oficiálny portál ručne alebo cez vlastnú záložku. Finančná správa uvádza ako oficiálne kanály svoj portál, osobnú internetovú zónu, eSlužby a Slovensko.sk. Rovnaký princíp platí aj pri iných inštitúciách."
+      },
+      {
+        "heading": "Čo robiť po kliknutí",
+        "body": "Samotné otvorenie odkazu ešte nemusí znamenať finančnú škodu, ale stránku zatvorte a nič na nej nezadávajte. Ak ste už poskytli bankové alebo iné citlivé údaje, Finančná správa odporúča bezodkladne kontaktovať banku a políciu."
+      },
+      {
+        "heading": "Prečo nestačí pozerať iba na číslo odosielateľa",
+        "body": "Podvodná správa môže pôsobiť dôveryhodne textom, názvom odosielateľa alebo naliehavosťou. Rozhodujúce je, kam vás chce správa dostať a aké údaje od vás žiada. Úradný názov v SMS sám osebe nepotvrdzuje pravosť."
+      }
+    ],
+    "warnings": [
+      "Nespoliehajte sa na konkrétnu sumu alebo presné znenie podvodu; útočníci obsah priebežne menia.",
+      "Citlivé údaje nezadávajte na stránke otvorenej z nevyžiadanej SMS ani vtedy, keď stránka vizuálne pripomína oficiálny portál."
+    ],
+    "sources": [
+      {
+        "title": "Finančná správa – Upozornenie na podvodné SMS s prísľubom vrátenia peňazí",
+        "url": "https://www.financnasprava.sk/sk/pre-media/novinky/archiv-noviniek/detail-novinky/_sms-podvod-202609-ts/bc"
+      }
+    ],
+    "verified": "2026-09-18",
+    "keywords": [
+      "podvodná sms",
+      "phishing",
+      "vratka",
+      "finančná správa",
+      "banka",
+      "citlivé údaje",
+      "podvod"
+    ]
+  }
+]

@@ -107,32 +107,42 @@
     {
       "topic": "Peniaze a práca",
       "title": "Sociálna poisťovňa: ako si overiť dlh a priradenie platby",
-      "reason": "opakovaný praktický problém; vhodné na interné prelinkovanie zo zoznamu dlžníkov"
+      "reason": "opakovaný praktický problém; vhodné na interné prelinkovanie zo zoznamu dlžníkov",
+      "status": "published",
+      "url": "/poradna/socialna-poistovna-dlh-ako-overit-a-sparovat-platbu/"
     },
     {
       "topic": "Peniaze a práca",
       "title": "SZČO: kedy vzniká a zaniká povinné sociálne poistenie",
-      "reason": "stabilná vyhľadávacia potreba, ktorú možno aktualizovať pri zmene hraníc"
+      "reason": "stabilná vyhľadávacia potreba, ktorú možno aktualizovať pri zmene hraníc",
+      "status": "published",
+      "url": "/poradna/szco-povinne-socialne-poistenie-2026/"
     },
     {
       "topic": "Peniaze a práca",
       "title": "Daňové priznanie po odklade: kontrolný zoznam pred termínom",
-      "reason": "silná sezónna potreba a prirodzený hub pre termínové správy"
+      "reason": "silná sezónna potreba a prirodzený hub pre termínové správy",
+      "status": "published",
+      "url": "/poradna/danove-priznanie-po-odklade-kontrolny-zoznam/"
     },
     {
       "topic": "Spotrebiteľ a bezpečnosť",
       "title": "Ako rozoznať podvodnú SMS od úradu alebo finančnej inštitúcie",
-      "reason": "evergreen bezpečnostná téma pre budúce podvodné kampane"
+      "reason": "evergreen bezpečnostná téma pre budúce podvodné kampane",
+      "status": "published",
+      "url": "/poradna/podvodna-sms-od-uradu-ako-ju-rozoznat/"
     },
     {
       "topic": "Úrady a služby",
       "title": "Zatvorená pobočka alebo úrad: kde overiť náhradné vybavenie",
-      "reason": "spája pošty, úrady a dočasné zmeny služieb"
+      "reason": "spája pošty, úrady a dočasné zmeny služieb",
+      "status": "planned"
     },
     {
       "topic": "Rodina a zdravie",
       "title": "Ospravedlnenky v škôlke: praktický prehľad pravidiel pre rodiča",
-      "reason": "evergreen vysvetlenie pre budúce zmeny a regionálne rozdiely"
+      "reason": "evergreen vysvetlenie pre budúce zmeny a regionálne rozdiely",
+      "status": "planned"
     }
   ]
 }
