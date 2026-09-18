@@ -40,6 +40,13 @@ const SOURCES = [
     accept: (u) => /posta\.sk\/clanky\/[^/?#]+/i.test(u),
     limit: 12,
   },
+  {
+    name: "Slovenská obchodná inšpekcia",
+    type: "html",
+    url: "https://www.soi.sk/novinky",
+    accept: (u) => /soi\.sk\/novinky\/[^/?#]+/i.test(u),
+    limit: 12,
+  },
 ];
 
 const PRACTICAL = [
