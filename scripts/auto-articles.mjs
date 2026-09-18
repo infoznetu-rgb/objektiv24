@@ -592,6 +592,12 @@ function basicArticleValid(a, sourceText="", sourceTitle="") {
   return basicArticleIssues(a,sourceText,sourceTitle).length===0;
 }
 
+function suspiciousOneLetterEnding(v="") {
+  const text=String(v||"").trim();
+  if(/(?:\bs\.\s*r\.\s*o|\ba\.\s*s|\bn\.\s*o|\bz\.\s*z)\.$/i.test(text)) return false;
+  return /\b[a-záäčďéíĺľňóôŕšťúýž]\.$/i.test(text);
+}
+
 function articleIssues(a, sourceText="", sourceTitle="") {
   const issues=basicArticleIssues(a,sourceText,sourceTitle);
   if(issues.length) return issues;
@@ -602,7 +608,7 @@ function articleIssues(a, sourceText="", sourceTitle="") {
   const next=String(a.next_step||"").trim();
   const fields=[intro,happened,means,next];
   if(/\b(a|aj|ale|alebo|do|na|o|od|po|pod|pre|pri|s|so|v|vo|z|za|zo|že)$/i.test(title)) issues.push("title-incomplete");
-  if(fields.some(x=>/\b[a-záäčďéíĺľňóôŕšťúýž]\.$/i.test(x))) issues.push("suspicious-one-letter-ending");
+  if(fields.some(suspiciousOneLetterEnding)) issues.push("suspicious-one-letter-ending");
   const grammarText=[title,...fields].join(" ");
   if(/\bnie všetky študenti\b/i.test(grammarText)) issues.push("grammar-studenti-vsetky");
   if(/\bštudenti\b[^.!?]{0,100}\bnemusí\b/i.test(grammarText)) issues.push("grammar-plural-singular");
