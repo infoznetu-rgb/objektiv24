@@ -36,14 +36,38 @@ const builtInDrafts=[
 function nowDate(){return new Intl.DateTimeFormat("sk-SK",{day:"2-digit",month:"2-digit",year:"numeric"}).format(new Date())}
 function authMessage(text,type=""){const el=$("#auth-message");el.textContent=text;el.className="auth-message"+(type?" "+type:"")}
 function escapeHtml(value){return String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[ch]))}
+const EDITOR_CATEGORIES=["Slovensko","Peniaze a práca","Doprava a regióny","Úrady a služby","Rodina a zdravie","Spotrebiteľ a bezpečnosť","Šport"];
+function normalizeCategory(value){
+  const raw=String(value||"").trim();
+  if(EDITOR_CATEGORIES.includes(raw))return raw;
+  const s=raw.toLocaleLowerCase("sk").normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  if(/sport|basket|hokej|futbal|tenis|lyz|cyklist/.test(s))return"Šport";
+  if(/doprava|tunel|dialnic|cest|uzaver|vlak|autobus|premav|region/.test(s))return"Doprava a regióny";
+  if(/peniaz|praca|zamest|socialn|davk|poist|dan|eur/.test(s))return"Peniaze a práca";
+  if(/rodin|skol|zdrav|matersk|lekar|vakcin|diet/.test(s))return"Rodina a zdravie";
+  if(/urad|posta|slovensko\.sk|sluzb|doklad|pobock|sipo/.test(s))return"Úrady a služby";
+  if(/spotrebit|podvod|sms|internet|bezpec|nakup|reklamac|phishing/.test(s))return"Spotrebiteľ a bezpečnosť";
+  return"Slovensko";
+}
+function formatVerifiedAt(value){
+  if(!value)return"Zdroje zatiaľ nemajú samostatne zaznamenané overenie.";
+  const d=new Date(value);
+  if(Number.isNaN(d.getTime()))return"Zdroje overené: "+value;
+  return"Zdroje overené "+new Intl.DateTimeFormat("sk-SK",{day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"}).format(d);
+}
+function updateVerificationUI(value){
+  const label=$("#verified-at-label");
+  if(label)label.textContent=formatVerifiedAt(value);
+}
+
 
 async function seedPublishedArticles(){
   try{
     const r=await fetch("data/articles.json",{cache:"no-store"});
     const a=await r.json();
     return a.map(x=>({
-      id:"published-"+x.slug,seed:true,title:x.title,category:x.category,intro:x.summary,
-      state:x.archived?"archived":"published",updated:x.verified,
+      id:"published-"+x.slug,seed:true,title:x.title,category:normalizeCategory(x.category),intro:x.summary,
+      state:x.archived?"archived":"published",updated:x.verified,verifiedAt:x.verified||"",
       whatHappened:x.facts||"",
       whatItMeans:x.meaning||"",
       nextStep:[...(Array.isArray(x.steps)?x.steps:[]),x.contact||""].filter(Boolean).join("\n\n"),
@@ -60,7 +84,8 @@ function dbToDraft(row){
     state:row.state||"draft",
     updated:row.updated_at?new Intl.DateTimeFormat("sk-SK",{day:"2-digit",month:"2-digit",year:"numeric"}).format(new Date(row.updated_at)):"",
     title:row.title||"",
-    category:row.category||"",
+    category:normalizeCategory(row.category),
+    verifiedAt:row.verified_at||"",
     intro:row.intro||"",
     whatHappened:row.what_happened||"",
     whatItMeans:row.what_it_means||"",
@@ -74,7 +99,7 @@ function draftToDb(draft){
   return {
     user_id:currentUser.id,
     title:draft.title||"",
-    category:draft.category||"Slovensko v súvislostiach",
+    category:normalizeCategory(draft.category),
     intro:draft.intro||"",
     what_happened:draft.whatHappened||"",
     what_it_means:draft.whatItMeans||"",
@@ -143,7 +168,8 @@ function renderDraftList(){
 function resetForm(){
   $("#article-form").reset();
   $("#draft-id").value="";
-  $("#category").value="Slovensko v súvislostiach";
+  $("#category").value="Slovensko";
+  updateVerificationUI("");
   $("#draft-status").textContent="Nový návrh";
   currentImageData="";
   hidePreview();
@@ -156,7 +182,8 @@ function selectDraft(id){
   const d=drafts.find(x=>x.id===id);if(!d)return;
   $("#draft-id").value=d.id;
   $("#title").value=d.title||"";
-  $("#category").value=d.category||"";
+  $("#category").value=normalizeCategory(d.category);
+  updateVerificationUI(d.verifiedAt||"");
   $("#intro").value=d.intro||"";
   $("#what-happened").value=d.whatHappened||"";
   $("#what-it-means").value=d.whatItMeans||"";
@@ -177,7 +204,7 @@ function readForm(){
     id:$("#draft-id").value||"",
     seed:false,
     title:$("#title").value.trim(),
-    category:$("#category").value.trim(),
+    category:normalizeCategory($("#category").value),
     intro:$("#intro").value.trim(),
     whatHappened:$("#what-happened").value.trim(),
     whatItMeans:$("#what-it-means").value.trim(),
@@ -245,6 +272,37 @@ async function saveDraft(){
   $("#draft-status").textContent="Uložené "+new Date().toLocaleTimeString("sk-SK",{hour:"2-digit",minute:"2-digit"});
   $(".editor-heading").classList.remove("save-flash");void $(".editor-heading").offsetWidth;$(".editor-heading").classList.add("save-flash");
   return saved;
+}
+
+async function verifySourcesNow(){
+  const sources=$("#sources").value.trim();
+  if(!/https?:\/\/\S+/i.test(sources)){
+    alert("Najprv doplňte aspoň jeden priamy zdroj s URL.");
+    $("#sources").focus();
+    return;
+  }
+  const button=$("#verify-sources");
+  if(button)button.disabled=true;
+  try{
+    $("#draft-status").textContent="Ukladám článok pred overením…";
+    const saved=await saveDraft();
+    if(!saved?.id)return;
+    const verifiedAt=new Date().toISOString();
+    $("#draft-status").textContent="Zaznamenávam overenie zdrojov…";
+    const {data,error}=await client.from("drafts")
+      .update({verified_at:verifiedAt})
+      .eq("id",saved.id)
+      .select("*")
+      .single();
+    if(error)throw error;
+    const verified=dbToDraft(data);
+    await refreshDrafts();
+    selectDraft(verified.id);
+    updateVerificationUI(verified.verifiedAt);
+    $("#draft-status").textContent="Zdroje overené dnes";
+  }finally{
+    if(button)button.disabled=false;
+  }
 }
 
 async function deleteDraft(){
@@ -351,6 +409,7 @@ $("#image-upload").addEventListener("change",async e=>{
 });
 
 $("#remove-image").addEventListener("click",()=>{currentImageData="";$("#image-upload").value="";hidePreview();updateLivePreview()});
+$("#verify-sources")?.addEventListener("click",async()=>{try{await verifySourcesNow()}catch(err){console.error(err);alert("Overenie zdrojov sa nepodarilo uložiť: "+err.message);$("#draft-status").textContent="Chyba pri overení zdrojov"}});
 $("#delete-draft").addEventListener("click",async()=>{try{await deleteDraft()}catch(err){console.error(err);alert("Návrh sa nepodarilo vymazať: "+err.message)}});
 $("#export-draft").addEventListener("click",()=>{
   const d=readForm(),b=new Blob([JSON.stringify(d,null,2)],{type:"application/json"}),u=URL.createObjectURL(b),a=document.createElement("a");
