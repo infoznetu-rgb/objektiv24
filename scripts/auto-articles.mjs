@@ -582,7 +582,7 @@ function validArticle(a, sourceText="", sourceTitle="") {
 const token = await oidcToken();
 const status = await ingest(token, { action:"status" });
 console.log("Objektív24 status:", JSON.stringify(status));
-if ((status.published_last_24h || 0) >= 9) {
+if ((status.published_last_24h || 0) >= 12) {
   console.log("Denný limit je naplnený; tento beh nič nevydá.");
   process.exit(0);
 }
@@ -622,9 +622,9 @@ console.log("Po filtroch zostalo kandidátov:", candidates.length);
 
 let published = 0;
 let attempts = 0;
-const maxToPublish = Math.min(1, Math.max(0, 9 - (status.published_last_24h || 0)));
+const maxToPublish = Math.min(3, Math.max(0, 12 - (status.published_last_24h || 0)));
 for (const c of candidates) {
-  if (published >= maxToPublish || attempts >= 2) break;
+  if (published >= maxToPublish || attempts >= 6) break;
   try {
     const page = await fetchText(c.link);
     c.link = page.finalUrl || c.link;
