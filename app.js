@@ -216,4 +216,4 @@ document.addEventListener("click",e=>{
 bindTopicLinks();
 const revealEls=[...document.querySelectorAll(".reveal")];if(window.matchMedia("(max-width: 680px)").matches){revealEls.forEach(el=>el.classList.add("is-visible"))}else{const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add("is-visible");observer.unobserve(entry.target)}}),{threshold:.05,rootMargin:"0px 0px 120px 0px"});revealEls.forEach(el=>observer.observe(el))}
 loadArticles();
-(()=>{let a=document.createElement('script');a.src='analytics.js?v=4';a.onload=()=>{let p=document.createElement('script');p.src='pwa.js?v=14';p.defer=true;document.head.appendChild(p)};document.head.appendChild(a)})();
+(()=>{let a=document.createElement('script');a.src='analytics.js?v=4';a.onload=()=>{let p=document.createElement('script');p.src='pwa.js?v=15';p.defer=true;document.head.appendChild(p)};document.head.appendChild(a)})();
