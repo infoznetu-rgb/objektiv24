@@ -652,9 +652,9 @@ console.log("Po filtroch zostalo kandidátov:", candidates.length);
 
 let published = 0;
 let attempts = 0;
-const maxToPublish = Math.min(3, Math.max(0, dailyCap - (status.published_last_24h || 0)));
+const maxToPublish = Math.min(5, Math.max(0, dailyCap - (status.published_last_24h || 0)));
 for (const c of candidates) {
-  if (published >= maxToPublish || attempts >= 6) break;
+  if (published >= maxToPublish || attempts >= 10) break;
   try {
     const page = await fetchText(c.link);
     c.link = page.finalUrl || c.link;
