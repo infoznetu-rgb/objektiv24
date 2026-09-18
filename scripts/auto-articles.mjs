@@ -39,6 +39,10 @@ const POLITICAL = [
   "voľby","volieb","parlament","politická strana","koalícia","opozícia",
   "prezident","premiér","minister","poslanec"
 ];
+const LOW_VALUE = [
+  "nelegáln","nelegaln","cigare","pašer","paser","zaistil","zadržal","zadrzal",
+  "krimin","trestn","zásah colní","zasah colni","drogy","hazard"
+];
 
 function decode(s="") {
   return s
@@ -92,6 +96,7 @@ function likelyDuplicate(a="", b="") {
 function score(title, desc="") {
   const t = norm(title + " " + desc);
   if (POLITICAL.some(k=>t.includes(norm(k)))) return -100;
+  if (LOW_VALUE.some(k=>t.includes(norm(k)))) return -80;
   let n = 0;
   for (const k of PRACTICAL) if (t.includes(norm(k))) n++;
   return n;
@@ -394,12 +399,12 @@ for (const c of candidates) {
     const page = await fetchText(c.link);
     c.link = page.finalUrl || c.link;
     if (knownSources.has(canonicalUrl(c.link))) continue;
-    attempts++;
     const body = articleText(page.text);
     if (body.length < 700) {
       console.log("Preskočené pre málo textu:", c.title);
       continue;
     }
+    attempts++;
     const article = await generate(c, body);
     if (!validArticle(article, body, c.title)) {
       console.log("Model vrátil neúplný článok:", c.title);
