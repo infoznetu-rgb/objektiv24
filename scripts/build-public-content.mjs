@@ -130,6 +130,27 @@ function briefHtml(a){
   if(!happened&&!affected&&!action)return"";
   return `<section class="article-brief" aria-labelledby="brief-heading"><div class="article-brief-head"><span class="section-kicker">V SKRATKE</span><h2 id="brief-heading">To najdôležitejšie za pár sekúnd</h2></div><div class="article-brief-grid"><div><strong>Čo sa stalo</strong><p>${esc(happened||a.summary)}</p></div><div><strong>Koho sa to týka</strong><p>${esc(affected||a.summary)}</p></div><div><strong>Čo urobiť</strong><p>${esc(action||"Skontrolujte aktuálne podmienky a zdroje uvedené v článku.")}</p></div></div></section>`;
 }
+function readingMinutes(a){
+  const text=[a.summary,a.facts,a.meaning,a.watch,a.contact,...(a.steps||[])].filter(Boolean).join(" ");
+  const words=(text.match(/[A-Za-zÀ-ž0-9]+/g)||[]).length;
+  return Math.max(1,Math.ceil(words/220));
+}
+function nextFor(a,all,related=[]){
+  const blocked=new Set([a.slug,...related.map(x=>x.slug)]);
+  const active=all.filter(x=>!x.archived&&x.slug);
+  const index=active.findIndex(x=>x.slug===a.slug);
+  if(index>=0){
+    for(let step=1;step<active.length;step++){
+      const candidate=active[(index+step)%active.length];
+      if(!blocked.has(candidate.slug))return candidate;
+    }
+  }
+  return active.find(x=>x.slug!==a.slug)||null;
+}
+function nextArticleHtml(b){
+  if(!b)return"";
+  return `<section class="article-next" aria-label="Ďalší článok"><a href="/clanky/${encodeURIComponent(b.slug)}/">${b.image?`<img src="${esc(b.image)}" alt="${esc(b.imageAlt||b.title)}" loading="lazy" decoding="async">`:""}<div><span class="section-kicker">ĎALŠÍ ČLÁNOK</span><h2>${esc(b.title)}</h2><p>${esc(b.summary)}</p><strong>Pokračovať v čítaní →</strong></div></a></section>`;
+}
 function schemaFor(a){
   const canonical = canonicalFor(a.slug);
   const author = a.author && a.author !== "Objektív24"
@@ -158,7 +179,7 @@ function sourcesHtml(sources){
   if (!sources.length) return "";
   return `<section><p class="overline">ZDROJE A PODKLADY</p><ul class="article-sources">${sources.map(u=>`<li><a href="${esc(u)}" rel="noopener noreferrer">${esc(hostLabel(u))} ↗</a></li>`).join("")}</ul></section>`;
 }
-function articleHtml(a,related=[]){
+function articleHtml(a,related=[],nextArticle=null){
   const canonical = canonicalFor(a.slug);
   const published = asDate(a.publishedAt || a.verifiedAt);
   const modified = asDate(a.modifiedAt || a.publishedAt || a.verifiedAt);
@@ -169,6 +190,8 @@ function articleHtml(a,related=[]){
   const contact = a.contact ? `<section><p class="overline">KAM SA OBRÁTIŤ</p><p>${esc(a.contact)}</p></section>` : "";
   const relatedBlock = relatedHtml(related);
   const briefBlock = briefHtml(a);
+  const readMins = readingMinutes(a);
+  const nextBlock = nextArticleHtml(nextArticle);
   const archive = a.archived ? '<div class="article-archive-banner"><strong>Archív:</strong> táto informácia bola viazaná na už uplynutý termín. Pred konaním si overte aktuálny stav.</div>' : "";
   const ogImage = a.image ? `<meta property="og:image" content="${esc(a.image)}"><meta name="twitter:image" content="${esc(a.image)}">` : "";
   return `<!doctype html>
@@ -196,14 +219,16 @@ function articleHtml(a,related=[]){
   <link rel="alternate" type="application/rss+xml" title="Objektív24 RSS" href="/rss.xml">
   <link rel="icon" href="/assets/app-icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css?v=20260918-seo1">
-  <style>html,body{max-width:100%;overflow-x:hidden}.article-page,.article-detail,.article-detail-header,.article-detail-grid,.article-detail-copy{min-width:0;max-width:100%}.article-detail-header h1{overflow-wrap:break-word}.article-detail-image{max-width:100%;overflow:hidden}.article-detail-image img{display:block;width:100%;height:auto;max-height:680px;aspect-ratio:16/9;object-fit:cover}@media(max-width:800px){.site-header .topbar{width:calc(100% - 32px);min-width:0;gap:12px}.site-header .help-link{display:none}.site-header .nav-wrap{display:none}.article-page{padding-top:28px}.article-detail.container{width:calc(100% - 32px);margin-inline:auto}.article-detail-header h1{font-size:clamp(2.15rem,9.5vw,3.25rem)!important;line-height:1.02!important;letter-spacing:-.045em!important;margin:18px 0 20px!important}.article-detail-grid{grid-template-columns:minmax(0,1fr)!important;gap:22px!important;margin-top:30px!important}.article-detail-image img{max-height:none;aspect-ratio:16/10}}@media(max-width:480px){.site-header .topbar,.article-detail.container{width:calc(100% - 24px)}.article-detail-header h1{font-size:clamp(2rem,10vw,2.7rem)!important;line-height:1.04!important}.article-detail-image img{aspect-ratio:4/3}}.article-related{margin:64px 0 18px;padding-top:34px;border-top:1px solid var(--line)}.article-related-head h2{font-size:clamp(2rem,4vw,3.4rem);letter-spacing:-.055em;margin:10px 0 24px}.article-related-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.article-related-card{min-width:0;border:1px solid var(--line);border-radius:20px;overflow:hidden;background:linear-gradient(160deg,rgba(13,29,39,.86),rgba(6,16,23,.86))}.article-related-card>a{display:flex;height:100%;flex-direction:column;text-decoration:none;padding-bottom:18px}.article-related-card img{width:100%;aspect-ratio:16/9;object-fit:cover}.article-related-card .eyebrow{align-self:flex-start;margin:16px 18px 0}.article-related-card h3{font-size:1.1rem;line-height:1.15;margin:13px 18px 8px}.article-related-card p{color:var(--muted);font-size:.84rem;margin:0 18px 14px}.article-related-card strong{color:var(--accent);font-size:.82rem;margin:auto 18px 0}@media(max-width:800px){.article-related-grid{grid-template-columns:1fr}.article-related-card>a{display:grid;grid-template-columns:120px 1fr;grid-template-rows:auto auto 1fr auto;padding:0}.article-related-card img{grid-row:1/5;width:120px;height:100%;aspect-ratio:auto}.article-related-card .eyebrow{margin:14px 14px 0}.article-related-card h3{margin:10px 14px 6px}.article-related-card p{margin:0 14px 8px}.article-related-card strong{margin:0 14px 14px}}.article-sharebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:18px 0 28px}.article-sharebar button{border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.04);color:var(--text);padding:10px 14px;font:800 .82rem/1 Inter,ui-sans-serif,system-ui;cursor:pointer}.article-sharebar button:hover,.article-sharebar button:focus-visible{background:var(--accent);color:#061018;border-color:var(--accent);outline:0}.article-share-status{color:var(--muted);font-size:.78rem;min-height:1em}@media(max-width:520px){.article-sharebar button{flex:1;min-width:130px}}.article-brief{margin:8px 0 30px;padding:22px;border:1px solid rgba(217,255,40,.28);border-radius:22px;background:linear-gradient(145deg,rgba(217,255,40,.07),rgba(9,23,32,.82))}.article-brief-head{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:16px}.article-brief-head h2{font-size:clamp(1.3rem,2.5vw,2rem);letter-spacing:-.035em;margin:0;text-align:right}.article-brief-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.article-brief-grid>div{padding:16px;border:1px solid var(--line);border-radius:16px;background:rgba(3,8,13,.52)}.article-brief-grid strong{display:block;color:var(--accent);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}.article-brief-grid p{margin:0;font-size:.92rem;line-height:1.5}@media(max-width:760px){.article-brief{padding:18px}.article-brief-head{display:block}.article-brief-head h2{text-align:left;margin-top:8px}.article-brief-grid{grid-template-columns:1fr}.article-brief-grid>div{padding:14px}}</style>
+  <style>html,body{max-width:100%;overflow-x:hidden}.article-page,.article-detail,.article-detail-header,.article-detail-grid,.article-detail-copy{min-width:0;max-width:100%}.article-detail-header h1{overflow-wrap:break-word}.article-detail-image{max-width:100%;overflow:hidden}.article-detail-image img{display:block;width:100%;height:auto;max-height:680px;aspect-ratio:16/9;object-fit:cover}@media(max-width:800px){.site-header .topbar{width:calc(100% - 32px);min-width:0;gap:12px}.site-header .help-link{display:none}.site-header .nav-wrap{display:none}.article-page{padding-top:28px}.article-detail.container{width:calc(100% - 32px);margin-inline:auto}.article-detail-header h1{font-size:clamp(2.15rem,9.5vw,3.25rem)!important;line-height:1.02!important;letter-spacing:-.045em!important;margin:18px 0 20px!important}.article-detail-grid{grid-template-columns:minmax(0,1fr)!important;gap:22px!important;margin-top:30px!important}.article-detail-image img{max-height:none;aspect-ratio:16/10}}@media(max-width:480px){.site-header .topbar,.article-detail.container{width:calc(100% - 24px)}.article-detail-header h1{font-size:clamp(2rem,10vw,2.7rem)!important;line-height:1.04!important}.article-detail-image img{aspect-ratio:4/3}}.article-related{margin:64px 0 18px;padding-top:34px;border-top:1px solid var(--line)}.article-related-head h2{font-size:clamp(2rem,4vw,3.4rem);letter-spacing:-.055em;margin:10px 0 24px}.article-related-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.article-related-card{min-width:0;border:1px solid var(--line);border-radius:20px;overflow:hidden;background:linear-gradient(160deg,rgba(13,29,39,.86),rgba(6,16,23,.86))}.article-related-card>a{display:flex;height:100%;flex-direction:column;text-decoration:none;padding-bottom:18px}.article-related-card img{width:100%;aspect-ratio:16/9;object-fit:cover}.article-related-card .eyebrow{align-self:flex-start;margin:16px 18px 0}.article-related-card h3{font-size:1.1rem;line-height:1.15;margin:13px 18px 8px}.article-related-card p{color:var(--muted);font-size:.84rem;margin:0 18px 14px}.article-related-card strong{color:var(--accent);font-size:.82rem;margin:auto 18px 0}@media(max-width:800px){.article-related-grid{grid-template-columns:1fr}.article-related-card>a{display:grid;grid-template-columns:120px 1fr;grid-template-rows:auto auto 1fr auto;padding:0}.article-related-card img{grid-row:1/5;width:120px;height:100%;aspect-ratio:auto}.article-related-card .eyebrow{margin:14px 14px 0}.article-related-card h3{margin:10px 14px 6px}.article-related-card p{margin:0 14px 8px}.article-related-card strong{margin:0 14px 14px}}.article-sharebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:18px 0 28px}.article-sharebar button{border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.04);color:var(--text);padding:10px 14px;font:800 .82rem/1 Inter,ui-sans-serif,system-ui;cursor:pointer}.article-sharebar button:hover,.article-sharebar button:focus-visible{background:var(--accent);color:#061018;border-color:var(--accent);outline:0}.article-share-status{color:var(--muted);font-size:.78rem;min-height:1em}@media(max-width:520px){.article-sharebar button{flex:1;min-width:130px}}.article-brief{margin:8px 0 30px;padding:22px;border:1px solid rgba(217,255,40,.28);border-radius:22px;background:linear-gradient(145deg,rgba(217,255,40,.07),rgba(9,23,32,.82))}.article-brief-head{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:16px}.article-brief-head h2{font-size:clamp(1.3rem,2.5vw,2rem);letter-spacing:-.035em;margin:0;text-align:right}.article-brief-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.article-brief-grid>div{padding:16px;border:1px solid var(--line);border-radius:16px;background:rgba(3,8,13,.52)}.article-brief-grid strong{display:block;color:var(--accent);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}.article-brief-grid p{margin:0;font-size:.92rem;line-height:1.5}@media(max-width:760px){.article-brief{padding:18px}.article-brief-head{display:block}.article-brief-head h2{text-align:left;margin-top:8px}.article-brief-grid{grid-template-columns:1fr}.article-brief-grid>div{padding:14px}}.reading-progress-track{position:fixed;z-index:9999;top:0;left:0;right:0;height:3px;pointer-events:none;background:rgba(255,255,255,.04)}.reading-progress-bar{display:block;width:100%;height:100%;transform:scaleX(0);transform-origin:left center;background:var(--accent);will-change:transform}.article-next{margin:22px 0 8px}.article-next>a{display:grid;grid-template-columns:minmax(180px,31%) 1fr;gap:20px;align-items:stretch;text-decoration:none;border:1px solid var(--line);border-radius:22px;overflow:hidden;background:rgba(255,255,255,.025)}.article-next img{width:100%;height:100%;min-height:190px;object-fit:cover}.article-next div{padding:22px 22px 22px 0}.article-next h2{font-size:clamp(1.35rem,2.5vw,2.1rem);line-height:1.08;letter-spacing:-.035em;margin:9px 0}.article-next p{color:var(--muted);margin:0 0 14px}.article-next strong{color:var(--accent)}@media(max-width:680px){.article-next>a{grid-template-columns:1fr}.article-next img{max-height:220px;min-height:0}.article-next div{padding:18px}.reading-progress-track{height:2px}}</style>
   <script type="application/ld+json">${schemaFor(a)}</script>
   <script src="/analytics.js?v=3" defer></script>
   <script src="/pwa.js?v=4" defer></script>
   <script src="/back-to-top.js?v=1" defer></script>
   <script src="/article-actions.js?v=1" defer></script>
+  <script src="/article-reading.js?v=1" defer></script>
 </head>
 <body>
+  <div class="reading-progress-track" aria-hidden="true"><span class="reading-progress-bar" data-reading-progress></span></div>
   <a class="skip-link" href="#obsah">Preskočiť na obsah</a>
   <header class="site-header">
     <div class="topbar container">
@@ -223,7 +248,7 @@ function articleHtml(a,related=[]){
         <span class="eyebrow">${esc(a.category)}</span>
         <h1>${esc(a.title)}</h1>
         <p class="article-lead">${esc(a.summary)}</p>
-        <div class="article-detail-meta"><span>${verified ? "Podklady overené "+esc(verified) : "Objektív24"}</span><span>${esc(a.author || "Objektív24")}</span></div>
+        <div class="article-detail-meta"><span>${verified ? "Podklady overené "+esc(verified) : "Objektív24"}</span><span>${esc(a.author || "Objektív24")}</span><span>⌛ ${readMins} min čítania</span></div>
       </header>
       <div class="article-sharebar" aria-label="Zdieľanie článku">
         <button type="button" data-article-share>↗ Zdieľať</button>
@@ -244,6 +269,7 @@ function articleHtml(a,related=[]){
         </aside>
       </div>
       ${relatedBlock}
+      ${nextBlock}
     </article>
   </main>
   <footer class="site-footer"><div class="container footer-grid"><div><a class="brand" href="/"><span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span></a><p>Čo sa deje. Čo to znamená pre vás. Čo ďalej.</p></div><div class="footer-links"><a href="/clanky/">Všetky články</a><a href="/ako-pracujeme.html">Ako pracujeme</a><a href="/kontakt.html">Kontakt</a></div><p class="copyright">© 2026 Objektív24. Nie sme štátny úrad ani jeho oficiálny partner.</p></div></footer>
@@ -278,7 +304,10 @@ const bySlug=new Map();
 for(const a of [...dbArticles,...staticArticles]) if(a.slug&&!bySlug.has(a.slug)) bySlug.set(a.slug,a);
 const articles=[...bySlug.values()].sort((a,b)=>Date.parse(b.publishedAt||b.verifiedAt||0)-Date.parse(a.publishedAt||a.verifiedAt||0));
 
-for(const a of articles) await write(path.join("clanky",a.slug,"index.html"),articleHtml(a,relatedFor(a,articles)));
+for(const a of articles){
+  const related=relatedFor(a,articles);
+  await write(path.join("clanky",a.slug,"index.html"),articleHtml(a,related,nextFor(a,articles,related)));
+}
 await write(path.join("clanky","index.html"),archiveHtml(articles));
 
 for(const a of staticArticles){
