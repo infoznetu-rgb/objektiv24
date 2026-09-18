@@ -171,8 +171,9 @@ async function generate(candidate, sourceBody) {
     "Nepreberaj vety zo zdroja doslovne; preformuluj ich vlastnými slovami.",
     "Nevytváraj politické ani volebné články.",
     "Píš vecne, zrozumiteľne, bez clickbaitu a bez individuálnej právnej, finančnej či zdravotnej rady.",
-    "Vráť iba platný JSON bez markdownu."
+    "Dodrž presné minimálne a maximálne dĺžky. Nevkladaj žiadne ďalšie kľúče ani komentár."
   ].join(" ");
+
   const prompt = `OFICIÁLNY ZDROJ
 Inštitúcia: ${candidate.sourceName}
 Pôvodný titulok: ${candidate.title}
@@ -182,19 +183,51 @@ Popis: ${candidate.description || ""}
 Text stránky:
 ${sourceBody}
 
-Vytvor JSON presne s kľúčmi:
-{
-  "title": "25-110 znakov, originálny a faktický titulok",
-  "category": "jedna z: Slovensko | Peniaze a práca | Doprava a regióny | Úrady a služby | Rodina a zdravie | Spotrebiteľ a bezpečnosť | Šport",
-  "intro": "80-260 znakov; jadro správy a koho sa týka",
-  "what_happened": "aspoň 300 znakov; čo presne zdroj oznamuje, dôležité dátumy a podmienky",
-  "what_it_means": "aspoň 200 znakov; praktický dopad pre čitateľa, iba podložený zdrojom",
-  "next_step": "aspoň 120 znakov; čo má dotknutý človek skontrolovať alebo urobiť; ak nič, povedz to jasne",
-  "image_alt": "vecný alt text pre neutrálnu ilustračnú grafiku",
-  "image_search_query": "4-8 anglických slov opisujúcich neutrálnu ilustráciu"
-}`;
+Vytvor stručný praktický článok. Dĺžky:
+- title 25-105 znakov
+- intro 90-180 znakov
+- what_happened 280-420 znakov
+- what_it_means 190-300 znakov
+- next_step 110-220 znakov
+- image_alt 40-140 znakov
+- image_search_query 4-8 anglických slov.
+
+Category musí byť presne jedna z:
+Slovensko
+Peniaze a práca
+Doprava a regióny
+Úrady a služby
+Rodina a zdravie
+Spotrebiteľ a bezpečnosť
+Šport`;
+
+  const schema = {
+    type: "object",
+    additionalProperties: false,
+    required: [
+      "title","category","intro","what_happened","what_it_means",
+      "next_step","image_alt","image_search_query"
+    ],
+    properties: {
+      title: { type:"string", minLength:25, maxLength:105 },
+      category: {
+        type:"string",
+        enum:[
+          "Slovensko","Peniaze a práca","Doprava a regióny","Úrady a služby",
+          "Rodina a zdravie","Spotrebiteľ a bezpečnosť","Šport"
+        ]
+      },
+      intro: { type:"string", minLength:90, maxLength:180 },
+      what_happened: { type:"string", minLength:280, maxLength:420 },
+      what_it_means: { type:"string", minLength:190, maxLength:300 },
+      next_step: { type:"string", minLength:110, maxLength:220 },
+      image_alt: { type:"string", minLength:40, maxLength:140 },
+      image_search_query: { type:"string", minLength:12, maxLength:90 }
+    }
+  };
+
   const ctrl = new AbortController();
-  const timer = setTimeout(()=>ctrl.abort(), 90000);
+  const timer = setTimeout(()=>ctrl.abort(), 110000);
   let r;
   try {
     r = await fetch("http://127.0.0.1:11434/api/chat", {
@@ -204,18 +237,27 @@ Vytvor JSON presne s kľúčmi:
       body:JSON.stringify({
         model: MODEL,
         stream:false,
-        format:"json",
+        format:schema,
         messages:[{role:"system",content:system},{role:"user",content:prompt}],
-        options:{temperature:0.12,num_ctx:4096,num_predict:700}
+        options:{temperature:0.05,num_ctx:4096,num_predict:950}
       })
     });
   } finally {
     clearTimeout(timer);
   }
   if (!r.ok) throw new Error("Ollama HTTP " + r.status + ": " + await r.text());
+
   const data = await r.json();
-  const raw = data?.message?.content || "";
-  const obj = JSON.parse(raw);
+  const raw = String(data?.message?.content || "").trim();
+  let obj;
+  try {
+    obj = JSON.parse(raw);
+  } catch (e) {
+    const first = raw.indexOf("{");
+    const last = raw.lastIndexOf("}");
+    if (first >= 0 && last > first) obj = JSON.parse(raw.slice(first,last+1));
+    else throw e;
+  }
   return obj;
 }
 function validArticle(a) {
