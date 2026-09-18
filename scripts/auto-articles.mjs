@@ -42,10 +42,9 @@ const SOURCES = [
   },
   {
     name: "Slovenská obchodná inšpekcia",
-    type: "html",
-    url: "https://www.soi.sk/novinky",
+    type: "rss",
+    url: "https://feeds.feedburner.com/soisk?format=xml",
     accept: (u) => /soi\.sk\/novinky\/[^/?#]+/i.test(u),
-    limit: 12,
   },
 ];
 
