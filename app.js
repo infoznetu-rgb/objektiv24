@@ -213,4 +213,4 @@ document.querySelector("#reset-search")?.addEventListener("click",()=>{state.fil
 bindTopicLinks();
 const revealEls=[...document.querySelectorAll(".reveal")];if(window.matchMedia("(max-width: 680px)").matches){revealEls.forEach(el=>el.classList.add("is-visible"))}else{const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add("is-visible");observer.unobserve(entry.target)}}),{threshold:.05,rootMargin:"0px 0px 120px 0px"});revealEls.forEach(el=>observer.observe(el))}
 loadArticles();
-(()=>{if(document.querySelector('script[src*="analytics.js"]'))return;let a=document.createElement('script');a.src='analytics.js?v=5';document.head.appendChild(a)})();
+(()=>{if(document.querySelector('script[src*="analytics.js"]'))return;let a=document.createElement('script');a.src='analytics.js?v=7';document.head.appendChild(a)})();
