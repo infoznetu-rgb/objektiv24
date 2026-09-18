@@ -66,7 +66,7 @@ async function seedPublishedArticles(){
     const r=await fetch("data/articles.json",{cache:"no-store"});
     const a=await r.json();
     return a.map(x=>({
-      id:"published-"+x.slug,seed:true,title:x.title,category:normalizeCategory(x.category),intro:x.summary,
+      id:"published-"+x.slug,seed:true,title:x.title,seoTitle:x.seoTitle||"",metaDescription:x.metaDescription||"",category:normalizeCategory(x.category),intro:x.summary,
       state:x.archived?"archived":"published",updated:x.verified,verifiedAt:x.verified||"",
       whatHappened:x.facts||"",
       whatItMeans:x.meaning||"",
@@ -84,6 +84,8 @@ function dbToDraft(row){
     state:row.state||"draft",
     updated:row.updated_at?new Intl.DateTimeFormat("sk-SK",{day:"2-digit",month:"2-digit",year:"numeric"}).format(new Date(row.updated_at)):"",
     title:row.title||"",
+    seoTitle:row.seo_title||"",
+    metaDescription:row.meta_description||"",
     category:normalizeCategory(row.category),
     verifiedAt:row.verified_at||"",
     intro:row.intro||"",
@@ -99,6 +101,8 @@ function draftToDb(draft){
   return {
     user_id:currentUser.id,
     title:draft.title||"",
+    seo_title:draft.seoTitle||"",
+    meta_description:draft.metaDescription||"",
     category:normalizeCategory(draft.category),
     intro:draft.intro||"",
     what_happened:draft.whatHappened||"",
@@ -182,6 +186,8 @@ function selectDraft(id){
   const d=drafts.find(x=>x.id===id);if(!d)return;
   $("#draft-id").value=d.id;
   $("#title").value=d.title||"";
+  $("#seo-title").value=d.seoTitle||"";
+  $("#meta-description").value=d.metaDescription||"";
   $("#category").value=normalizeCategory(d.category);
   updateVerificationUI(d.verifiedAt||"");
   $("#intro").value=d.intro||"";
@@ -204,6 +210,8 @@ function readForm(){
     id:$("#draft-id").value||"",
     seed:false,
     title:$("#title").value.trim(),
+    seoTitle:$("#seo-title").value.trim(),
+    metaDescription:$("#meta-description").value.trim(),
     category:normalizeCategory($("#category").value),
     intro:$("#intro").value.trim(),
     whatHappened:$("#what-happened").value.trim(),
