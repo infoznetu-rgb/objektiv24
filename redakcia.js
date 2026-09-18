@@ -454,7 +454,7 @@ async function sendPublishedPush(saved){
   if(!session?.access_token)throw new Error("Chýba prihlásenie pre odoslanie upozornenia.");
 
   const articleUrl=row.slug
-    ? "https://objektiv24.sk/clanok.html?slug="+encodeURIComponent(row.slug)
+    ? "https://objektiv24.sk/clanky/"+encodeURIComponent(row.slug)+"/"
     : "https://objektiv24.sk/clanok.html?id="+encodeURIComponent(row.id);
 
   const response=await fetch(SUPABASE_URL+"/functions/v1/send-push-notification",{
