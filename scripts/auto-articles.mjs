@@ -394,25 +394,48 @@ function overlapRatio(a="",b="") {
   for(const x of A)if(B.has(x))common++;
   return common/Math.min(A.size,B.size);
 }
+function canonicalNumber(raw="") {
+  const compact=String(raw)
+    .replace(/[\u00a0\u202f\s]/g,"")
+    .replace(",",".");
+  if(!/^\d+(?:\.\d+)?$/.test(compact)) return "";
+  const n=Number(compact);
+  if(!Number.isFinite(n)) return "";
+  if(Number.isInteger(n)) return String(n);
+  return String(n).replace(/(\.\d*?[1-9])0+$/,"$1").replace(/\.0+$/,"");
+}
+function extractNumericClaims(text="") {
+  let work=String(text)
+    .toLocaleLowerCase("sk")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"");
+  const claims=[];
+  const take=(regex,convert)=>{
+    work=work.replace(regex,(match,...args)=>{
+      const value=convert(match,...args);
+      if(value && value!=="0") claims.push(value);
+      return " ".repeat(match.length);
+    });
+  };
+  take(/\b(\d{1,3}(?:[.,]\d+)?)\s*(?:-|–|—)?\s*tisic(?:ov|e|a|u|om|mi)?\b/g,
+    (_m,n)=>{
+      const base=Number(String(n).replace(",","."));
+      if(!Number.isFinite(base)) return "";
+      return canonicalNumber(String(base*1000));
+    });
+  take(/\b\d{1,3}(?:[ \u00a0\u202f]\d{3})+(?:[.,]\d+)?\b/g,
+    m=>canonicalNumber(m));
+  take(/\b\d+(?:[.,]\d+)?\b/g,
+    m=>canonicalNumber(m));
+  return [...new Set(claims)];
+}
 function numericClaimsSupported(article, sourceText, sourceTitle) {
   const generated=[
     article.title,article.intro,article.what_happened,article.what_it_means,article.next_step
   ].join(" ");
-  const nums=[...generated.matchAll(/\b\d+(?:[.,]\d+)?\b/g)]
-    .map(m=>m[0].replace(",","."))
-    .filter(n=>!/^0+$/.test(n));
-  const rawSource=String(sourceText+" "+sourceTitle);
-  const source=norm(rawSource).replace(/,/g,".");
-  return [...new Set(nums)].every(n=>{
-    if(source.includes(n)) return true;
-    const plain=n.replace(/\.0+$/,"");
-    if(source.includes(plain)) return true;
-    if(/^\d{4,}$/.test(plain) && /000$/.test(plain)) {
-      const thousands=String(Number(plain)/1000).replace(/\.0+$/,"");
-      if(source.includes(thousands) && /tisic/.test(source)) return true;
-    }
-    return false;
-  });
+  const generatedClaims=extractNumericClaims(generated);
+  const sourceClaims=new Set(extractNumericClaims(String(sourceText)+" "+String(sourceTitle)));
+  return generatedClaims.every(n=>sourceClaims.has(n));
 }
 function normalizeFinalArticle(a) {
   const out={...a};
