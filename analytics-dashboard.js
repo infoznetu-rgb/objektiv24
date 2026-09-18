@@ -19,23 +19,23 @@
     section.id='analytics-dashboard';
     section.className='analytics-dashboard';
     section.innerHTML=
-      '<div class="analytics-head"><div><p class="analytics-kicker">ČITATEĽSKÁ ANALYTIKA</p><h2>Čo ľudia naozaj čítajú</h2><p>Len návštevy so súhlasom s analytikou. Vyhľadávané slová sa neukladajú.</p></div><button id="analytics-refresh" type="button">Obnoviť</button></div>'+
+      '<div class="analytics-head"><div><p class="analytics-kicker">ČITATEĽSKÁ ANALYTIKA</p><h2>Čo ľudia naozaj čítajú</h2><p>Len návštevy so súhlasom s analytikou. Surové identifikátory návštevníkov sa v Redakcii nezobrazujú.</p></div><button id="analytics-refresh" type="button">Obnoviť</button></div>'+
       '<div class="analytics-stats">'+
         '<article><span>Dnes</span><strong id="a-today">—</strong><small>zobrazení stránok</small></article>'+
         '<article><span>7 dní</span><strong id="a-week">—</strong><small>zobrazení stránok</small></article>'+
-        '<article><span>Návštevníci</span><strong id="a-visitors">—</strong><small>za 30 dní</small></article>'+
-        '<article><span>Články</span><strong id="a-opens">—</strong><small>otvorení · 30 dní</small></article>'+
-        '<article><span>Dočítanie 75 %</span><strong id="a-read75">—</strong><small>z otvorených článkov</small></article>'+
-        '<article><span>Do konca</span><strong id="a-read100">—</strong><small>z otvorených článkov</small></article>'+
-        '<article><span>Zdieľanie</span><strong id="a-shares">—</strong><small>zdieľať + kopírovať</small></article>'+
-        '<article><span>Vyhľadávanie</span><strong id="a-search">—</strong><small>použití · 30 dní</small></article>'+
+        '<article><span>Návštevníci</span><strong id="a-visitors">—</strong><small>unikátni · 30 dní</small></article>'+
+        '<article><span>Návraty</span><strong id="a-returning">—</strong><small>návratoví · 7 dní</small></article>'+
+        '<article><span>Články</span><strong id="a-opens">—</strong><small>zobrazenia · 30 dní</small></article>'+
+        '<article><span>Aktívne 30 s</span><strong id="a-engaged">—</strong><small>z článkov od nového merania</small></article>'+
+        '<article><span>Dočítanie 75 %</span><strong id="a-read75">—</strong><small>z článkov od nového merania</small></article>'+
+        '<article><span>Push odbery</span><strong id="a-push">—</strong><small>aktívne zariadenia</small></article>'+
       '</div>'+
       '<div class="analytics-grid">'+
         '<article class="analytics-panel"><h3>Vývoj · posledných 7 dní</h3><div id="a-chart" class="analytics-chart"></div></article>'+
         '<article class="analytics-panel"><h3>Najčítanejšie články · 30 dní</h3><div id="a-articles" class="analytics-list">Načítavam…</div></article>'+
         '<article class="analytics-panel"><h3>Záujem o rubriky · 30 dní</h3><div id="a-topics" class="analytics-list">Načítavam…</div></article>'+
-        '<article class="analytics-panel"><h3>Dočítanie článkov · 30 dní</h3><div id="a-reading" class="analytics-list">Načítavam…</div></article>'+
-        '<article class="analytics-panel"><h3>Čo privádza kliknutie · 30 dní</h3><div id="a-clicks" class="analytics-list">Načítavam…</div></article>'+
+        '<article class="analytics-panel"><h3>Dočítanie článkov</h3><div id="a-reading" class="analytics-list">Načítavam…</div></article>'+
+        '<article class="analytics-panel"><h3>Interakcie · 30 dní</h3><div id="a-clicks" class="analytics-list">Načítavam…</div></article>'+
         '<article class="analytics-panel"><h3>Odkiaľ prišli · 30 dní</h3><div id="a-referrers" class="analytics-list">Načítavam…</div></article>'+
       '</div>'+
       '<p id="a-note" class="analytics-note"></p>';
@@ -44,148 +44,144 @@
     await load();
   }
 
-  function pct(n,d){
-    if(!d)return'—';
-    return Math.min(100,Math.round(n/d*100))+' %';
+  function pctRate(value){
+    if(value===null||value===undefined||!Number.isFinite(Number(value)))return'—';
+    return Math.min(100,Math.round(Number(value)*100))+' %';
   }
 
   function humanSlug(slug){
     if(!slug)return'Neznámy článok';
-    return decodeURIComponent(slug).replace(/-/g,' ').replace(/\b\w/g,m=>m.toLocaleUpperCase('sk'));
+    try{return decodeURIComponent(slug).replace(/-/g,' ').replace(/\b\w/g,m=>m.toLocaleUpperCase('sk'))}
+    catch{return String(slug).replace(/-/g,' ')}
+  }
+
+  async function secureAnalytics(){
+    const {data,error}=await client.auth.getSession();
+    if(error)throw error;
+    const token=data?.session?.access_token;
+    if(!token)throw new Error('Editor session is not available.');
+
+    const response=await fetch(SUPABASE_URL+'/functions/v1/editor-analytics',{
+      method:'POST',
+      headers:{
+        apikey:SUPABASE_PUBLISHABLE_KEY,
+        Authorization:'Bearer '+token,
+        'Content-Type':'application/json'
+      },
+      body:'{}',
+      cache:'no-store'
+    });
+    const payload=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(payload?.error||('HTTP '+response.status));
+    return payload;
   }
 
   async function load(){
     const note=$('#a-note');
-    note.textContent='Načítavam dáta…';
-    const since=new Date(Date.now()-30*864e5).toISOString();
+    const button=$('#analytics-refresh');
+    note.textContent='Načítavam bezpečný súhrn…';
+    if(button)button.disabled=true;
 
-    const [eventsResult,draftsResult]=await Promise.all([
-      client.from('site_events')
-        .select('created_at,path,article_slug,referrer,visitor_id,event_type,event_label')
-        .gte('created_at',since)
-        .order('created_at',{ascending:false})
-        .limit(20000),
-      client.from('drafts')
-        .select('slug,title')
-        .eq('state','published')
-        .not('slug','is',null)
-        .limit(1000)
-    ]);
+    try{
+      const data=await secureAnalytics();
 
-    if(eventsResult.error){
-      note.textContent='Štatistiky sa nepodarilo načítať: '+eventsResult.error.message;
-      return;
+      $('#a-today').textContent=Number(data.page_views_today||0).toLocaleString('sk-SK');
+      $('#a-week').textContent=Number(data.page_views_7d||0).toLocaleString('sk-SK');
+      $('#a-visitors').textContent=Number(data.visitors_30d||0).toLocaleString('sk-SK');
+      $('#a-returning').textContent=Number(data.returning_visitors_7d||0).toLocaleString('sk-SK');
+      $('#a-opens').textContent=Number(data.article_views_30d||0).toLocaleString('sk-SK');
+      $('#a-engaged').textContent=pctRate(data.engaged_30s_rate);
+      $('#a-read75').textContent=pctRate(data.read_75_rate);
+      $('#a-push').textContent=Number(data.push_subscribers||0).toLocaleString('sk-SK');
+
+      renderChart(data.daily_page_views_7d||[]);
+      renderRows(
+        (data.top_articles_30d||[]).map(x=>({
+          label:x.title||humanSlug(x.slug),
+          value:Number(x.views||0)
+        })),
+        '#a-articles'
+      );
+      renderRows(
+        (data.top_topics_30d||[]).map(x=>({
+          label:x.topic,
+          value:Number(x.clicks||0)
+        })),
+        '#a-topics'
+      );
+
+      const base=Number(data.quality_article_views||0);
+      renderFunnel([
+        ['Zobrazenie článku',base],
+        ['25 %',Number(data.read_25||0)],
+        ['50 %',Number(data.read_50||0)],
+        ['75 %',Number(data.read_75||0)],
+        ['100 %',Number(data.read_100||0)]
+      ],'#a-reading',base);
+
+      const interactions=(data.click_sources_30d||[]).map(x=>({
+        label:x.label,
+        value:Number(x.count||0)
+      }));
+      if(Number(data.search_uses_30d||0)>0)interactions.push({label:'Vyhľadávanie',value:Number(data.search_uses_30d)});
+      renderRows(interactions,'#a-clicks');
+
+      renderRows(
+        (data.referrers_30d||[]).map(x=>({
+          label:x.referrer,
+          value:Number(x.views||0)
+        })),
+        '#a-referrers'
+      );
+
+      const qualitySince=data.quality_tracking_since
+        ?new Intl.DateTimeFormat('sk-SK',{day:'numeric',month:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(data.quality_tracking_since))
+        :'dnešného nasadenia';
+
+      note.textContent=
+        'Aktualizované '+new Date().toLocaleTimeString('sk-SK',{hour:'2-digit',minute:'2-digit'})+
+        ' · Dáta sa merajú iba po súhlase návštevníka. Engagement a dočítanie sa počítajú od '+qualitySince+'.';
+    }catch(error){
+      console.error('Secure analytics failed',error);
+      note.textContent='Štatistiky sa nepodarilo načítať: '+(error?.message||String(error));
+      ['#a-articles','#a-topics','#a-reading','#a-clicks','#a-referrers'].forEach(sel=>{
+        if($(sel))$(sel).innerHTML='<p>Zatiaľ bez dát.</p>';
+      });
+    }finally{
+      if(button)button.disabled=false;
     }
-
-    const all=eventsResult.data||[];
-    const titleMap=new Map((draftsResult.data||[]).map(x=>[x.slug,x.title]));
-    const pages=all.filter(x=>x.event_type==='page_view');
-    const opens=all.filter(x=>x.event_type==='article_open');
-    const read25=all.filter(x=>x.event_type==='read_25');
-    const read50=all.filter(x=>x.event_type==='read_50');
-    const read75=all.filter(x=>x.event_type==='read_75');
-    const read100=all.filter(x=>x.event_type==='read_100');
-    const shares=all.filter(x=>x.event_type==='share_click'||x.event_type==='copy_link');
-    const searches=all.filter(x=>x.event_type==='search_used');
-    const topics=all.filter(x=>x.event_type==='topic_click'&&x.event_label);
-    const now=new Date();
-    const startToday=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
-    const week=Date.now()-7*864e5;
-
-    $('#a-today').textContent=pages.filter(x=>new Date(x.created_at).getTime()>=startToday).length.toLocaleString('sk-SK');
-    $('#a-week').textContent=pages.filter(x=>new Date(x.created_at).getTime()>=week).length.toLocaleString('sk-SK');
-    $('#a-visitors').textContent=new Set(pages.map(x=>x.visitor_id).filter(Boolean)).size.toLocaleString('sk-SK');
-    $('#a-opens').textContent=opens.length.toLocaleString('sk-SK');
-    $('#a-read75').textContent=pct(read75.length,opens.length);
-    $('#a-read100').textContent=pct(read100.length,opens.length);
-    $('#a-shares').textContent=shares.length.toLocaleString('sk-SK');
-    $('#a-search').textContent=searches.length.toLocaleString('sk-SK');
-
-    renderChart(pages);
-    renderTop(
-      opens.filter(x=>x.article_slug),
-      'article_slug',
-      '#a-articles',
-      slug=>titleMap.get(slug)||humanSlug(slug)
-    );
-    renderTop(topics,'event_label','#a-topics',x=>x);
-
-    const reading=[
-      ['Otvorenie článku',opens.length],
-      ['25 %',read25.length],
-      ['50 %',read50.length],
-      ['75 %',read75.length],
-      ['100 %',read100.length]
-    ];
-    renderPairs(reading,'#a-reading',opens.length);
-
-    const clickPairs=[
-      ['Karta článku',all.filter(x=>x.event_type==='article_click').length],
-      ['Hlavný článok',all.filter(x=>x.event_type==='hero_click').length],
-      ['Najnovšie',all.filter(x=>x.event_type==='latest_click').length],
-      ['Súvisiaci článok',all.filter(x=>x.event_type==='related_click').length],
-      ['Ďalší článok',all.filter(x=>x.event_type==='next_article_click').length],
-      ['Zdieľanie / odkaz',shares.length]
-    ].filter(x=>x[1]>0);
-    renderPairs(clickPairs,'#a-clicks');
-
-    renderTop(
-      pages.filter(x=>x.referrer),
-      'referrer',
-      '#a-referrers',
-      x=>x||'Priamy vstup'
-    );
-
-    const newEvents=all.some(x=>['read_25','article_open','topic_click','share_click'].includes(x.event_type));
-    note.textContent=
-      'Posledná aktualizácia '+new Date().toLocaleTimeString('sk-SK',{hour:'2-digit',minute:'2-digit'})+
-      ' · Dáta sa merajú iba po súhlase návštevníka.'+
-      (newEvents?'':' Nové metriky sa začnú napĺňať od dnešného nasadenia.');
   }
 
-  function renderTop(rows,key,sel,label){
-    const m=new Map();
-    rows.forEach(x=>{
-      const k=x[key]||'';
-      if(!k)return;
-      m.set(k,(m.get(k)||0)+1);
-    });
-    const a=[...m].sort((x,y)=>y[1]-x[1]).slice(0,7);
-    const max=a[0]?.[1]||1;
-    $(sel).innerHTML=a.length
-      ?a.map(([k,n],i)=>'<div class="analytics-row"><span class="rank">'+(i+1)+'</span><div><b>'+esc(label(k))+'</b><i style="--w:'+Math.max(5,n/max*100)+'%"></i></div><strong>'+n+'</strong></div>').join('')
+  function renderRows(items,sel){
+    const rows=(items||[]).filter(x=>x.label&&Number(x.value)>=0).sort((a,b)=>b.value-a.value).slice(0,7);
+    const max=rows[0]?.value||1;
+    $(sel).innerHTML=rows.length
+      ?rows.map((x,i)=>'<div class="analytics-row"><span class="rank">'+(i+1)+'</span><div><b>'+esc(x.label)+'</b><i style="--w:'+Math.max(5,x.value/max*100)+'%"></i></div><strong>'+x.value.toLocaleString('sk-SK')+'</strong></div>').join('')
       :'<p>Zatiaľ bez dát.</p>';
   }
 
-  function renderPairs(items,sel,base){
-    const rows=items.filter(([,n])=>n>=0);
-    const max=Math.max(1,...rows.map(x=>x[1]));
+  function renderFunnel(items,sel,base){
+    const rows=(items||[]).filter(([,n])=>Number(n)>=0);
+    const max=Math.max(1,...rows.map(x=>Number(x[1])||0));
     $(sel).innerHTML=rows.length
       ?rows.map(([label,n],i)=>{
-        const right=base&&i>0?pct(n,base):n.toLocaleString('sk-SK');
-        return '<div class="analytics-row"><span class="rank">'+(i+1)+'</span><div><b>'+esc(label)+'</b><i style="--w:'+Math.max(5,n/max*100)+'%"></i></div><strong>'+right+'</strong></div>';
+        const value=Number(n)||0;
+        const right=i===0?value.toLocaleString('sk-SK'):(base?Math.min(100,Math.round(value/base*100))+' %':'—');
+        return '<div class="analytics-row"><span class="rank">'+(i+1)+'</span><div><b>'+esc(label)+'</b><i style="--w:'+Math.max(5,value/max*100)+'%"></i></div><strong>'+right+'</strong></div>';
       }).join('')
       :'<p>Zatiaľ bez dát.</p>';
   }
 
   function renderChart(rows){
-    const days=[];
-    for(let i=6;i>=0;i--){
-      const d=new Date();
-      d.setHours(0,0,0,0);
-      d.setDate(d.getDate()-i);
-      days.push({d,key:d.toISOString().slice(0,10),n:0});
-    }
-    rows.forEach(x=>{
-      const d=new Date(x.created_at);
-      const local=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
-      const o=days.find(y=>y.key===local);
-      if(o)o.n++;
-    });
-    const max=Math.max(1,...days.map(x=>x.n));
-    $('#a-chart').innerHTML=days.map(x=>
-      '<div class="bar-col"><strong>'+x.n+'</strong><i style="height:'+Math.max(4,x.n/max*100)+'%"></i><span>'+x.d.toLocaleDateString('sk-SK',{weekday:'short'})+'</span></div>'
-    ).join('');
+    const items=(rows||[]).slice(-7);
+    const max=Math.max(1,...items.map(x=>Number(x.views)||0));
+    $('#a-chart').innerHTML=items.length
+      ?items.map(x=>{
+        const d=new Date(String(x.date)+'T12:00:00');
+        const n=Number(x.views)||0;
+        return '<div class="bar-col"><strong>'+n+'</strong><i style="height:'+Math.max(4,n/max*100)+'%"></i><span>'+d.toLocaleDateString('sk-SK',{weekday:'short'})+'</span></div>';
+      }).join('')
+      :'<p>Zatiaľ bez dát.</p>';
   }
 
   document.readyState==='loading'
