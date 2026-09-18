@@ -22,6 +22,8 @@ const splitLines = v => String(v || "").split(/\r?\n/).map(x=>x.trim()).filter(B
 const splitSteps = v => String(v || "").split(/\n\s*\n|\r?\n/).map(x=>x.trim()).filter(Boolean);
 const cleanSlug = v => String(v || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,110) || "clanok";
 const canonicalFor = slug => `${SITE}/clanky/${encodeURIComponent(slug)}/`;
+const guideCanonicalFor = slug => `${SITE}/poradna/${encodeURIComponent(slug)}/`;
+
 const absoluteUrl = v => { try { return new URL(String(v||""),SITE+"/").href; } catch { return String(v||""); } };
 const cutAtWord=(v,limit)=>{
   const s=String(v||"").replace(/\s+/g," ").trim();
@@ -190,6 +192,62 @@ const HUB_BY_TOPIC=new Map(TOPIC_HUBS.map(h=>[h.topic,h]));
 const hubForArticle=a=>HUB_BY_TOPIC.get(topicForArticle(a))||null;
 const hubUrl=h=>SITE+"/temy/"+encodeURIComponent(h.slug)+"/";
 const hubItems=(h,articles)=>articles.filter(a=>!a.archived&&hubForArticle(a)?.slug===h.slug);
+function evergreenTokens(x){
+  const raw=[x?.title,x?.summary,x?.category,x?.topic,...(x?.keywords||[])].join(" ");
+  return [...new Set(normalizeText(raw).replace(/[^a-z0-9 ]+/g," ").split(/\s+/).filter(v=>v.length>3))];
+}
+function evergreenForArticle(a,guides,limit=2){
+  const articleText=normalizeText([a?.title,a?.summary,a?.category,topicForArticle(a)].join(" "));
+  const topic=topicForArticle(a);
+  return guides.map(g=>{
+    let score=0;
+    if(normalizeText(g.topic)===normalizeText(topic))score+=6;
+    if(normalizeText(g.category)===normalizeText(a.category))score+=3;
+    for(const token of evergreenTokens(g))if(articleText.includes(token))score+=1;
+    return{g,score};
+  }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||String(a.g.title).localeCompare(String(b.g.title),"sk")).slice(0,limit).map(x=>x.g);
+}
+function evergreenLinksHtml(items){
+  if(!items.length)return"";
+  return `<section class="article-related" aria-labelledby="guide-heading"><div class="article-related-head"><span class="section-kicker">PRAKTICKÁ PORADŇA</span><h2 id="guide-heading">Ako postupovať krok za krokom</h2></div><div class="article-related-grid">${items.map(g=>`<article class="article-related-card"><a href="/poradna/${encodeURIComponent(g.slug)}/"><span class="eyebrow">${esc(g.category||g.topic||"Poradňa")}</span><h3>${esc(g.title)}</h3><p>${esc(g.summary)}</p><strong>Otvoriť poradňu →</strong></a></article>`).join("")}</div></section>`;
+}
+function evergreenSourcesHtml(sources){
+  if(!Array.isArray(sources)||!sources.length)return"";
+  return `<section><p class="overline">OFICIÁLNE ZDROJE</p><ul class="article-sources">${sources.map(s=>`<li><a href="${esc(s.url)}" rel="noopener noreferrer">${esc(s.title)} ↗</a></li>`).join("")}</ul></section>`;
+}
+function evergreenSchema(g){
+  const canonical=guideCanonicalFor(g.slug),orgId=SITE+"/#organization";
+  const article={"@type":"Article","@id":canonical+"#article",url:canonical,mainEntityOfPage:{"@type":"WebPage","@id":canonical},headline:g.title,description:g.metaDescription||g.summary,articleSection:g.category||g.topic,inLanguage:"sk-SK",isAccessibleForFree:true,datePublished:asDate(g.verified),dateModified:asDate(g.verified),author:{"@id":orgId},publisher:{"@id":orgId}};
+  const publisher={"@type":"Organization","@id":orgId,name:"Objektív24",url:SITE+"/",logo:{"@type":"ImageObject","url":SITE+"/assets/app-icon.svg"}};
+  const breadcrumb={"@type":"BreadcrumbList","@id":canonical+"#breadcrumb",itemListElement:[
+    {"@type":"ListItem","position":1,"name":"Objektív24","item":SITE+"/"},
+    {"@type":"ListItem","position":2,"name":"Poradňa","item":SITE+"/poradna/"},
+    {"@type":"ListItem","position":3,"name":g.title,"item":canonical}
+  ]};
+  return JSON.stringify({"@context":"https://schema.org","@graph":[publisher,article,breadcrumb]}).replace(/</g,"\\u003c");
+}
+function evergreenPageHtml(g,articles){
+  const canonical=guideCanonicalFor(g.slug);
+  const related=evergreenForArticle({title:g.title,summary:g.summary,category:g.topic},[],0);
+  const news=articles.map(a=>{
+    const hay=normalizeText([a.title,a.summary,a.category,topicForArticle(a)].join(" "));
+    let score=normalizeText(g.topic)===normalizeText(topicForArticle(a))?5:0;
+    for(const k of (g.keywords||[]))if(hay.includes(normalizeText(k)))score+=2;
+    return{a,score};
+  }).filter(x=>x.score>0&&!x.a.archived).sort((x,y)=>y.score-x.score||Date.parse(y.a.publishedAt||0)-Date.parse(x.a.publishedAt||0)).slice(0,3).map(x=>x.a);
+  const checklist=(g.checklist||[]).map(x=>`<li>${esc(x)}</li>`).join("");
+  const sections=(g.sections||[]).map(s=>`<section><p class="overline">${esc(s.heading)}</p><p>${esc(s.body)}</p></section>`).join("");
+  const warnings=(g.warnings||[]).length?`<section class="watch-section"><p class="overline">NA ČO SI DAŤ POZOR</p><ul class="article-steps">${g.warnings.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></section>`:"";
+  const relatedNews=news.length?`<section class="article-related" aria-labelledby="guide-news-heading"><div class="article-related-head"><span class="section-kicker">SÚVISIACE AKTUALITY</span><h2 id="guide-news-heading">Čo sa v téme zmenilo</h2></div><div class="article-related-grid">${news.map(a=>`<article class="article-related-card"><a href="/clanky/${encodeURIComponent(a.slug)}/"><span class="eyebrow">${esc(a.category)}</span><h3>${esc(a.title)}</h3><p>${esc(a.summary)}</p><strong>Čítať aktualitu →</strong></a></article>`).join("")}</div></section>`:"";
+  return `<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5"><title>${esc(g.seoTitle||g.title)}</title><meta name="description" content="${esc(g.metaDescription||g.summary)}"><meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1"><link rel="canonical" href="${canonical}"><meta property="og:site_name" content="Objektív24"><meta property="og:type" content="article"><meta property="og:url" content="${canonical}"><meta property="og:title" content="${esc(g.seoTitle||g.title)}"><meta property="og:description" content="${esc(g.metaDescription||g.summary)}"><meta name="twitter:card" content="summary"><link rel="icon" href="/assets/app-icon.svg?v=20260918-2" type="image/svg+xml"><script type="application/ld+json">${evergreenSchema(g)}</script><link rel="stylesheet" href="/styles.css?v=20260918-seo1"><script src="/analytics.js?v=4" defer></script><script src="/pwa.js?v=20" defer></script><script src="/back-to-top.js?v=2" defer></script></head><body><header class="site-header"><div class="topbar container"><a class="brand" href="/"><span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span><small>FAKTY · KONTEXT · ĽUDIA</small></a></div></header><main class="article-page"><article class="article-detail container"><header class="article-detail-header"><a class="eyebrow" href="/poradna/">PRAKTICKÁ PORADŇA · ${esc(g.category||g.topic)}</a><h1>${esc(g.title)}</h1><p class="article-lead">${esc(g.summary)}</p><div class="article-detail-meta"><span>Overené ${esc(g.verified)}</span><span>Objektív24</span></div></header><section class="article-brief"><div class="article-brief-head"><span class="section-kicker">PRE KOHO JE TENTO NÁVOD</span><h2>Keď potrebujete vedieť, čo urobiť</h2></div><div class="article-brief-grid"><div><strong>Koho sa týka</strong><p>${esc(g.audience)}</p></div><div><strong>Prečo je dôležitý</strong><p>${esc(g.why)}</p></div><div><strong>Stav informácií</strong><p>Podklady sme naposledy overili ${esc(g.verified)}. Pri časovo citlivom kroku si otvorte aj oficiálny zdroj.</p></div></div></section><div class="article-detail-grid"><div class="article-detail-copy"><section><p class="overline">KONTROLNÝ ZOZNAM</p><ol class="article-steps">${checklist}</ol></section>${sections}${warnings}${evergreenSourcesHtml(g.sources)}</div><aside class="article-detail-side"><div class="article-side-card"><span class="eyebrow">OVERENIE</span><strong>${esc(g.verified)}</strong><p>Evergreen návod aktualizujeme pri zmene oficiálnych pravidiel alebo postupu.</p></div><div class="article-side-card"><span class="eyebrow">DÔLEŽITÉ</span><p>Tento prehľad nenahrádza individuálne rozhodnutie alebo potvrdenie príslušnej inštitúcie.</p></div></aside></div>${relatedNews}</article></main><footer class="site-footer"><div class="container footer-grid"><div><a class="brand" href="/"><span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span></a><p>Fakty. Kontext. Ľudia.</p></div><div class="footer-links"><a href="/poradna/">Poradňa</a><a href="/terminy/">Termíny</a><a href="/temy/">Témy</a></div><p class="copyright">© 2026 Objektív24.</p></div></footer></body></html>`;
+}
+function evergreenIndexHtml(guides){
+  const canonical=SITE+"/poradna/";
+  const cards=guides.map(g=>`<article class="article-card"><div class="article-body"><span class="eyebrow">${esc(g.category||g.topic)}</span><h2 style="margin:10px 0 12px;font-size:1.55rem"><a href="/poradna/${encodeURIComponent(g.slug)}/" style="text-decoration:none">${esc(g.title)}</a></h2><p>${esc(g.summary)}</p><div class="article-meta"><span>Overené ${esc(g.verified)}</span><a href="/poradna/${encodeURIComponent(g.slug)}/">Otvoriť návod →</a></div></div></article>`).join("");
+  const schema={"@context":"https://schema.org","@graph":[{"@type":"CollectionPage","@id":canonical+"#page","name":"Praktická poradňa | Objektív24","description":"Trvalejšie návody Objektív24 postavené na oficiálnych zdrojoch.","url":canonical,"isPartOf":{"@id":SITE+"/#website"}},{"@type":"ItemList","itemListElement":guides.map((g,i)=>({"@type":"ListItem","position":i+1,"name":g.title,"url":guideCanonicalFor(g.slug)}))}]};
+  return `<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Praktická poradňa: čo vybaviť a ako postupovať</title><meta name="description" content="Praktické návody Objektív24 k Sociálnej poisťovni, daniam, SZČO a bezpečnosti. Krok za krokom, s dátumom overenia a oficiálnymi zdrojmi."><meta name="robots" content="index,follow,max-image-preview:large"><link rel="canonical" href="${canonical}"><link rel="icon" href="/assets/app-icon.svg?v=20260918-2" type="image/svg+xml"><script type="application/ld+json">${JSON.stringify(schema).replace(/</g,"\\u003c")}</script><link rel="stylesheet" href="/styles.css?v=20260918-seo1"><script src="/analytics.js?v=4" defer></script><script src="/pwa.js?v=20" defer></script><script src="/back-to-top.js?v=2" defer></script></head><body><header class="site-header"><div class="topbar container"><a class="brand" href="/"><span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span><small>FAKTY · KONTEXT · ĽUDIA</small></a></div></header><main class="discover container" style="padding-top:56px"><div class="section-row big"><div><span class="section-kicker">PRAKTICKÁ PORADŇA</span><h1 style="font-size:clamp(2.5rem,4vw,4.4rem);letter-spacing:-.06em">Návody, ktoré nezostarnú za jeden deň</h1><p style="max-width:850px;color:var(--muted);font-size:1.05rem;line-height:1.7">Poradňa spája trvalejšie postupy postavené na oficiálnych zdrojoch. Každý návod má kontrolný zoznam, dátum posledného overenia a odkazy na inštitúcie, podľa ktorých sme postup overili.</p></div><a href="/terminy/">Termíny →</a></div><div class="articles-grid" style="margin-top:32px">${cards}</div></main><footer class="site-footer"><div class="container footer-grid"><div><a class="brand" href="/"><span class="brand-word">OBJEKTÍV</span><span class="brand-badge">24</span></a><p>Fakty. Kontext. Ľudia.</p></div><div class="footer-links"><a href="/clanky/">Najnovšie</a><a href="/temy/">Témy</a><a href="/terminy/">Termíny</a></div><p class="copyright">© 2026 Objektív24.</p></div></footer></body></html>`;
+}
+
 const relatedStop=new Set(["ktory","ktora","ktore","tento","tato","dnes","zajtra","slovensko","objektiv24","uz","sa","si","na","do","od","pri","pre","a","v","vo","z","zo","je","su","o","aj","ako","co"]);
 function relatedTokens(a){
   return [...new Set(normalizeText([a?.title,a?.category].join(" ")).replace(/[^a-z0-9 ]+/g," ").split(/\s+/).filter(x=>x.length>3&&!relatedStop.has(x)))];
@@ -294,7 +352,7 @@ function sourcesHtml(sources){
   if (!sources.length) return "";
   return `<section><p class="overline">ZDROJE A PODKLADY</p><ul class="article-sources">${sources.map(u=>`<li><a href="${esc(u)}" rel="noopener noreferrer">${esc(hostLabel(u))} ↗</a></li>`).join("")}</ul></section>`;
 }
-function articleHtml(a,related=[],nextArticle=null){
+function articleHtml(a,related=[],nextArticle=null,guides=[]){
   const canonical = canonicalFor(a.slug);
   const seoTitle = seoTitleFor(a);
   const metaDescription = metaDescriptionFor(a);
@@ -306,6 +364,7 @@ function articleHtml(a,related=[],nextArticle=null){
   const watch = a.watch ? `<section class="watch-section"><p class="overline">NA ČO SI DAŤ POZOR</p><p>${esc(a.watch)}</p></section>` : "";
   const contact = a.contact ? `<section><p class="overline">KAM SA OBRÁTIŤ</p><p>${esc(a.contact)}</p></section>` : "";
   const relatedBlock = relatedHtml(related);
+  const guideBlock = evergreenLinksHtml(guides);
   const briefBlock = briefHtml(a);
   const readMins = readingMinutes(a);
   const nextBlock = nextArticleHtml(nextArticle);
@@ -385,6 +444,7 @@ function articleHtml(a,related=[],nextArticle=null){
           <div class="article-side-card"><span class="eyebrow">ZDROJE</span><p>Pri praktických a časovo citlivých témach uvádzame použité podklady priamo v článku.</p></div>
         </aside>
       </div>
+      ${guideBlock}
       ${relatedBlock}
       ${nextBlock}
     </article>
@@ -533,6 +593,7 @@ async function fetchDbArticles(){
 
 const staticRaw=JSON.parse(await fs.readFile(path.join(ROOT,"data/articles.json"),"utf8"));
 const strategy=JSON.parse(await fs.readFile(path.join(ROOT,"data/editorial-strategy.json"),"utf8"));
+const evergreen=JSON.parse(await fs.readFile(path.join(ROOT,"data/evergreen.json"),"utf8"));
 const staticArticles=staticRaw.map(articleFromStatic);
 const dbArticles=await fetchDbArticles();
 const archivedStaticByTitle=new Map(
@@ -555,7 +616,12 @@ await renderHomepage(articles,strategy);
 
 for(const a of articles){
   const related=relatedFor(a,articles);
-  await write(path.join("clanky",a.slug,"index.html"),articleHtml(a,related,nextFor(a,articles,related)));
+  const guides=evergreenForArticle(a,evergreen,2);
+  await write(path.join("clanky",a.slug,"index.html"),articleHtml(a,related,nextFor(a,articles,related),guides));
+}
+await write(path.join("poradna","index.html"),evergreenIndexHtml(evergreen));
+for(const g of evergreen){
+  await write(path.join("poradna",g.slug,"index.html"),evergreenPageHtml(g,articles));
 }
 await write(path.join("clanky","index.html"),archiveHtml(articles));
 await write(path.join("temy","index.html"),topicsIndexHtml(articles));
@@ -591,6 +657,8 @@ const sitemapUrls=[
   {loc:SITE+"/clanky/",lastmod:contentLastmod},
   {loc:SITE+"/temy/",lastmod:contentLastmod},
   {loc:SITE+"/terminy/",lastmod:strategy.updated?asDate(strategy.updated+"T00:00:00Z"):contentLastmod},
+  {loc:SITE+"/poradna/",lastmod:asDate(latestTimestamp(...evergreen.map(g=>g.verified)))},
+  ...evergreen.map(g=>({loc:guideCanonicalFor(g.slug),lastmod:asDate(g.verified)})),
   ...topicSitemapUrls,
   {loc:SITE+"/ako-pracujeme.html"},
   {loc:SITE+"/kontakt.html"},
