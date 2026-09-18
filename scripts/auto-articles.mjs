@@ -3,6 +3,8 @@ import { spawnSync } from "node:child_process";
 const INGEST_URL = "https://bkyappgttwjxakkwycub.supabase.co/functions/v1/github-article-ingest";
 const OIDC_AUDIENCE = "objektiv24-auto-articles";
 const MODEL = process.env.OLLAMA_MODEL || "qwen2.5:3b";
+const QA_RETRY_SOURCE_URL = String(process.env.QA_RETRY_SOURCE_URL || "").trim();
+const QA_DRY_RUN = process.env.QA_DRY_RUN === "1";
 
 const SOURCES = [
   {
@@ -843,7 +845,8 @@ for (const source of SOURCES) {
 const unique = new Map();
 for (const c of candidates) {
   const cu=canonicalUrl(c.link);
-  if (!c.link || knownSources.has(cu) || knownTitles.has(norm(c.title)) || !isFresh(c.pubDate)) continue;
+  const qaRetry = QA_RETRY_SOURCE_URL && cu === canonicalUrl(QA_RETRY_SOURCE_URL);
+  if (!c.link || (!qaRetry && knownSources.has(cu)) || (!qaRetry && knownTitles.has(norm(c.title))) || !isFresh(c.pubDate)) continue;
   if (recentTitles.some(t=>likelyDuplicate(c.title,t))) {
     console.log("Pred generovaním preskočená významová duplicita:", c.title);
     continue;
@@ -854,11 +857,18 @@ for (const c of candidates) {
   if (!unique.has(key)) unique.set(key, {...c, score:s});
 }
 candidates = [...unique.values()].sort((a,b)=>b.score-a.score);
-console.log("Po filtroch zostalo kandidátov:", candidates.length);
+if (QA_RETRY_SOURCE_URL) {
+  const wanted=canonicalUrl(QA_RETRY_SOURCE_URL);
+  candidates=candidates.filter(x=>canonicalUrl(x.link)===wanted);
+  console.log("QA dry-run kandidátov:", candidates.length, wanted);
+} else {
+  console.log("Po filtroch zostalo kandidátov:", candidates.length);
+}
 
 let published = 0;
 let attempts = 0;
 let repairedCandidates = 0;
+let dryRunPassed = 0;
 const publishedBySource=new Map();
 const maxToPublish = Math.min(5, Math.max(0, dailyCap - (status.published_last_24h || 0)));
 for (const c of candidates) {
@@ -937,6 +947,12 @@ for (const c of candidates) {
     article.seo_title=String(seo.seo_title||"").replace(/\s+/g," ").trim().replace(/[.!?]+$/,"");
     article.meta_description=String(seo.meta_description||"").replace(/\s+/g," ").trim();
 
+    if (QA_DRY_RUN) {
+      dryRunPassed++;
+      console.log("QA DRY RUN PASSED:", article.title, "| opravné zásahy:", repairedCandidates);
+      continue;
+    }
+
     const publishToken = await oidcToken();
     const result = await ingest(publishToken, {
       action:"publish",
@@ -958,4 +974,7 @@ for (const c of candidates) {
     console.warn("Kandidát zlyhal:", c.title, e.message || e);
   }
 }
-console.log("Beh dokončený. Publikované:", published, "Pokusy:", attempts, "Cielené opravy:", repairedCandidates);
+console.log("Beh dokončený. Publikované:", published, "Pokusy:", attempts, "Cielené opravy:", repairedCandidates, "Dry-run OK:", dryRunPassed);
+if (QA_DRY_RUN && dryRunPassed < 1) {
+  throw new Error("QA dry-run did not produce a fully QA-approved article");
+}
