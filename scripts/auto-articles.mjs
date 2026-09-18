@@ -398,9 +398,31 @@ function numericClaimsSupported(article, sourceText, sourceTitle) {
   const generated=[
     article.title,article.intro,article.what_happened,article.what_it_means,article.next_step
   ].join(" ");
-  const nums=[...generated.matchAll(/\b\d+(?:[.,]\d+)?\b/g)].map(m=>m[0].replace(",","."));
-  const source=norm(sourceText+" "+sourceTitle).replace(/,/g,".");
-  return [...new Set(nums)].every(n=>source.includes(n));
+  const nums=[...generated.matchAll(/\b\d+(?:[.,]\d+)?\b/g)]
+    .map(m=>m[0].replace(",","."))
+    .filter(n=>!/^0+$/.test(n));
+  const rawSource=String(sourceText+" "+sourceTitle);
+  const source=norm(rawSource).replace(/,/g,".");
+  return [...new Set(nums)].every(n=>{
+    if(source.includes(n)) return true;
+    const plain=n.replace(/\.0+$/,"");
+    if(source.includes(plain)) return true;
+    if(/^\d{4,}$/.test(plain) && /000$/.test(plain)) {
+      const thousands=String(Number(plain)/1000).replace(/\.0+$/,"");
+      if(source.includes(thousands) && /tisic/.test(source)) return true;
+    }
+    return false;
+  });
+}
+function normalizeFinalArticle(a) {
+  const out={...a};
+  for(const key of ["intro","what_happened","what_it_means","next_step"]) {
+    let v=String(out[key]||"").trim();
+    if(v && !/[.!?]$/.test(v)) v += ".";
+    out[key]=v;
+  }
+  out.title=String(out.title||"").trim().replace(/[.!?]+$/,"");
+  return out;
 }
 function basicArticleIssues(a, sourceText="", sourceTitle="") {
   const issues=[];
@@ -507,7 +529,7 @@ for (const c of candidates) {
       console.log("Prvý návrh neprešiel faktickou/štrukturálnou kontrolou:", c.title, basicArticleIssues(draft,body,c.title).join(","));
       continue;
     }
-    const article = await polishArticle(c, body, draft);
+    const article = normalizeFinalArticle(await polishArticle(c, body, draft));
     if (!validArticle(article, body, c.title)) {
       console.log("Jazyková korektúra neprešla QA:", c.title, articleIssues(article,body,c.title).join(","));
       continue;
