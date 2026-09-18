@@ -75,6 +75,7 @@ jobs:
 
           # Executes the ingest function runtime but stops before OIDC verification.
           probe "github-article-ingest" "GET" "github-article-ingest" "405"
+          probe "github-evergreen-check" "POST" "github-evergreen-check" "401" "{}"
 
           # JWT gateway protection should remain active for editor-only HeyGen functions.
           probe "heygen-render" "POST" "heygen-render" "401|403" "{}"

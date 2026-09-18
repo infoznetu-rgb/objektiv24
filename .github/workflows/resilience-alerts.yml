@@ -5,6 +5,7 @@ on:
     workflows:
       - "Objektiv24 encrypted Supabase backup"
       - "Automatické články Objektív24"
+      - "Objektív24 evergreen source check"
     types:
       - completed
 
@@ -37,6 +38,10 @@ jobs:
             "Automatické články Objektív24")
               TITLE="🚨 Objektív24: automatické články zlyhali"
               LABEL="automatické články"
+              ;;
+            "Objektív24 evergreen source check")
+              TITLE="🚨 Objektív24: kontrola evergreen zdrojov zlyhala"
+              LABEL="kontrola evergreen zdrojov"
               ;;
             *)
               echo "Workflow '$WORKFLOW_NAME' sa nemonitoruje."
