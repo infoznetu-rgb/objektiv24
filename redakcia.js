@@ -377,6 +377,37 @@ async function isPubliclyVisible(id){
   }catch{return false}
 }
 
+async function sendPublishedPush(saved){
+  if(!saved?.id)return;
+  const {data:row,error:rowError}=await client.from("drafts").select("id,title,intro,slug,push_sent_at").eq("id",saved.id).single();
+  if(rowError)throw rowError;
+  if(row.push_sent_at)return;
+
+  const {data:{session}}=await client.auth.getSession();
+  if(!session?.access_token)throw new Error("Chýba prihlásenie pre odoslanie upozornenia.");
+
+  const articleUrl=row.slug
+    ? "https://objektiv24.sk/clanok.html?slug="+encodeURIComponent(row.slug)
+    : "https://objektiv24.sk/clanok.html?id="+encodeURIComponent(row.id);
+
+  const response=await fetch(SUPABASE_URL+"/functions/v1/send-push-notification",{
+    method:"POST",
+    headers:{
+      Authorization:"Bearer "+session.access_token,
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify({
+      title:row.title,
+      body:row.intro||"Na Objektív24 vyšiel nový článok.",
+      url:articleUrl
+    })
+  });
+  if(!response.ok)throw new Error("Push upozornenie sa nepodarilo odoslať: "+await response.text());
+
+  const {error:markError}=await client.from("drafts").update({push_sent_at:new Date().toISOString()}).eq("id",row.id).is("push_sent_at",null);
+  if(markError)throw markError;
+}
+
 async function publishCurrentDraft(){
   const title=$("#title").value.trim();
   const intro=$("#intro").value.trim();
@@ -391,8 +422,15 @@ async function publishCurrentDraft(){
     const saved=await saveDraft();
     const visible=await isPubliclyVisible(saved.id);
     if(visible){
-      $("#draft-status").textContent="Publikované na webe";
-      alert("Článok je publikovaný. Na titulke sa zobrazí po obnovení stránky.");
+      try{
+        await sendPublishedPush(saved);
+        $("#draft-status").textContent="Publikované · upozornenie odoslané";
+        alert("Článok je publikovaný a push upozornenie bolo automaticky odoslané.");
+      }catch(pushError){
+        console.error(pushError);
+        $("#draft-status").textContent="Publikované · push sa nepodaril";
+        alert("Článok je publikovaný, ale push upozornenie sa nepodarilo odoslať: "+(pushError?.message||pushError));
+      }
     }else{
       $("#draft-status").textContent="Vydané v databáze";
       alert("Článok je označený ako vydaný. Ešte treba jednorazovo povoliť verejné čítanie vydaných článkov v Supabase.");
