@@ -22,6 +22,7 @@ const splitLines = v => String(v || "").split(/\r?\n/).map(x=>x.trim()).filter(B
 const splitSteps = v => String(v || "").split(/\n\s*\n|\r?\n/).map(x=>x.trim()).filter(Boolean);
 const cleanSlug = v => String(v || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,110) || "clanok";
 const canonicalFor = slug => `${SITE}/clanky/${encodeURIComponent(slug)}/`;
+const absoluteUrl = v => { try { return new URL(String(v||""),SITE).href; } catch { return String(v||""); } };
 
 async function publicSupabaseConfig(){
   const app=await fs.readFile(path.join(ROOT,"app.js"),"utf8");
@@ -162,28 +163,48 @@ function nextArticleHtml(b){
   return `<section class="article-next" aria-label="Ďalší článok"><a href="/clanky/${encodeURIComponent(b.slug)}/">${b.image?`<img src="${esc(b.image)}" alt="${esc(b.imageAlt||b.title)}" loading="lazy" decoding="async">`:""}<div><span class="section-kicker">ĎALŠÍ ČLÁNOK</span><h2>${esc(b.title)}</h2><p>${esc(b.summary)}</p><strong>Pokračovať v čítaní →</strong></div></a></section>`;
 }
 function schemaFor(a){
-  const canonical = canonicalFor(a.slug);
-  const author = a.author && a.author !== "Objektív24"
-    ? {"@type":"Person","name":a.author}
-    : {"@type":"Organization","name":"Objektív24","url":SITE+"/","logo":{"@type":"ImageObject","url":SITE+"/assets/app-icon.svg"}};
-  const data = {
-    "@context":"https://schema.org",
+  const canonical=canonicalFor(a.slug);
+  const orgId=SITE+"/#organization";
+  const publisher={
+    "@type":"Organization",
+    "@id":orgId,
+    name:"Objektív24",
+    url:SITE+"/",
+    logo:{"@type":"ImageObject","url":SITE+"/assets/app-icon.svg"}
+  };
+  let author;
+  if(a.author && a.author!=="Objektív24"){
+    author={"@type":"Person","name":a.author};
+    if(a.author==="Jozef Kameník") author.url=SITE+"/ako-pracujeme.html#prevadzkovatel";
+  }else{
+    author={"@id":orgId};
+  }
+  const article={
     "@type":"NewsArticle",
-    mainEntityOfPage: {"@type":"WebPage","@id":canonical},
+    "@id":canonical+"#article",
+    url:canonical,
+    mainEntityOfPage:{"@type":"WebPage","@id":canonical},
     headline:a.title,
     description:a.summary,
-    datePublished:asDate(a.publishedAt || a.verifiedAt),
-    dateModified:asDate(a.modifiedAt || a.publishedAt || a.verifiedAt),
+    articleSection:a.category||topicForArticle(a),
+    inLanguage:"sk-SK",
+    isAccessibleForFree:true,
+    datePublished:asDate(a.publishedAt||a.verifiedAt),
+    dateModified:asDate(a.modifiedAt||a.publishedAt||a.verifiedAt),
     author,
-    publisher:{
-      "@type":"Organization",
-      name:"Objektív24",
-      url:SITE+"/",
-      logo:{"@type":"ImageObject","url":SITE+"/assets/app-icon.svg"}
-    }
+    publisher:{"@id":orgId}
   };
-  if (a.image) data.image=[a.image];
-  return JSON.stringify(data).replace(/</g,"\\u003c");
+  if(a.image) article.image=[absoluteUrl(a.image)];
+  const breadcrumb={
+    "@type":"BreadcrumbList",
+    "@id":canonical+"#breadcrumb",
+    itemListElement:[
+      {"@type":"ListItem","position":1,"name":"Objektív24","item":SITE+"/"},
+      {"@type":"ListItem","position":2,"name":"Všetky články","item":SITE+"/clanky/"},
+      {"@type":"ListItem","position":3,"name":a.title,"item":canonical}
+    ]
+  };
+  return JSON.stringify({"@context":"https://schema.org","@graph":[publisher,article,breadcrumb]}).replace(/</g,"\\u003c");
 }
 function sourcesHtml(sources){
   if (!sources.length) return "";
@@ -203,7 +224,7 @@ function articleHtml(a,related=[],nextArticle=null){
   const readMins = readingMinutes(a);
   const nextBlock = nextArticleHtml(nextArticle);
   const archive = a.archived ? '<div class="article-archive-banner"><strong>Archív:</strong> táto informácia bola viazaná na už uplynutý termín. Pred konaním si overte aktuálny stav.</div>' : "";
-  const ogImage = a.image ? `<meta property="og:image" content="${esc(a.image)}"><meta name="twitter:image" content="${esc(a.image)}">` : "";
+  const ogImage = a.image ? `<meta property="og:image" content="${esc(absoluteUrl(a.image))}"><meta name="twitter:image" content="${esc(absoluteUrl(a.image))}">` : "";
   return `<!doctype html>
 <html lang="sk">
 <head>
@@ -378,15 +399,16 @@ for(const a of staticArticles){
   }catch{}
 }
 
+const contentLastmod=asDate(latestTimestamp(...articles.map(a=>a.modifiedAt||a.publishedAt||a.verifiedAt)))||new Date().toISOString();
 const sitemapUrls=[
-  {loc:SITE+"/",lastmod:new Date().toISOString()},
-  {loc:SITE+"/clanky/",lastmod:new Date().toISOString()},
+  {loc:SITE+"/",lastmod:contentLastmod},
+  {loc:SITE+"/clanky/",lastmod:contentLastmod},
   {loc:SITE+"/ako-pracujeme.html"},
   {loc:SITE+"/kontakt.html"},
   ...articles.map(a=>({loc:canonicalFor(a.slug),lastmod:asDate(a.modifiedAt||a.publishedAt||a.verifiedAt)}))
 ];
-const sitemap=`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapUrls.map(x=>`  <url><loc>${xml(x.loc)}</loc>${x.lastmod?`<lastmod>${xml(x.lastmod)}</lastmod>`:""}</url>`).join("\n")}\n</urlset>\n`;
-await write("sitemap.xml",sitemap);
+const pagesSitemap=`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapUrls.map(x=>`  <url><loc>${xml(x.loc)}</loc>${x.lastmod?`<lastmod>${xml(x.lastmod)}</lastmod>`:""}</url>`).join("\n")}\n</urlset>\n`;
+await write("sitemap-pages.xml",pagesSitemap);
 
 const newsCutoff=Date.now()-48*60*60*1000;
 const newsArticles=articles
@@ -399,6 +421,10 @@ const newsArticles=articles
 const newsSitemap=`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n${newsArticles.map(a=>`  <url>\n    <loc>${xml(canonicalFor(a.slug))}</loc>\n    <news:news>\n      <news:publication><news:name>Objektív24</news:name><news:language>sk</news:language></news:publication>\n      <news:publication_date>${xml(asDate(a.publishedAt||a.verifiedAt))}</news:publication_date>\n      <news:title>${xml(a.title)}</news:title>\n    </news:news>\n  </url>`).join("\n")}\n</urlset>\n`;
 await write("news-sitemap.xml",newsSitemap);
 
+const newsLastmod=asDate(latestTimestamp(...newsArticles.map(a=>a.modifiedAt||a.publishedAt||a.verifiedAt)))||contentLastmod;
+const sitemapIndex=`<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap><loc>${xml(SITE+"/sitemap-pages.xml")}</loc><lastmod>${xml(contentLastmod)}</lastmod></sitemap>\n  <sitemap><loc>${xml(SITE+"/news-sitemap.xml")}</loc><lastmod>${xml(newsLastmod)}</lastmod></sitemap>\n</sitemapindex>\n`;
+await write("sitemap.xml",sitemapIndex);
+
 const rssItems=articles.filter(a=>!a.archived).slice(0,50).map(a=>{
   const link=canonicalFor(a.slug);
   const d=new Date(a.publishedAt||a.verifiedAt||Date.now());
@@ -407,4 +433,4 @@ const rssItems=articles.filter(a=>!a.archived).slice(0,50).map(a=>{
 const rss=`<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel>\n  <title>Objektív24</title>\n  <link>${SITE}/</link>\n  <description>Správy v súvislostiach. Čo sa deje, čo to znamená pre vás a čo ďalej.</description>\n  <language>sk</language>\n  <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>\n${rssItems}\n</channel></rss>\n`;
 await write("rss.xml",rss);
 
-console.log(`Objektív24 SEO build: ${articles.length} článkov, sitemap, news sitemap a RSS hotové.`);
+console.log(`Objektív24 SEO build: ${articles.length} článkov, sitemap index, page sitemap, news sitemap a RSS hotové.`);
