@@ -46,7 +46,8 @@
       }).join('');
       const upcoming=(strategy.upcoming||[]).map(x=>({...x,days:daysLeft(x.date)})).filter(x=>x.days>=0&&x.days<=60).sort((a,b)=>a.days-b.days);
       $('#growth-deadlines').innerHTML=upcoming.length?upcoming.map(x=>'<a class="growth-row" href="/clanky/'+encodeURIComponent(x.slug)+'/" target="_blank" rel="noopener"><b>'+esc(x.label)+'</b><span>'+esc(formatDate(x.date))+(x.days===0?' · dnes':x.days===1?' · zajtra':' · '+x.days+' dní')+'</span></a>').join(''):'<p>Bez blízkych termínov.</p>';
-      $('#growth-evergreen').innerHTML=(strategy.evergreen||[]).slice(0,6).map(x=>'<div class="growth-row"><b>'+esc(x.title)+'</b><span>'+esc(x.topic)+' · '+esc(x.reason)+'</span></div>').join('');
+      const evergreen=(strategy.evergreen||[]).filter(x=>x.status!=='published');
+      $('#growth-evergreen').innerHTML=evergreen.length?evergreen.slice(0,6).map(x=>'<div class="growth-row"><b>'+esc(x.title)+'</b><span>'+esc(x.topic)+' · '+esc(x.reason)+'</span></div>').join(''):'<p>Aktuálny evergreen zásobník je spracovaný.</p>';
       note.textContent='Plán aktualizovaný '+(strategy.updated||'—')+' · Pokrytie sa počíta z publikovaných článkov za posledných 7 dní.';
     }catch(e){
       note.textContent='Rastový plán sa nepodarilo načítať: '+(e?.message||e);
