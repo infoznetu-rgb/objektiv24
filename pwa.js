@@ -3,7 +3,7 @@
   window.__objektiv24PwaLoaded=true;
   if(document.querySelector('link[rel="manifest"]')===null){const m=document.createElement('link');m.rel='manifest';m.href='/manifest.webmanifest';document.head.appendChild(m)}
   if(document.querySelector('link[rel="apple-touch-icon"]')===null){const i=document.createElement('link');i.rel='apple-touch-icon';i.href='/assets/app-icon-192.svg?v=20260918-2';document.head.appendChild(i)}
-  if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js?v=18',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js?v=19',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
   const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true,ua=navigator.userAgent||'',isIOS=/iphone|ipad|ipod/i.test(ua),isAndroid=/android/i.test(ua),isMobile=isIOS||isAndroid,isChrome=/chrome|crios/i.test(ua)&&!/edg|opr|opera/i.test(ua),isInApp=/wv|FBAN|FBAV|Instagram|WhatsApp|Messenger/i.test(ua);
   const dismissKey='objektiv24_mobile_panel_dismissed_until_v15';let deferredPrompt=null,shown=false,dockTimer=null;
   const track=type=>{if(typeof window.objektiv24Track==='function')window.objektiv24Track(type)};
@@ -68,8 +68,7 @@
     s.defer=true;
     document.head.appendChild(s);
   }
-  function addEditorLink(){document.querySelectorAll('.nav-inner').forEach(nav=>{if(nav.querySelector('.editor-link'))return;const a=document.createElement('a');a.href='redakcia.html';a.className='editor-link';a.textContent='Redakcia';const motto=nav.querySelector('.nav-motto');motto?nav.insertBefore(a,motto):nav.appendChild(a)})}
-  function addMenuLink(){document.querySelectorAll('.nav-inner').forEach(nav=>{if(nav.querySelector('.pwa-install-link'))return;const a=document.createElement('a');a.href='#';a.className='pwa-install-link';a.textContent=standalone?'Objektív24 '+(isMobile?'v mobile':'v počítači')+' ✓':'Objektív24 '+(isMobile?'v mobile':'v počítači');a.addEventListener('click',e=>{e.preventDefault();openCard(true)});const motto=nav.querySelector('.nav-motto');motto?nav.insertBefore(a,motto):nav.appendChild(a)})}
+  function bindMenuLinks(){document.querySelectorAll('.pwa-install-link').forEach(a=>{if(a.dataset.pwaBound==='1')return;a.dataset.pwaBound='1';a.addEventListener('click',e=>{e.preventDefault();openCard(true)})})}
   function card(){let el=document.querySelector('#pwa-install-card');if(el)return el;el=document.createElement('aside');el.id='pwa-install-card';el.className='pwa-card';el.hidden=true;document.body.appendChild(el);return el}
   function dock(){if(!isMobile)return null;let el=document.querySelector('#pwa-install-dock');if(el)return el;el=document.createElement('button');el.type='button';el.id='pwa-install-dock';el.className='pwa-dock';el.innerHTML='<span>'+(standalone?'🔔':'📱')+' Objektív24</span>';el.hidden=true;el.onclick=()=>openCard(true);document.body.appendChild(el);return el}
   function showDock(){const d=dock();if(isMobile&&d)d.hidden=false}
@@ -146,7 +145,7 @@
   }
   localStorage.removeItem('objektiv24_installed');localStorage.removeItem('objektiv24_push_enabled');
   function scheduleMobilePanel(){if(!isMobile)return;setTimeout(()=>{const dismissed=Number(localStorage.getItem(dismissKey))||0;if(document.body?.classList.contains('analytics-consent-open')){showDock();return}if(Date.now()>dismissed)openCard(false);else showDock()},6500)}
-  addEditorLink();addMenuLink();dock();addBackToTop();scheduleMobilePanel();
+  bindMenuLinks();dock();addBackToTop();scheduleMobilePanel();
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;const existing=document.querySelector('#pwa-install-card');if(existing&&!existing.hidden)openCard(true)});
   window.addEventListener('appinstalled',()=>{track('app_installed');deferredPrompt=null;localStorage.removeItem('objektiv24_installed');const existing=document.querySelector('#pwa-install-card');if(existing&&!existing.hidden)openCard(true);showDock()});
 })();
