@@ -31,7 +31,7 @@ async function publicSupabaseConfig(){
   return {url,key};
 }
 function imageLabel(a){
-  if (a.imageType === "ai" || /\/assets\/ai\//i.test(a.image || "")) return "Ilustračný obrázok · AI";
+  if (a.imageType === "ai" || a.imageType === "ai_illustration" || /\/assets\/ai\//i.test(a.image || "")) return "Ilustračný obrázok · AI";
   if (a.imageType === "own") return "Vlastná fotografia";
   if (a.imageType === "official") return "Oficiálny obrázok";
   return "Ilustračná fotografia";
