@@ -15,14 +15,14 @@ permissions:
 
 concurrency:
   group: objektiv24-auto-articles
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   generate:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      OLLAMA_MODEL: qwen2.5:3b
+      OLLAMA_MODEL: qwen2.5:1.5b
       OLLAMA_MODELS: ${{ github.workspace }}/.ollama-models
 
     steps:
@@ -33,7 +33,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .ollama-models
-          key: objektiv24-ollama-qwen25-3b-v1
+          key: objektiv24-ollama-qwen25-15b-v1
 
       - name: Install Ollama
         run: |
