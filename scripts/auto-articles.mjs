@@ -369,6 +369,57 @@ Uprav návrh do profesionálnej redakčnej slovenčiny. Nemeň fakty ani čísla
   const data=await response.json();
   return JSON.parse(String(data?.message?.content||"").trim());
 }
+async function reviewArticleLanguage(candidate, sourceBody, article) {
+  const schema = {
+    type:"object",
+    additionalProperties:false,
+    required:["ok","issues"],
+    properties:{
+      ok:{type:"boolean"},
+      issues:{type:"array",items:{type:"string"},maxItems:8}
+    }
+  };
+  const system = [
+    "Si prísny finálny jazykový editor slovenského spravodajského webu Objektív24.",
+    "Nič neprepisuj. Iba rozhodni, či je text bezpečné publikovať.",
+    "Zamietni text pri gramatickej chybe, nespisovnom alebo useknutom slove, nedokončenej vete, neprirodzenej formulácii, tautológii alebo zbytočnom opakovaní.",
+    "Zamietni text aj vtedy, ak jazyková korektúra zmenila vecný význam, číslo, dátum, podmienku alebo pridala tvrdenie, ktoré nie je v oficiálnom zdroji.",
+    "Zamietni marketingový alebo PR jazyk. Titulok musí byť prirodzený, úplný a bez opakovania rovnakého slovného koreňa.",
+    "Ak nájdeš čo i len jednu vážnu chybu, nastav ok=false a stručne ju pomenuj v issues.",
+    "Vráť iba JSON podľa schémy."
+  ].join(" ");
+  const prompt = `OFICIÁLNY ZDROJ
+Inštitúcia: ${candidate.sourceName}
+Zdrojový titulok: ${candidate.title}
+Výňatok:
+${sourceBody.slice(0,2600)}
+
+FINÁLNY ČLÁNOK:
+${JSON.stringify(article)}`;
+
+  const ctrl=new AbortController();
+  const timer=setTimeout(()=>ctrl.abort(),120000);
+  let response;
+  try {
+    response=await fetch("http://127.0.0.1:11434/api/chat",{
+      method:"POST",
+      signal:ctrl.signal,
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:MODEL,
+        stream:false,
+        format:schema,
+        messages:[{role:"system",content:system},{role:"user",content:prompt}],
+        options:{temperature:0,num_ctx:4096,num_predict:220}
+      })
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+  if(!response.ok) throw new Error("Finálna jazyková QA Ollama HTTP "+response.status+": "+await response.text());
+  const data=await response.json();
+  return JSON.parse(String(data?.message?.content||"").trim());
+}
 
 function fieldWords(v="") {
   return norm(v).split(" ").filter(w=>w.length>2);
@@ -477,8 +528,10 @@ function articleIssues(a, sourceText="", sourceTitle="") {
   const next=String(a.next_step||"").trim();
   const fields=[intro,happened,means,next];
   if(/\b(a|aj|ale|alebo|do|na|o|od|po|pod|pre|pri|s|so|v|vo|z|za|zo|že)$/i.test(title)) issues.push("title-incomplete");
+  const stems=titleStems(title);
+  if(stems.some((s,i)=>stems.indexOf(s)!==i)) issues.push("title-repeated-word-root");
   const allText=[title,...fields].join(" ");
-  if(/\b(časťe|vstúpíkom|zamestnávateľi|významné výsledkom|v príprave na novú právnu úpravu vznikla)\b/i.test(allText)) issues.push("known-language-error");
+  if(/\b(časťe|vstúpíkom|zamestnávateľi|významné výsledkom|v príprave na novú právnu úpravu vznikla|úrokovk\w*|dôchodkovéh)\b/i.test(allText)) issues.push("known-language-error");
   if(/\b(pohodlné|revolučné|skvelé)\b/i.test(allText)) issues.push("marketing-language");
   fields.forEach((x,i)=>{if(!/["”')\]]?[.!?]$/.test(x)) issues.push("unfinished-field-"+i)});
   fields.forEach((x,i)=>{if(repeatedSentence(x)) issues.push("repeated-sentence-"+i)});
@@ -555,6 +608,11 @@ for (const c of candidates) {
     const article = normalizeFinalArticle(await polishArticle(c, body, draft));
     if (!validArticle(article, body, c.title)) {
       console.log("Jazyková korektúra neprešla QA:", c.title, articleIssues(article,body,c.title).join(","));
+      continue;
+    }
+    const finalReview = await reviewArticleLanguage(c, body, article);
+    if (!finalReview?.ok) {
+      console.log("Finálna jazyková QA odmietla:", c.title, (finalReview?.issues||[]).join(" | "));
       continue;
     }
     const result = await ingest(token, {
