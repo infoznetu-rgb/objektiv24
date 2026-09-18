@@ -33,6 +33,13 @@ const SOURCES = [
     type: "rss",
     url: "https://www.slovensko.sk/sk/rss/oznamy",
   },
+  {
+    name: "Slovenská pošta",
+    type: "html",
+    url: "https://www.posta.sk/clanky",
+    accept: (u) => /posta\.sk\/clanky\/[^/?#]+/i.test(u),
+    limit: 12,
+  },
 ];
 
 const PRACTICAL = [
@@ -158,6 +165,7 @@ function parseHtmlLinks(html, source) {
     if (source.accept && !source.accept(link, title)) continue;
     if (score(title) <= 0) continue;
     out.push({ sourceName: source.name, title, description: "", link, pubDate: "" });
+    if (source.limit && out.length >= source.limit) break;
   }
   return out;
 }
@@ -204,6 +212,22 @@ async function ingest(token, payload) {
   try { data = JSON.parse(text); } catch { data = { error: text }; }
   if (!r.ok) throw new Error("Ingest HTTP " + r.status + ": " + JSON.stringify(data));
   return data;
+}
+async function recordRejected(candidate, reason) {
+  try {
+    const rejectToken = await oidcToken();
+    await ingest(rejectToken, {
+      action: "reject",
+      reason: String(reason || "rejected by local QA").slice(0, 800),
+      article: {
+        source_url: candidate.link,
+        source_name: candidate.sourceName,
+        source_title: candidate.title,
+      }
+    });
+  } catch (e) {
+    console.warn("Nepodarilo sa zapísať QA odmietnutie:", candidate.title, e.message || e);
+  }
 }
 async function generate(candidate, sourceBody) {
   const system = [
@@ -642,18 +666,23 @@ for (const c of candidates) {
     }
     attempts++;
     const draft = await generate(c, body);
-    if (!basicArticleValid(draft, body, c.title)) {
-      console.log("Prvý návrh neprešiel faktickou/štrukturálnou kontrolou:", c.title, basicArticleIssues(draft,body,c.title).join(","));
+    const draftIssues = basicArticleIssues(draft, body, c.title);
+    if (draftIssues.length) {
+      console.log("Prvý návrh neprešiel faktickou/štrukturálnou kontrolou:", c.title, draftIssues.join(","));
+      await recordRejected(c, "first-stage QA: " + draftIssues.join(","));
       continue;
     }
     const article = normalizeFinalArticle(await polishArticle(c, body, draft));
-    if (!validArticle(article, body, c.title)) {
-      console.log("Jazyková korektúra neprešla QA:", c.title, articleIssues(article,body,c.title).join(","));
+    const polishedIssues = articleIssues(article, body, c.title);
+    if (polishedIssues.length) {
+      console.log("Jazyková korektúra neprešla QA:", c.title, polishedIssues.join(","));
+      await recordRejected(c, "polished QA: " + polishedIssues.join(","));
       continue;
     }
     const spellingIssues = hunspellIssues(article, body, c.title);
     if (spellingIssues.length) {
       console.log("Slovníková QA odmietla:", c.title, spellingIssues.join(" | "));
+      await recordRejected(c, "dictionary QA: " + spellingIssues.join(" | "));
       continue;
     }
     const finalReview = await reviewArticleLanguage(c, body, article);
@@ -668,7 +697,9 @@ for (const c of candidates) {
       finalReview.issues.length===0
     );
     if (!finalReviewOk) {
-      console.log("Finálna jazyková QA odmietla:", c.title, (finalReview?.issues||[]).join(" | "));
+      const finalIssues = (finalReview?.issues||[]).join(" | ") || "field-level language QA failed";
+      console.log("Finálna jazyková QA odmietla:", c.title, finalIssues);
+      await recordRejected(c, "final language QA: " + finalIssues);
       continue;
     }
     const publishToken = await oidcToken();

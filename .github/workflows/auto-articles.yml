@@ -20,7 +20,7 @@ concurrency:
 jobs:
   generate:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     env:
       OLLAMA_MODEL: qwen2.5:3b
       OLLAMA_MODELS: ${{ github.workspace }}/.ollama-models
@@ -56,6 +56,9 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y hunspell hunspell-sk
+
+      - name: Validate automation script
+        run: node --check scripts/auto-articles.mjs
 
       - name: Generate and publish
         run: node scripts/auto-articles.mjs
