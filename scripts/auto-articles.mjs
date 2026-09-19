@@ -8,6 +8,7 @@ const QA_RETRY_SOURCE_NAME = String(process.env.QA_RETRY_SOURCE_NAME || "").trim
 const QA_RETRY_SOURCE_TITLE = String(process.env.QA_RETRY_SOURCE_TITLE || "").trim();
 const QA_DRY_RUN = process.env.QA_DRY_RUN === "1";
 const QA_FORCE_REPAIR_FIXTURE = process.env.QA_FORCE_REPAIR_FIXTURE === "1";
+const QA_SELF_TEST = process.env.QA_SELF_TEST === "1";
 
 const SOURCES = [
   {
@@ -862,6 +863,49 @@ function articleIssues(a, sourceText="", sourceTitle="") {
 }
 function validArticle(a, sourceText="", sourceTitle="") {
   return articleIssues(a,sourceText,sourceTitle).length===0;
+}
+
+if (QA_SELF_TEST) {
+  const fail=(message)=>{throw new Error("QA self-test failed: "+message)};
+
+  const safeIntro="Sociálna poisťovňa upozorňuje ľudí na podvodné videá na sociálnej sieti. Klienti majú chrániť svoje osobné údaje.";
+  const truncated=safeIntro+" Ďalšia veta bola modelom useknutá a.";
+  const cleaned=dropClearlyTruncatedLastSentence(truncated,80);
+  if(cleaned!==safeIntro) fail("truncated last sentence was not safely removed");
+  if(suspiciousOneLetterEnding(cleaned)) fail("cleaned text still has suspicious ending");
+
+  const typoFixed=fixKnownLanguageTypos({
+    title:"Testovací článok o bezpečnosti osobných údajov",
+    intro:"Používatelia môžu byť ohrožení podvodným obsahom na sociálnych sieťach.",
+    what_happened:"Bezpečnostné upozornenie sa týka ochrany osobných údajov a dôveryhodnosti správ. ".repeat(4),
+    what_it_means:"Používateľ by mal overovať zdroj správy a neposielať citlivé údaje cez neoverené formuláre. ".repeat(3),
+    next_step:"Pri pochybnostiach je vhodné použiť oficiálny kontakt inštitúcie a správu neposúvať ďalej. ".repeat(2)
+  });
+  if(/\bohrožení\b/iu.test(JSON.stringify(typoFixed))) fail("known Slovak typo was not fixed");
+  if(!/\bohrození\b/iu.test(typoFixed.intro)) fail("expected corrected Slovak form is missing");
+
+  const numericFixture={
+    title:"Testovací článok o bezpečnosti osobných údajov",
+    intro:"Oficiálny zdroj upozorňuje na podvodný obsah a odporúča chrániť osobné údaje 987654321.",
+    what_happened:"Oficiálna inštitúcia upozorňuje používateľov na podvodné videá a správy, ktoré sa môžu vydávať za dôveryhodnú komunikáciu. Cieľom je získať osobné údaje alebo presmerovať človeka na neoverený formulár. Pri podobnom obsahu je dôležité skontrolovať pôvod správy a neodosielať citlivé údaje bez overenia.",
+    what_it_means:"Pre používateľa to znamená, že samotné logo alebo názov inštitúcie ešte nepotvrdzuje pravosť správy. Dôležitý je oficiálny kanál, adresa stránky a obsah výzvy. Pri neistote je bezpečnejšie správu neotvárať a údaje neposielať.",
+    next_step:"Ak dostanete podozrivú správu, overte si informáciu na oficiálnom webe alebo cez oficiálny kontakt inštitúcie. Nezadávajte osobné údaje do formulára, ktorého pôvod neviete spoľahlivo overiť."
+  };
+  if(numericClaimsSupported(numericFixture,"Oficiálny zdroj upozorňuje na podvodné videá a ochranu osobných údajov.","Bezpečnostné upozornenie")) {
+    fail("unsupported numeric claim was not detected");
+  }
+
+  const cleanFixture=cleanupModelArticle({
+    ...numericFixture,
+    intro:truncated.replace("987654321.",""),
+    what_it_means:numericFixture.what_it_means.replace(/\.$/,"")+" v."
+  });
+  if(suspiciousOneLetterEnding(cleanFixture.intro)||suspiciousOneLetterEnding(cleanFixture.what_it_means)) {
+    fail("cleanupModelArticle left a suspicious one-letter ending");
+  }
+
+  console.log("QA SAFEGUARD SELF-TEST PASSED");
+  process.exit(0);
 }
 
 let status;

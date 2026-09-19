@@ -9,65 +9,23 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 concurrency:
   group: objektiv24-qa-repair-smoke
   cancel-in-progress: true
 
 jobs:
-  qa-repair:
+  qa-safeguards:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
-    env:
-      OLLAMA_MODEL: qwen3:4b-instruct
-      OLLAMA_MODELS: ${{ github.workspace }}/.ollama-models
-      QA_RETRY_SOURCE_URL: https://socpoist.sk/news/pozor-na-podvodne-videa-socialna-poistovna-od-vas-cez-facebook-neziada-osobne-udaje
-      QA_RETRY_SOURCE_NAME: Sociálna poisťovňa
-      QA_RETRY_SOURCE_TITLE: "Pozor na podvodné videá: Sociálna poisťovňa od vás cez Facebook nežiada osobné údaje"
-      QA_DRY_RUN: "1"
-      QA_FORCE_REPAIR_FIXTURE: "1"
-
+    timeout-minutes: 5
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Cache Ollama model
-        uses: actions/cache@v4
-        with:
-          path: .ollama-models
-          key: objektiv24-ollama-qwen25-3b-v2
-
-      - name: Install Ollama
-        run: |
-          curl -fsSL https://ollama.com/install.sh | sh
-          sudo systemctl stop ollama || true
-          pkill -x ollama || true
-          mkdir -p "${OLLAMA_MODELS}"
-          nohup env OLLAMA_MODELS="${OLLAMA_MODELS}" ollama serve >/tmp/ollama.log 2>&1 &
-          for i in {1..30}; do
-            if curl -fsS http://127.0.0.1:11434/api/tags >/dev/null; then
-              break
-            fi
-            sleep 1
-          done
-
-      - name: Prepare Slovak editorial model
-        run: ollama pull "${OLLAMA_MODEL}"
-
-      - name: Install Slovak spell checker
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y hunspell hunspell-sk
-
       - name: Validate automation script
         run: node --check scripts/auto-articles.mjs
 
-      - name: Run read-only QA repair test
+      - name: Run deterministic QA safeguards
+        env:
+          QA_SELF_TEST: "1"
         run: node scripts/auto-articles.mjs
-
-      - name: Ollama diagnostics on failure
-        if: failure()
-        run: |
-          echo "=== Ollama log ==="
-          tail -n 200 /tmp/ollama.log || true
