@@ -197,8 +197,9 @@ function parseRss(xml, source) {
     const link = absUrl(rawLink, source.url);
     const title = get("title");
     const description = get("description");
+    const sourceContent = get("content:encoded") || get("content");
     const pubDate = get("pubDate") || get("dc:date");
-    if (title && link) items.push({ sourceName: source.name, title, description, link, pubDate });
+    if (title && link) items.push({ sourceName: source.name, title, description, sourceContent, link, pubDate });
   }
   return items;
 }
@@ -265,7 +266,7 @@ function metadataArticleText(html) {
   return chunks.join(" ").slice(0,5000);
 }
 function sourceArticleText(html, candidate={}) {
-  const parts=[articleText(html),metadataArticleText(html),String(candidate.description||"")];
+  const parts=[articleText(html),metadataArticleText(html),String(candidate.sourceContent||""),String(candidate.description||"")];
   const out=[];
   const seen=new Set();
   for(const raw of parts) {
@@ -975,7 +976,7 @@ if (QA_SELF_TEST) {
     '<script type="application/ld+json">{"@type":"NewsArticle","articleBody":"Oficiálna inštitúcia zverejnila podrobné upozornenie pre používateľov služby. Vysvetľuje rozsah zmeny, dotknuté skupiny a odporúčaný postup. Informácie pochádzajú priamo z oficiálneho oznámenia a slúžia ako podklad na vecné spracovanie článku bez dopĺňania nových faktov."}</script>' +
     '</head><body><main><p>Krátky viditeľný text stránky.</p></main></body></html>';
   const extractedSource=sourceArticleText(extractionFixture,{description:"RSS popis dopĺňa, že používateľ si má pred vykonaním úkonu skontrolovať aktuálne podmienky na oficiálnom webe inštitúcie."});
-  if(extractedSource.length<420) fail("structured source fallback did not provide enough trusted source text");
+  if(extractedSource.length<300) fail("structured source fallback did not provide enough trusted source text");
   if(!extractedSource.includes("Oficiálna inštitúcia")) fail("JSON-LD articleBody was not extracted");
   if(!extractedSource.includes("RSS popis")) fail("RSS description fallback was not included");
 
@@ -1087,7 +1088,7 @@ for (const c of candidates) {
     if (!isQaRetrySource && knownSources.has(canonicalUrl(c.link))) continue;
     const visibleBody = articleText(page.text);
     const body = sourceArticleText(page.text,c);
-    if (body.length < 420) {
+    if (body.length < 300) {
       console.log("Preskočené pre málo podkladov:", c.title, "| viditeľný text:", visibleBody.length, "| obohatený podklad:", body.length);
       continue;
     }
