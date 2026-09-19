@@ -1,0 +1,236 @@
+/* Mobile/PWA-only cleanup for Redakcia.
+   Activated only when redakcia.html adds .redakcia-app and the viewport is <= 900px.
+   Desktop/browser Redakcia and publishing automation are untouched. */
+
+@media (max-width:900px){
+  html.redakcia-app,
+  html.redakcia-app body{overflow-x:hidden}
+
+  html.redakcia-app .editor-topbar{
+    min-height:64px;
+    padding:calc(10px + env(safe-area-inset-top)) 14px 10px;
+    gap:12px;
+    position:sticky;
+    top:0;
+    z-index:100;
+  }
+  html.redakcia-app .editor-brand{font-size:1.35rem}
+  html.redakcia-app .editor-label{display:none}
+
+  /* Keep the article picker compact instead of consuming most of the screen. */
+  html.redakcia-app .drafts-panel{
+    border-right:0;
+    border-bottom:1px solid var(--line);
+  }
+  html.redakcia-app .drafts-sticky{
+    position:static;
+    height:auto;
+    max-height:none;
+    padding:14px;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:10px 12px;
+    overflow:visible;
+  }
+  html.redakcia-app .drafts-panel h1{
+    margin:0;
+    align-self:center;
+    font-size:1.1rem;
+    font-weight:700;
+  }
+  html.redakcia-app .new-draft{
+    padding:9px 12px;
+    white-space:nowrap;
+  }
+  html.redakcia-app .search-label{
+    grid-column:1/-1;
+    margin:3px 0 -3px;
+  }
+  html.redakcia-app .draft-search{grid-column:1/-1}
+  html.redakcia-app .draft-count{
+    grid-column:1/-1;
+    margin:0;
+  }
+  html.redakcia-app .draft-list{
+    grid-column:1/-1;
+    display:flex;
+    gap:10px;
+    max-height:none;
+    min-height:0;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scrollbar-gutter:auto;
+    padding:2px 2px 8px 0;
+    scroll-snap-type:x proximity;
+    -webkit-overflow-scrolling:touch;
+  }
+  html.redakcia-app .draft-card{
+    flex:0 0 min(78vw,280px);
+    scroll-snap-align:start;
+    padding:12px;
+  }
+
+  /* In the app, editing comes first. Dashboards remain available below it. */
+  html.redakcia-app .editor-main{
+    display:flex;
+    flex-direction:column;
+    max-width:none;
+    padding:18px 14px calc(60px + env(safe-area-inset-bottom));
+  }
+  html.redakcia-app .editor-main>.editor-quicknav{order:-20}
+  html.redakcia-app .editor-main>.editor-heading{order:0}
+  html.redakcia-app .editor-main>.mode-note{order:1}
+  html.redakcia-app .editor-main>.editor-tools{order:2}
+  html.redakcia-app .editor-main>#article-form{order:3}
+  html.redakcia-app .editor-main>#auto-articles-status{order:10}
+  html.redakcia-app .editor-main>#system-health{order:11}
+  html.redakcia-app .editor-main>#analytics-dashboard{order:20}
+  html.redakcia-app .editor-main>#growth-plan{order:21}
+  html.redakcia-app .editor-main>#editorial-qa{order:22}
+  html.redakcia-app .editor-main>#evergreen-watch{order:23}
+  html.redakcia-app .editor-main>#production-readiness{order:24}
+
+  html.redakcia-app .editor-heading{
+    gap:12px;
+    margin-top:2px;
+  }
+  html.redakcia-app .editor-heading h2{
+    font-size:2rem;
+    line-height:1;
+    margin-bottom:16px;
+  }
+  html.redakcia-app .draft-status{
+    margin-top:9px;
+    text-align:right;
+  }
+  html.redakcia-app .mode-note{
+    margin-bottom:18px;
+    font-size:.8rem;
+  }
+  html.redakcia-app .editor-tools{
+    grid-template-columns:1fr;
+    gap:12px;
+    margin:0 0 18px;
+  }
+  html.redakcia-app .editor-tools>div,
+  html.redakcia-app .live-card{padding:14px}
+  html.redakcia-app .live-card{padding:0}
+  html.redakcia-app .form-section{padding:18px 0}
+  html.redakcia-app .two-col{grid-template-columns:1fr;gap:0}
+
+  html.redakcia-app .form-footer{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  html.redakcia-app .form-footer>div:first-child{min-width:0;width:100%}
+  html.redakcia-app .actions{
+    width:100%;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:9px;
+  }
+  html.redakcia-app .actions button{
+    width:100%;
+    min-width:0;
+  }
+
+  /* The quick menu becomes a single, useful article toolbar in the app. */
+  html.redakcia-app .editor-quicknav{
+    position:sticky !important;
+    top:64px !important;
+    right:auto !important;
+    width:auto !important;
+    max-height:none !important;
+    margin:0 -14px 16px !important;
+    padding:8px 14px !important;
+    display:flex !important;
+    gap:7px !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    border-left:0 !important;
+    border-right:0 !important;
+    border-radius:0 !important;
+    z-index:80 !important;
+    -webkit-overflow-scrolling:touch;
+  }
+  html.redakcia-app .editor-quicknav[hidden]{display:none !important}
+  html.redakcia-app .editor-quicknav-head,
+  html.redakcia-app .editor-quicknav-status,
+  html.redakcia-app .editor-quicknav-label,
+  html.redakcia-app .editor-quicknav-group[data-group="overview"],
+  html.redakcia-app .editor-quicknav .quick-top{display:none !important}
+  html.redakcia-app .editor-quicknav-group[data-group="article"]{
+    display:flex !important;
+    gap:6px !important;
+    margin:0 !important;
+    flex:none;
+  }
+  html.redakcia-app .editor-quicknav button{
+    width:auto !important;
+    white-space:nowrap;
+    padding:8px 10px !important;
+  }
+  html.redakcia-app .editor-quicknav button.quick-save{
+    margin:0 !important;
+    flex:none;
+  }
+
+  /* Automation status is compact and horizontally scrollable in the app. */
+  html.redakcia-app #auto-articles-status{
+    display:flex !important;
+    gap:9px !important;
+    overflow-x:auto;
+    overflow-y:hidden;
+    margin:6px 0 20px;
+    padding:2px 0 8px;
+    scroll-snap-type:x proximity;
+    -webkit-overflow-scrolling:touch;
+  }
+  html.redakcia-app #auto-articles-status article{
+    flex:0 0 min(72vw,245px);
+    scroll-snap-align:start;
+    padding:12px 13px;
+  }
+  html.redakcia-app #auto-articles-status .auto-main{
+    flex-basis:min(82vw,290px);
+    grid-column:auto !important;
+  }
+
+  html.redakcia-app .system-health,
+  html.redakcia-app .analytics-dashboard,
+  html.redakcia-app .growth-dashboard,
+  html.redakcia-app .editorial-qa,
+  html.redakcia-app .evergreen-watch,
+  html.redakcia-app .production-readiness{
+    margin-bottom:18px;
+    padding:16px;
+    border-radius:16px;
+  }
+  html.redakcia-app .system-health-grid{grid-template-columns:1fr 1fr}
+  html.redakcia-app .analytics-head h2,
+  html.redakcia-app .growth-head h2,
+  html.redakcia-app .editorial-qa-head h2,
+  html.redakcia-app .evergreen-watch-head h2{
+    font-size:1.55rem;
+    line-height:1.05;
+  }
+
+  html.redakcia-app .source-verification{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  html.redakcia-app .source-verification button{width:100%}
+}
+
+@media (max-width:480px){
+  html.redakcia-app .editor-heading{display:block}
+  html.redakcia-app .draft-status{
+    display:block;
+    margin:0 0 14px;
+    text-align:left;
+  }
+  html.redakcia-app .actions{grid-template-columns:1fr}
+  html.redakcia-app .system-health-grid{grid-template-columns:1fr}
+  html.redakcia-app .editor-topbar{min-height:58px}
+  html.redakcia-app .editor-quicknav{top:58px !important}
+}
