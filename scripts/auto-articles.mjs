@@ -1102,7 +1102,7 @@ if (QA_DRY_RUN) {
   status = {
     ok:true,
     published_last_24h:0,
-    daily_cap:15,
+    daily_cap:9,
     recent_titles:[],
     recent_source_urls:[],
     known_sources:[]
@@ -1246,7 +1246,7 @@ const publishedBySource=new Map();
 const maxToPublish = Math.min(5, Math.max(0, dailyCap - (status.published_last_24h || 0)));
 for (const c of candidates) {
   if (published >= maxToPublish || attempts >= 3) {
-    if (attempts >= 3 && published < maxToPublish) console.log("Beh končí po troch náročných AI pokusoch; ďalší kandidáti počkajú na nasledujúcu hodinu.");
+    if (attempts >= 3 && published < maxToPublish) console.log("Beh končí po troch náročných AI pokusoch; ďalší kandidáti počkajú na ďalší 15-minútový beh.");
     break;
   }
   if ((publishedBySource.get(c.sourceName)||0) >= 2) {
