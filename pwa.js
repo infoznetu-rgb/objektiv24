@@ -172,7 +172,10 @@
     },9000)
   }
   const promoKey='objektiv24_app_promo_dismissed_until_v2';
+  const promoSessionKey='objektiv24_app_promo_seen_session_v1';
+  const installedKey='objektiv24_app_installed_v1';
   const isHome=/^\/(?:index\.html)?$/.test(location.pathname);
+  if(standalone)localStorage.setItem(installedKey,'1');
 
   function createAppPromo(){
     if(standalone||!isHome||document.querySelector('#objektiv24-app-promo'))return null;
@@ -221,18 +224,21 @@
     `;
     document.body.appendChild(promo);
 
-    const close=()=>{
+    let autoHideTimer=null;
+    const hidePromo=(remember=false,reason='auto')=>{
+      clearTimeout(autoHideTimer);
       promo.classList.remove('is-visible');
-      localStorage.setItem(promoKey,String(Date.now()+7*864e5));
+      if(remember)localStorage.setItem(promoKey,String(Date.now()+7*864e5));
       setTimeout(()=>promo.remove(),950);
-      track('app_promo_dismissed');
+      track(reason==='auto'?'app_promo_auto_hidden':'app_promo_dismissed');
     };
 
-    promo.querySelector('.app-promo-close')?.addEventListener('click',close);
+    promo.querySelector('.app-promo-close')?.addEventListener('click',()=>hidePromo(true,'manual'));
     promo.querySelector('.app-promo-url')?.addEventListener('click',()=>track('app_promo_site_click'));
     promo.querySelector('.app-promo-cta')?.addEventListener('click',async()=>{
       track('app_promo_clicked');
       localStorage.setItem(promoKey,String(Date.now()+14*864e5));
+      clearTimeout(autoHideTimer);
       promo.classList.remove('is-visible');
       setTimeout(()=>promo.remove(),700);
       if(deferredPrompt){
@@ -246,13 +252,17 @@
       }
     });
 
+    sessionStorage.setItem(promoSessionKey,'1');
     requestAnimationFrame(()=>requestAnimationFrame(()=>promo.classList.add('is-visible')));
+    autoHideTimer=setTimeout(()=>hidePromo(false,'auto'),10500);
     track('app_promo_shown');
     return promo;
   }
 
   function scheduleAppPromo(){
     if(standalone||!isHome)return;
+    if(localStorage.getItem(installedKey)==='1')return;
+    if(sessionStorage.getItem(promoSessionKey)==='1')return;
     const dismissed=Number(localStorage.getItem(promoKey))||0;
     if(Date.now()<dismissed)return;
 
@@ -621,5 +631,14 @@
   window.objektiv24OpenSubscriptionPanel=()=>openCard(true);
   bindMenuLinks();dock();addBackToTop();scheduleAppPromo();
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;const existing=document.querySelector('#pwa-install-card');if(existing&&!existing.hidden)openCard(true)});
-  window.addEventListener('appinstalled',()=>{track('app_installed');deferredPrompt=null;localStorage.removeItem('objektiv24_installed');const existing=document.querySelector('#pwa-install-card');if(existing&&!existing.hidden)openCard(true);showDock()});
+  window.addEventListener('appinstalled',()=>{
+    track('app_installed');
+    deferredPrompt=null;
+    localStorage.setItem(installedKey,'1');
+    localStorage.removeItem('objektiv24_installed');
+    document.querySelector('#objektiv24-app-promo')?.remove();
+    const existing=document.querySelector('#pwa-install-card');
+    if(existing&&!existing.hidden)openCard(true);
+    showDock();
+  });
 })();
