@@ -84,13 +84,20 @@ async function autosaveDraftToServer(){
   if(!hasMeaningfulDraftContent(draft))return null;
 
   const selected=drafts.find(x=>x.id===draft.id);
-  const mayForkPublished=Boolean(selected&&(selected.seed||selected.state==="published"));
-  if(draft.state!=="draft"&&!mayForkPublished)return null;
+
+  // Never fork an already published database article during background autosave.
+  // Published articles stay attached to their original row until the editor
+  // explicitly saves/publishes the change. This prevents duplicate articles
+  // with the same title/source from being created just by editing an image/text.
+  if(selected&&!selected.seed&&selected.state==="published")return null;
+
+  const mayForkSeed=Boolean(selected&&selected.seed);
+  if(draft.state!=="draft"&&!mayForkSeed)return null;
 
   serverAutosaveRunning=true;
   serverAutosaveQueued=false;
   const status=$("#draft-status");
-  const mustFork=mayForkPublished;
+  const mustFork=mayForkSeed;
   const payload=draftToDb({...draft,state:"draft"});
 
   try{
@@ -677,11 +684,45 @@ async function sendPublishedPush(saved){
   if(markError)throw markError;
 }
 
+async function findPublishedDuplicate(currentId,title,sources){
+  const base=client.from("drafts")
+    .select("id,title,slug,sources")
+    .eq("state","published")
+    .neq("id",currentId||"00000000-0000-0000-0000-000000000000");
+
+  if(sources){
+    const bySource=await base.eq("sources",sources).limit(1);
+    if(bySource.error)throw bySource.error;
+    if(bySource.data?.[0])return bySource.data[0];
+  }
+
+  if(title){
+    const byTitle=await client.from("drafts")
+      .select("id,title,slug,sources")
+      .eq("state","published")
+      .eq("title",title)
+      .neq("id",currentId||"00000000-0000-0000-0000-000000000000")
+      .limit(1);
+    if(byTitle.error)throw byTitle.error;
+    if(byTitle.data?.[0])return byTitle.data[0];
+  }
+
+  return null;
+}
+
 async function publishCurrentDraft(){
   const title=$("#title").value.trim();
   const intro=$("#intro").value.trim();
+  const sources=$("#sources").value.trim();
+  const currentId=$("#draft-id").value||"";
   if(!title){alert("Pred publikovaním doplňte titulok.");return}
   if(!intro){alert("Pred publikovaním doplňte krátky úvod.");return}
+
+  const duplicate=await findPublishedDuplicate(currentId,title,sources);
+  if(duplicate){
+    alert("Tento článok alebo rovnaký zdroj je už publikovaný. Redakcia nevytvorí druhú kópiu. Otvorte pôvodný vydaný článok a upravte ho priamo.");
+    return;
+  }
 
   const button=$("#publish-draft");
   button.disabled=true;
