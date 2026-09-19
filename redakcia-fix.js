@@ -145,7 +145,7 @@
   }
 
   const imageModule = document.createElement("script");
-  imageModule.src = "redakcia-images.js?v=20260919-ai1";
+  imageModule.src = "redakcia-images.js?v=20260919-ai2";
   imageModule.async = false;
   imageModule.onload = loadVideoModule;
   imageModule.onerror = loadVideoModule;
