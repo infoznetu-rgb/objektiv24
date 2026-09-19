@@ -6,8 +6,9 @@
   const PUBLIC_SUPABASE_URL='https://bkyappgttwjxakkwycub.supabase.co';
   const PUBLIC_SUPABASE_KEY='sb_publishable_xgl_GnkeKPFDCtyr1RtnnA_f6aaPdS4';
   const AUTO_WORKFLOW='.github/workflows/auto-articles.yml';
-  const EXPECTED_START_MINUTE=5;
-  const NORMAL_DELAY_MINUTES=20;
+  const SCHEDULE_INTERVAL_MINUTES=15;
+  const NORMAL_DELAY_MINUTES=10;
+  const RUN_STALE_MINUTES=55;
 
   const style=document.createElement('style');
   style.textContent=`
@@ -37,7 +38,7 @@
     <article class="auto-main" id="auto-health-card">
       <span class="auto-articles-kicker">AUTOMATICKÉ ČLÁNKY</span>
       <strong id="auto-run-summary">Kontrolujem automatiku…</strong>
-      <small id="auto-run-note">Každú hodinu sa kontrolujú zdroje. Nový článok vznikne iba vtedy, keď vhodná téma prejde filtrami a QA.</small>
+      <small id="auto-run-note">Každých 15 minút sa kontrolujú zdroje. Nový článok vznikne iba vtedy, keď vhodná téma prejde filtrami a QA. Po dosiahnutí 9 článkov za 24 hodín sa AI už nespúšťa.</small>
       <button id="auto-run-refresh" class="auto-articles-refresh" type="button">Obnoviť stav</button>
     </article>
 
@@ -63,7 +64,7 @@
     <article>
       <span class="auto-articles-kicker">ĎALŠIA KONTROLA</span>
       <strong id="auto-countdown" class="auto-countdown">—</strong>
-      <small id="auto-next-run">Plán približne každú hodinu o :05.</small>
+      <small id="auto-next-run">Plán približne každých 15 minút.</small>
     </article>
   `;
   if(health)health.before(root);else main.prepend(root);
@@ -78,11 +79,13 @@
   function nextScheduledDate(now=new Date()){
     const next=new Date(now);
     next.setSeconds(0,0);
-    if(now.getMinutes()<EXPECTED_START_MINUTE){
-      next.setMinutes(EXPECTED_START_MINUTE);
-    }else{
+    const minute=now.getMinutes();
+    const nextMinute=(Math.floor(minute/SCHEDULE_INTERVAL_MINUTES)+1)*SCHEDULE_INTERVAL_MINUTES;
+    if(nextMinute>=60){
       next.setHours(next.getHours()+1);
-      next.setMinutes(EXPECTED_START_MINUTE);
+      next.setMinutes(0);
+    }else{
+      next.setMinutes(nextMinute);
     }
     return next;
   }
@@ -112,7 +115,7 @@
     const started=new Date(run.created_at);
     const age=Date.now()-started.getTime();
     if(run.status!=='completed')return {cls:'running',text:'● Automatika práve beží',detail:'Spustené '+dateTimeFmt.format(started)};
-    if(age>95*60000)return {cls:'bad',text:'● Automatika pravdepodobne mešká',detail:'Posledný beh bol '+dateTimeFmt.format(new Date(run.updated_at||run.created_at))};
+    if(age>RUN_STALE_MINUTES*60000)return {cls:'bad',text:'● Automatika pravdepodobne mešká',detail:'Posledný beh bol '+dateTimeFmt.format(new Date(run.updated_at||run.created_at))};
     if(run.conclusion==='success')return {cls:'ok',text:'● Automatika funguje',detail:'Posledný beh dokončený '+dateTimeFmt.format(new Date(run.updated_at||run.created_at))};
     return {cls:'bad',text:'● Posledný beh zlyhal',detail:String(run.conclusion||'neznámy stav')+' · '+dateTimeFmt.format(new Date(run.updated_at||run.created_at))};
   }
