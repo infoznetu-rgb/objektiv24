@@ -34,7 +34,6 @@
     if ((d.whatItMeans || "").trim().length < 180) problems.push("časť „Čo to znamená“ je príliš krátka");
     if ((d.nextStep || "").trim().length < 100) problems.push("časť „Čo ďalej“ je príliš krátka");
     if (!/https?:\/\/\S+/i.test(d.sources || "")) problems.push("chýba priamy zdroj s URL");
-    if (!(d.image || "").trim()) problems.push("chýba relevantný obrázok alebo AI ilustrácia");
     return problems;
   }
 
