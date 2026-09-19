@@ -23,6 +23,10 @@ let workspaceDirty=false;
 let workspaceSaveTimer=null;
 let workspaceRestoring=false;
 let preserveEditorScroll=false;
+let serverAutosaveTimer=null;
+let serverAutosaveRunning=false;
+let serverAutosaveQueued=false;
+let serverAutosaveBlocked=false;
 
 function workspaceSnapshot(){
   const fields={};
@@ -50,6 +54,83 @@ function saveEditorWorkspace(){
 function scheduleWorkspaceSave(delay=450){
   clearTimeout(workspaceSaveTimer);
   workspaceSaveTimer=setTimeout(saveEditorWorkspace,delay);
+}
+function hasMeaningfulDraftContent(d){
+  return Boolean(
+    (d.title||"").trim() ||
+    (d.seoTitle||"").trim() ||
+    (d.metaDescription||"").trim() ||
+    (d.intro||"").trim() ||
+    (d.whatHappened||"").trim() ||
+    (d.whatItMeans||"").trim() ||
+    (d.nextStep||"").trim() ||
+    (d.sources||"").trim() ||
+    (d.image||"").trim()
+  );
+}
+function scheduleServerAutosave(delay=1400){
+  if(workspaceRestoring||serverAutosaveBlocked||!currentUser)return;
+  clearTimeout(serverAutosaveTimer);
+  serverAutosaveTimer=setTimeout(()=>{void autosaveDraftToServer()},delay);
+}
+async function autosaveDraftToServer(){
+  if(workspaceRestoring||serverAutosaveBlocked||!currentUser)return null;
+  if(serverAutosaveRunning){
+    serverAutosaveQueued=true;
+    return null;
+  }
+
+  const draft=readForm();
+  if(!hasMeaningfulDraftContent(draft))return null;
+
+  serverAutosaveRunning=true;
+  serverAutosaveQueued=false;
+  const status=$("#draft-status");
+  const selected=drafts.find(x=>x.id===draft.id);
+  const mustFork=Boolean(selected&&(selected.seed||selected.state==="published"));
+  const payload=draftToDb({...draft,state:"draft"});
+
+  try{
+    if(status)status.textContent="Automaticky ukladám…";
+
+    let result;
+    if(selected&&!selected.seed&&selected.state!=="published"){
+      result=await client.from("drafts").update(payload).eq("id",selected.id).select("*").single();
+    }else{
+      result=await client.from("drafts").insert(payload).select("*").single();
+    }
+    if(result.error)throw result.error;
+
+    const saved=dbToDraft(result.data);
+    $("#draft-id").value=saved.id;
+    $("#state").value="draft";
+    $("#delete-draft").hidden=false;
+
+    const existingIndex=drafts.findIndex(x=>x.id===saved.id);
+    if(existingIndex>=0)drafts[existingIndex]=saved;
+    else drafts.unshift(saved);
+
+    if(mustFork&&selected){
+      const oldIndex=drafts.findIndex(x=>x.id===selected.id);
+      if(oldIndex>=0&&selected.seed) drafts[oldIndex]=selected;
+    }
+
+    workspaceDirty=false;
+    renderDraftList();
+    saveEditorWorkspace();
+    if(status)status.textContent="Automaticky uložené "+new Date().toLocaleTimeString("sk-SK",{hour:"2-digit",minute:"2-digit"});
+    return saved;
+  }catch(error){
+    console.error("Automatické uloženie zlyhalo:",error);
+    if(status)status.textContent="Autosave zlyhal – zmeny ostali v prehliadači";
+    return null;
+  }finally{
+    serverAutosaveRunning=false;
+    if(serverAutosaveQueued){
+      serverAutosaveQueued=false;
+      scheduleServerAutosave(400);
+    }
+  }
 }
 function restoreEditorWorkspace(){
   let snapshot=null;
@@ -243,6 +324,8 @@ function renderDraftList(){
 }
 
 function resetForm(){
+  clearTimeout(serverAutosaveTimer);
+  serverAutosaveBlocked=false;
   workspaceDirty=false;
   $("#article-form").reset();
   $("#draft-id").value="";
@@ -258,7 +341,9 @@ function resetForm(){
 }
 
 function selectDraft(id){
-  const d=drafts.find(x=>x.id===id);if(!d)return;
+  clearTimeout(serverAutosaveTimer);
+  serverAutosaveBlocked=true;
+  const d=drafts.find(x=>x.id===id);if(!d){serverAutosaveBlocked=false;return;}
   $("#draft-id").value=d.id;
   $("#title").value=d.title||"";
   $("#seo-title").value=d.seoTitle||"";
@@ -279,6 +364,7 @@ function selectDraft(id){
   renderDraftList();
   workspaceDirty=false;
   scheduleWorkspaceSave(0);
+  serverAutosaveBlocked=false;
   if(!preserveEditorScroll)window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -415,7 +501,7 @@ async function showEditor(user){
   $("#session-user").textContent=user.email||"Prihlásený používateľ";
   $("#logout-button").hidden=false;
   await refreshDrafts();
-  resetForm();
+  if(!restoreEditorWorkspace())resetForm();
 }
 
 function showLogin(){
@@ -487,11 +573,24 @@ $("#draft-search").addEventListener("input",renderDraftList);
     workspaceDirty=true;
     updateLivePreview();
     scheduleWorkspaceSave();
+    scheduleServerAutosave();
   });
 });
-["#category","#state"].forEach(id=>$(id)?.addEventListener("change",()=>{workspaceDirty=true;scheduleWorkspaceSave()}));
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveEditorWorkspace()});
-window.addEventListener("pagehide",saveEditorWorkspace);
+["#category","#state"].forEach(id=>$(id)?.addEventListener("change",()=>{
+  workspaceDirty=true;
+  scheduleWorkspaceSave();
+  scheduleServerAutosave(700);
+}));
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="hidden"){
+    saveEditorWorkspace();
+    scheduleServerAutosave(0);
+  }
+});
+window.addEventListener("pagehide",()=>{
+  saveEditorWorkspace();
+  scheduleServerAutosave(0);
+});
 window.addEventListener("scroll",()=>scheduleWorkspaceSave(700),{passive:true});
 
 $("#image-upload").addEventListener("change",async e=>{
@@ -501,6 +600,9 @@ $("#image-upload").addEventListener("change",async e=>{
   try{
     currentImageData=await resizeImage(f);
     showPreview(currentImageData);updateLivePreview();
+    workspaceDirty=true;
+    scheduleWorkspaceSave();
+    scheduleServerAutosave(500);
     $("#draft-status").textContent="Obrázok pripravený";
   }catch{
     alert("Obrázok sa nepodarilo načítať.");
@@ -508,7 +610,7 @@ $("#image-upload").addEventListener("change",async e=>{
   }
 });
 
-$("#remove-image").addEventListener("click",()=>{currentImageData="";$("#image-upload").value="";hidePreview();updateLivePreview()});
+$("#remove-image").addEventListener("click",()=>{currentImageData="";$("#image-upload").value="";hidePreview();updateLivePreview();workspaceDirty=true;scheduleWorkspaceSave();scheduleServerAutosave(500)});
 $("#verify-sources")?.addEventListener("click",async()=>{try{await verifySourcesNow()}catch(err){console.error(err);alert("Overenie zdrojov sa nepodarilo uložiť: "+err.message);$("#draft-status").textContent="Chyba pri overení zdrojov"}});
 $("#delete-draft").addEventListener("click",async()=>{try{await deleteDraft()}catch(err){console.error(err);alert("Návrh sa nepodarilo vymazať: "+err.message)}});
 $("#export-draft").addEventListener("click",()=>{
