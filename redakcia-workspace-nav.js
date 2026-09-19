@@ -21,21 +21,23 @@
   nav.innerHTML = `
     <div class="editor-quicknav-head"><span class="editor-quicknav-title">RÝCHLE MENU</span></div>
     <p class="editor-quicknav-status">Rozpracovaný text a pozícia sa ukladajú automaticky v tomto prehliadači.</p>
+    <div class="editor-quicknav-group" data-group="overview">
+      <span class="editor-quicknav-label">PREHĽADY</span>
+      <button type="button" data-jump="analytics-dashboard">Návštevnosť</button>
+      <button type="button" data-jump="growth-plan">Rastový plán</button>
+      <button type="button" data-jump="editorial-qa">Redakčná fronta</button>
+      <button type="button" data-jump="evergreen-watch">Evergreen</button>
+      <button type="button" data-jump="production-readiness">Produkčná pripravenosť</button>
+      <button type="button" data-jump="system-health">Stav systému</button>
+    </div>
     <div class="editor-quicknav-group" data-group="article">
       <span class="editor-quicknav-label">ČLÁNOK</span>
+      <button type="button" data-jump="editor-image">Obrázok</button>
       <button type="button" data-jump="editor-basics">Titulok a SEO</button>
       <button type="button" data-jump="editor-body">Text článku</button>
       <button type="button" data-jump="editor-sources">Ďalší krok a zdroje</button>
-      <button type="button" data-jump="editor-image">Obrázok</button>
       <button type="button" data-jump="editor-video" data-optional="1">Video / TikTok</button>
       <button type="button" data-jump="editor-publish">Publikovanie</button>
-    </div>
-    <div class="editor-quicknav-group" data-group="tools">
-      <span class="editor-quicknav-label">NÁSTROJE</span>
-      <button type="button" data-jump="system-health">Stav systému</button>
-      <button type="button" data-jump="editorial-qa">Redakčná fronta</button>
-      <button type="button" data-jump="analytics-dashboard">Návštevnosť</button>
-      <button type="button" data-jump="evergreen-watch">Evergreen</button>
     </div>
     <button type="button" class="quick-save">Uložiť návrh</button>
     <button type="button" class="quick-top">↑ Hore</button>
@@ -102,7 +104,7 @@
     clearTimeout(activeTimer);
     activeTimer=setTimeout(()=>{
       assignTargets();
-      const ids=['editor-basics','editor-body','editor-sources','editor-image','editor-video','editor-publish','system-health','editorial-qa','analytics-dashboard','evergreen-watch'];
+      const ids=['analytics-dashboard','growth-plan','editorial-qa','evergreen-watch','production-readiness','system-health','editor-image','editor-basics','editor-body','editor-sources','editor-video','editor-publish'];
       let active='';
       let best=Infinity;
       for(const id of ids){
