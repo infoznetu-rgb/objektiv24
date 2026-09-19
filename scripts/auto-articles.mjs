@@ -828,7 +828,7 @@ function basicArticleValid(a, sourceText="", sourceTitle="") {
 function suspiciousOneLetterEnding(v="") {
   const text=String(v||"").trim();
   if(/(?:\bs\.\s*r\.\s*o|\ba\.\s*s|\bn\.\s*o|\bz\.\s*z)\.$/i.test(text)) return false;
-  return /\b[a-záäčďéíĺľňóôŕšťúýž]\.$/i.test(text);
+  return /(?<![\p{L}\p{N}_])[\p{L}]\.$/u.test(text);
 }
 
 function articleIssues(a, sourceText="", sourceTitle="") {
