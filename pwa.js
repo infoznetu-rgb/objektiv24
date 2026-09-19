@@ -171,48 +171,70 @@
       else showDock();
     },9000)
   }
-  const promoKey='objektiv24_app_promo_dismissed_until_v1';
+  const promoKey='objektiv24_app_promo_dismissed_until_v2';
   const isHome=/^\/(?:index\.html)?$/.test(location.pathname);
+
   function createAppPromo(){
     if(standalone||!isHome||document.querySelector('#objektiv24-app-promo'))return null;
+
     const promo=document.createElement('aside');
     promo.id='objektiv24-app-promo';
-    promo.className='app-promo';
+    promo.className='app-promo app-promo-featured';
     promo.setAttribute('role','dialog');
     promo.setAttribute('aria-label','Objektív24 aplikácia');
     promo.innerHTML=`
       <button class="app-promo-close" type="button" aria-label="Zavrieť ponuku aplikácie">×</button>
-      <div class="app-promo-brand">
-        <span class="app-promo-phone" aria-hidden="true">▯</span>
-        <span>APLIKÁCIA</span>
+
+      <div class="app-promo-device" aria-hidden="true">
+        <div class="app-promo-device-speaker"></div>
+        <div class="app-promo-device-screen">
+          <div class="app-promo-device-logo">Objektív<span>24</span></div>
+          <div class="app-promo-device-visual">
+            <img src="/assets/app-mark-modern.svg?v=20260919-1" alt="">
+          </div>
+          <small>SLOVENSKO</small>
+          <strong>Aktuálne správy<br>zo Slovenska<br>a zo sveta</strong>
+        </div>
       </div>
-      <div class="app-promo-copy">
-        <strong>Majte <em>Objektív24</em> vždy poruke</strong>
-        <p>Aktuálne správy každých 30 minút, prehľadne a rýchlo v aplikácii.</p>
-        <a href="/" class="app-promo-url">◉ www.objektiv24.sk</a>
+
+      <div class="app-promo-main">
+        <strong class="app-promo-title">Majte <em>Objektív24</em><br>vždy poruke</strong>
+        <p>Aktuálne správy počas celého dňa, prehľadne a rýchlo v aplikácii.</p>
       </div>
-      <div class="app-promo-benefits" aria-hidden="true">
-        <span><b>⚡</b> každých<br>30 minút</span>
-        <span><b>▯</b> rýchly<br>prístup</span>
-        <span><b>◌</b> Slovensko<br>aj svet</span>
+
+      <div class="app-promo-benefits">
+        <span><b>⚡</b><strong>Priebežné<br>aktualizácie</strong></span>
+        <span><b>▯</b><strong>Rýchly prístup<br>v aplikácii</strong></span>
+        <span><b>◌</b><strong>Dôležité témy<br>zo Slovenska aj sveta</strong></span>
       </div>
-      <button class="app-promo-cta" type="button">Otvoriť v aplikácii <span>→</span></button>
+
+      <div class="app-promo-bottom">
+        <a href="/" class="app-promo-url"><span>◎</span> www.objektiv24.sk</a>
+        <span class="app-promo-remember">Zapamätajte si adresu<br>alebo si pridajte aplikáciu.</span>
+      </div>
+
+      <button class="app-promo-cta" type="button">
+        <span class="app-promo-download" aria-hidden="true">⇩</span>
+        <strong>Otvoriť<br>v aplikácii</strong>
+        <span class="app-promo-arrow" aria-hidden="true">→</span>
+      </button>
     `;
     document.body.appendChild(promo);
 
     const close=()=>{
       promo.classList.remove('is-visible');
       localStorage.setItem(promoKey,String(Date.now()+7*864e5));
-      setTimeout(()=>promo.remove(),900);
+      setTimeout(()=>promo.remove(),950);
       track('app_promo_dismissed');
     };
+
     promo.querySelector('.app-promo-close')?.addEventListener('click',close);
     promo.querySelector('.app-promo-url')?.addEventListener('click',()=>track('app_promo_site_click'));
     promo.querySelector('.app-promo-cta')?.addEventListener('click',async()=>{
       track('app_promo_clicked');
       localStorage.setItem(promoKey,String(Date.now()+14*864e5));
       promo.classList.remove('is-visible');
-      setTimeout(()=>promo.remove(),650);
+      setTimeout(()=>promo.remove(),700);
       if(deferredPrompt){
         try{
           deferredPrompt.prompt();
@@ -223,6 +245,7 @@
         openCard(true);
       }
     });
+
     requestAnimationFrame(()=>requestAnimationFrame(()=>promo.classList.add('is-visible')));
     track('app_promo_shown');
     return promo;
@@ -232,6 +255,7 @@
     if(standalone||!isHome)return;
     const dismissed=Number(localStorage.getItem(promoKey))||0;
     if(Date.now()<dismissed)return;
+
     setTimeout(()=>{
       if(document.body?.classList.contains('analytics-consent-open')){
         setTimeout(scheduleAppPromo,3500);
@@ -249,23 +273,28 @@
       z-index:117;
       left:50%;
       top:50%;
-      width:min(1180px,calc(100% - 44px));
-      min-height:168px;
+      width:min(1320px,calc(100% - 48px));
+      min-height:255px;
       display:grid;
-      grid-template-columns:auto minmax(300px,1.4fr) auto auto;
+      grid-template-columns:190px minmax(320px,1.2fr) minmax(330px,.95fr) 230px;
+      grid-template-rows:1fr auto;
       align-items:center;
-      gap:28px;
-      padding:24px 28px;
-      border:1px solid rgba(217,255,40,.48);
-      border-radius:30px;
-      background:linear-gradient(105deg,rgba(9,24,18,.985),rgba(3,14,20,.985));
-      box-shadow:0 24px 75px rgba(0,0,0,.48),0 0 34px rgba(217,255,40,.055);
+      column-gap:26px;
+      row-gap:16px;
+      padding:25px 30px 25px 22px;
+      overflow:hidden;
+      border:1px solid rgba(217,255,40,.62);
+      border-radius:34px;
+      background:
+        radial-gradient(circle at 9% 52%,rgba(217,255,40,.08),transparent 25%),
+        linear-gradient(105deg,#081711 0%,#061117 52%,#031015 100%);
+      box-shadow:0 28px 86px rgba(0,0,0,.56),0 0 36px rgba(217,255,40,.07);
       color:#f7fafb;
       font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
       opacity:0;
       visibility:hidden;
-      transform:translate(-125vw,-50%);
-      transition:transform 1.65s cubic-bezier(.18,.78,.22,1),opacity .7s ease,visibility .7s ease;
+      transform:translate(-130vw,-50%);
+      transition:transform 1.75s cubic-bezier(.18,.78,.22,1),opacity .85s ease,visibility .85s ease;
       will-change:transform,opacity;
     }
     .app-promo.is-visible{
@@ -275,166 +304,314 @@
     }
     .app-promo-close{
       position:absolute;
-      top:11px;
-      right:14px;
-      width:34px;
-      height:34px;
+      z-index:3;
+      top:12px;
+      right:16px;
+      width:36px;
+      height:36px;
       border:0;
       background:transparent;
-      color:#87939a;
-      font:300 29px/1 system-ui;
+      color:#7f8c93;
+      font:300 31px/1 system-ui;
       cursor:pointer;
+      transition:color .2s ease,transform .2s ease;
     }
-    .app-promo-close:hover{color:#fff}
-    .app-promo-brand{
-      display:grid;
-      grid-template-columns:62px auto;
-      align-items:center;
-      gap:13px;
-      padding-right:24px;
-      border-right:1px solid rgba(217,255,40,.18);
-      color:#d9ff28;
-      font-size:.74rem;
+    .app-promo-close:hover{color:#fff;transform:rotate(4deg)}
+
+    .app-promo-device{
+      grid-row:1/3;
+      align-self:center;
+      justify-self:center;
+      width:142px;
+      height:238px;
+      padding:9px;
+      border:3px solid #31383d;
+      border-radius:27px;
+      background:#05090c;
+      box-shadow:0 18px 32px rgba(0,0,0,.5),0 0 18px rgba(217,255,40,.09);
+      transform:rotate(-7deg) translateY(9px);
+      position:relative;
+    }
+    .app-promo-device-speaker{
+      position:absolute;
+      z-index:2;
+      top:7px;
+      left:50%;
+      width:32px;
+      height:4px;
+      margin-left:-16px;
+      border-radius:4px;
+      background:#1d252a;
+    }
+    .app-promo-device-screen{
+      height:100%;
+      overflow:hidden;
+      border-radius:18px;
+      padding:17px 10px 12px;
+      background:linear-gradient(180deg,#061018 0%,#0c1d24 52%,#071116 100%);
+    }
+    .app-promo-device-logo{
+      font-size:.76rem;
       font-weight:950;
-      letter-spacing:.13em;
+      letter-spacing:-.04em;
+      color:#fff;
     }
-    .app-promo-phone{
-      width:62px;
-      height:62px;
+    .app-promo-device-logo span{color:#d9ff28}
+    .app-promo-device-visual{
+      height:88px;
+      margin:9px -2px 10px;
       display:grid;
       place-items:center;
-      border-radius:17px;
-      background:rgba(217,255,40,.075);
-      border:1px solid rgba(217,255,40,.11);
-      color:#d9ff28;
-      font-size:2rem;
-      line-height:1;
+      border-radius:9px;
+      background:
+        radial-gradient(circle at 50% 46%,rgba(217,255,40,.1),transparent 55%),
+        linear-gradient(145deg,#17313a,#081318);
     }
-    .app-promo-copy{min-width:0}
-    .app-promo-copy strong{
+    .app-promo-device-visual img{
+      width:62px;
+      height:62px;
       display:block;
-      margin:0;
-      color:#f8fafb;
-      font-size:clamp(1.35rem,2.2vw,2.15rem);
-      line-height:1.04;
-      letter-spacing:-.035em;
     }
-    .app-promo-copy strong em{
-      color:#d9ff28;
-      font-style:normal;
-    }
-    .app-promo-copy p{
-      margin:9px 0 12px;
-      color:#c0cbd0;
-      font-size:.92rem;
-      line-height:1.45;
-    }
-    .app-promo-url{
+    .app-promo-device-screen small{
       display:inline-flex;
-      align-items:center;
-      gap:8px;
-      border:1px solid rgba(217,255,40,.24);
-      border-radius:999px;
-      padding:8px 12px;
-      color:#d9ff28;
-      background:rgba(217,255,40,.045);
-      text-decoration:none;
-      font-size:.78rem;
-      font-weight:900;
-      letter-spacing:.015em;
-    }
-    .app-promo-benefits{
-      display:grid;
-      grid-template-columns:repeat(3,86px);
-      gap:10px;
-      text-align:center;
-      color:#d7e0e4;
-      font-size:.68rem;
-      line-height:1.28;
-    }
-    .app-promo-benefits span{
-      min-height:80px;
-      display:grid;
-      place-content:center;
-      border-left:1px solid rgba(217,255,40,.12);
-    }
-    .app-promo-benefits span:first-child{border-left:0}
-    .app-promo-benefits b{
-      display:block;
-      margin-bottom:5px;
-      color:#d9ff28;
-      font-size:1.25rem;
-    }
-    .app-promo-cta{
-      min-width:188px;
-      border:0;
+      padding:4px 7px;
       border-radius:999px;
       background:#d9ff28;
       color:#061018;
-      padding:18px 22px;
-      font:950 .88rem/1.1 Inter,ui-sans-serif,system-ui;
-      cursor:pointer;
-      box-shadow:0 10px 28px rgba(217,255,40,.12);
-      white-space:nowrap;
+      font-size:.42rem;
+      font-weight:950;
     }
-    .app-promo-cta span{margin-left:7px;font-size:1.1rem}
-    .app-promo-cta:hover{filter:brightness(.96);transform:translateY(-1px)}
+    .app-promo-device-screen>strong{
+      display:block;
+      margin-top:7px;
+      font-size:.69rem;
+      line-height:1.15;
+      color:#fff;
+    }
+
+    .app-promo-main{
+      grid-column:2;
+      grid-row:1;
+      align-self:end;
+      min-width:0;
+    }
+    .app-promo-title{
+      display:block;
+      color:#f8fafb;
+      font-size:clamp(1.8rem,2.55vw,2.8rem);
+      line-height:.98;
+      letter-spacing:-.045em;
+    }
+    .app-promo-title em{
+      color:#d9ff28;
+      font-style:normal;
+    }
+    .app-promo-main p{
+      max-width:560px;
+      margin:14px 0 0;
+      color:#b8c4ca;
+      font-size:1rem;
+      line-height:1.45;
+    }
+
+    .app-promo-benefits{
+      grid-column:3;
+      grid-row:1;
+      align-self:end;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      min-width:0;
+      text-align:center;
+    }
+    .app-promo-benefits span{
+      min-height:108px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:0 13px;
+      border-left:1px solid rgba(217,255,40,.19);
+    }
+    .app-promo-benefits span:first-child{border-left:0}
+    .app-promo-benefits b{
+      color:#d9ff28;
+      font-size:1.8rem;
+      line-height:1;
+    }
+    .app-promo-benefits strong{
+      color:#eef3f5;
+      font-size:.76rem;
+      line-height:1.35;
+      font-weight:750;
+    }
+
+    .app-promo-bottom{
+      grid-column:2/4;
+      grid-row:2;
+      display:flex;
+      align-items:center;
+      gap:20px;
+      min-width:0;
+    }
+    .app-promo-url{
+      flex:none;
+      display:inline-flex;
+      align-items:center;
+      gap:9px;
+      border:1px solid rgba(217,255,40,.28);
+      border-radius:999px;
+      padding:11px 16px;
+      color:#d9ff28;
+      background:rgba(217,255,40,.045);
+      text-decoration:none;
+      font-size:.86rem;
+      font-weight:950;
+      letter-spacing:.01em;
+    }
+    .app-promo-url span{font-size:1.15rem}
+    .app-promo-remember{
+      padding-left:18px;
+      border-left:1px solid rgba(217,255,40,.18);
+      color:#8999a1;
+      font-size:.78rem;
+      line-height:1.35;
+    }
+
+    .app-promo-cta{
+      grid-column:4;
+      grid-row:1/3;
+      align-self:end;
+      justify-self:end;
+      width:218px;
+      min-height:88px;
+      margin-bottom:5px;
+      display:grid;
+      grid-template-columns:38px 1fr 28px;
+      align-items:center;
+      gap:7px;
+      border:0;
+      border-radius:25px;
+      padding:14px 16px;
+      background:#d9ff28;
+      color:#061018;
+      box-shadow:0 11px 31px rgba(217,255,40,.16);
+      cursor:pointer;
+      transition:transform .2s ease,filter .2s ease;
+    }
+    .app-promo-cta:hover{transform:translateY(-2px);filter:brightness(.97)}
+    .app-promo-cta strong{
+      text-align:left;
+      font-size:1.02rem;
+      line-height:1.05;
+      font-weight:950;
+    }
+    .app-promo-download{
+      font-size:2rem;
+      line-height:1;
+      font-weight:500;
+    }
+    .app-promo-arrow{
+      font-size:1.8rem;
+      line-height:1;
+    }
+
     .analytics-consent-open .app-promo{display:none!important}
 
-    @media(max-width:980px){
+    @media(max-width:1120px){
       .app-promo{
-        width:min(720px,calc(100% - 26px));
-        grid-template-columns:auto minmax(0,1fr) auto;
-        gap:16px;
-        padding:22px;
+        width:min(900px,calc(100% - 32px));
+        grid-template-columns:120px minmax(0,1fr) 210px;
+        min-height:220px;
+        gap:20px;
       }
+      .app-promo-device{
+        width:110px;
+        height:190px;
+        border-radius:23px;
+      }
+      .app-promo-device-visual{height:62px}
+      .app-promo-device-visual img{width:48px;height:48px}
       .app-promo-benefits{display:none}
-      .app-promo-brand{
-        grid-template-columns:50px;
-        padding-right:16px;
-      }
-      .app-promo-brand>span:last-child{display:none}
-      .app-promo-phone{width:50px;height:50px;border-radius:14px}
-      .app-promo-cta{min-width:160px;padding:16px 18px}
+      .app-promo-main{grid-column:2}
+      .app-promo-bottom{grid-column:2;gap:12px}
+      .app-promo-cta{grid-column:3}
     }
-    @media(max-width:620px){
+
+    @media(max-width:720px){
       .app-promo{
         top:auto;
         bottom:max(14px,env(safe-area-inset-bottom));
         width:calc(100% - 18px);
         min-height:0;
-        grid-template-columns:46px minmax(0,1fr);
-        gap:11px 12px;
-        padding:16px;
-        border-radius:22px;
-        transform:translateX(-125vw);
-        transition:transform 1.45s cubic-bezier(.18,.78,.22,1),opacity .7s ease,visibility .7s ease;
+        grid-template-columns:56px minmax(0,1fr);
+        grid-template-rows:auto auto auto;
+        gap:10px 12px;
+        padding:17px;
+        border-radius:23px;
+        transform:translateX(-130vw);
+        transition:transform 1.55s cubic-bezier(.18,.78,.22,1),opacity .8s ease,visibility .8s ease;
       }
       .app-promo.is-visible{transform:translateX(-50%)}
-      .app-promo-close{top:8px;right:8px}
-      .app-promo-brand{
+      .app-promo-device{
+        grid-column:1;
         grid-row:1/3;
-        grid-template-columns:46px;
-        padding:0;
-        border:0;
+        width:52px;
+        height:88px;
+        padding:4px;
+        border-width:2px;
+        border-radius:13px;
+        transform:rotate(-5deg);
         align-self:start;
       }
-      .app-promo-phone{width:46px;height:46px;font-size:1.55rem}
-      .app-promo-copy{padding-right:22px}
-      .app-promo-copy strong{font-size:1.18rem;line-height:1.08}
-      .app-promo-copy p{margin:6px 0 9px;font-size:.78rem}
-      .app-promo-url{padding:6px 9px;font-size:.7rem}
-      .app-promo-cta{
+      .app-promo-device-speaker{display:none}
+      .app-promo-device-screen{padding:8px 4px;border-radius:8px}
+      .app-promo-device-logo{font-size:.38rem}
+      .app-promo-device-visual{height:36px;margin:5px 0}
+      .app-promo-device-visual img{width:28px;height:28px}
+      .app-promo-device-screen small,
+      .app-promo-device-screen>strong{display:none}
+      .app-promo-main{
         grid-column:2;
-        width:100%;
-        min-width:0;
-        padding:13px 15px;
-        font-size:.8rem;
+        grid-row:1;
+        align-self:start;
+        padding-right:24px;
       }
+      .app-promo-title{font-size:1.22rem;line-height:1.03}
+      .app-promo-main p{margin:7px 0 0;font-size:.77rem;line-height:1.4}
+      .app-promo-bottom{
+        grid-column:2;
+        grid-row:2;
+        display:block;
+      }
+      .app-promo-url{padding:7px 10px;font-size:.7rem}
+      .app-promo-remember{display:none}
+      .app-promo-cta{
+        grid-column:1/3;
+        grid-row:3;
+        width:100%;
+        min-height:50px;
+        margin:1px 0 0;
+        grid-template-columns:28px 1fr 24px;
+        border-radius:15px;
+        padding:10px 13px;
+      }
+      .app-promo-cta strong{
+        text-align:center;
+        font-size:.84rem;
+      }
+      .app-promo-cta strong br{display:none}
+      .app-promo-download{font-size:1.4rem}
+      .app-promo-arrow{font-size:1.35rem}
+      .app-promo-close{top:7px;right:7px}
     }
+
     @media(prefers-reduced-motion:reduce){
-      .app-promo,.app-promo.is-visible{transition:opacity .2s ease;transform:translate(-50%,-50%)}
-      @media(max-width:620px){
+      .app-promo,.app-promo.is-visible{
+        transition:opacity .2s ease;
+        transform:translate(-50%,-50%);
+      }
+      @media(max-width:720px){
         .app-promo,.app-promo.is-visible{transform:translateX(-50%)}
       }
     }
