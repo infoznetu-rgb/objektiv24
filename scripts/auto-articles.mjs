@@ -775,6 +775,13 @@ function dropClearlyTruncatedLastSentence(value="", minLength=0) {
   const text=String(value||"").trim();
   if(!suspiciousOneLetterEnding(text)) return text;
 
+  const withoutDangling=text
+    .replace(/\s+[a-záäčďéíĺľňóôŕšťúýž]\.[\s]*$/iu,"")
+    .trim();
+  if(withoutDangling.length >= minLength) {
+    return /[.!?]$/.test(withoutDangling) ? withoutDangling : withoutDangling+".";
+  }
+
   const withoutTerminal=text.replace(/[.!?]\s*$/,"");
   const matches=[...withoutTerminal.matchAll(/[.!?](?:\s+|$)/g)];
   if(!matches.length) return text;
