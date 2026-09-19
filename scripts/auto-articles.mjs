@@ -1117,7 +1117,7 @@ for (const c of candidates) {
 
     let article = cleanupModelArticle(await polishArticle(c, body, draft));
     let polishedIssues = articleIssues(article, body, c.title);
-    let spellingIssues = hunspellIssues(article, body, c.title);
+    let spellingIssues = hunspellIssues(article, body, c.title+" "+c.sourceName);
     const repairIssues=[...new Set([...polishedIssues,...spellingIssues])];
 
     if (repairIssues.length) {
@@ -1125,7 +1125,7 @@ for (const c of candidates) {
       repairedCandidates++;
       article = await repairArticleOnce(c, body, article, repairIssues, "polished/dictionary QA");
       polishedIssues = articleIssues(article, body, c.title);
-      spellingIssues = hunspellIssues(article, body, c.title);
+      spellingIssues = hunspellIssues(article, body, c.title+" "+c.sourceName);
       const afterRepair=[...new Set([...polishedIssues,...spellingIssues])];
       if (afterRepair.length) {
         console.log("Text po opravnom pokuse stále neprešiel QA:", c.title, afterRepair.join(" | "));
