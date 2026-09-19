@@ -378,7 +378,7 @@ Spotrebiteľ a bezpečnosť
   if (!r.ok) throw new Error("Ollama HTTP " + r.status + ": " + await r.text());
 
   const data = await r.json();
-  return parseModelJson(data?.message?.content, "generation");
+  return cleanupModelArticle(parseModelJson(data?.message?.content, "generation"));
 }
 async function polishArticle(candidate, sourceBody, draft) {
   const schema = {
@@ -455,7 +455,7 @@ Uprav návrh do profesionálnej redakčnej slovenčiny. Nemeň fakty ani čísla
   }
   if(!response.ok) throw new Error("Jazyková korektúra Ollama HTTP "+response.status+": "+await response.text());
   const data=await response.json();
-  return parseModelJson(data?.message?.content, "language polish");
+  return cleanupModelArticle(parseModelJson(data?.message?.content, "language polish"));
 }
 async function repairArticleOnce(candidate, sourceBody, article, issues, stage="QA") {
   const schema = {
@@ -543,7 +543,7 @@ Oprav len chyby uvedené vyššie. Ak chyba obsahuje názov poľa za dvojbodkou,
   }finally{clearTimeout(timer);}
   if(!response.ok)throw new Error("QA repair Ollama HTTP "+response.status+": "+await response.text());
   const data=await response.json();
-  return normalizeFinalArticle(parseModelJson(data?.message?.content,"QA repair"));
+  return cleanupModelArticle(parseModelJson(data?.message?.content,"QA repair"));
 }
 
 async function reviewArticleLanguage(candidate, sourceBody, article) {
@@ -760,6 +760,43 @@ function normalizeFinalArticle(a) {
   out.title=String(out.title||"").trim().replace(/[.!?]+$/,"");
   return out;
 }
+
+function fixKnownLanguageTypos(article) {
+  const out={...article};
+  for(const key of ["title","intro","what_happened","what_it_means","next_step"]) {
+    out[key]=String(out[key]||"")
+      .replace(/\bohrožení\b/giu,"ohrození");
+  }
+  return out;
+}
+
+function dropClearlyTruncatedLastSentence(value="", minLength=0) {
+  const text=String(value||"").trim();
+  if(!suspiciousOneLetterEnding(text)) return text;
+
+  const withoutTerminal=text.replace(/[.!?]\s*$/,"");
+  const matches=[...withoutTerminal.matchAll(/[.!?](?:\s+|$)/g)];
+  if(!matches.length) return text;
+
+  const last=matches[matches.length-1];
+  const candidate=withoutTerminal.slice(0,last.index+1).trim();
+  if(candidate.length < minLength) return text;
+  return candidate;
+}
+
+function cleanupModelArticle(article) {
+  const mins={
+    intro:80,
+    what_happened:250,
+    what_it_means:180,
+    next_step:100
+  };
+  let out=fixKnownLanguageTypos(normalizeFinalArticle(article));
+  for(const [key,minLength] of Object.entries(mins)) {
+    out[key]=dropClearlyTruncatedLastSentence(out[key],minLength);
+  }
+  return normalizeFinalArticle(out);
+}
 function basicArticleIssues(a, sourceText="", sourceTitle="") {
   const issues=[];
   if(!a || typeof a!=="object") return ["not-object"];
@@ -954,7 +991,7 @@ for (const c of candidates) {
       }
     }
 
-    let article = normalizeFinalArticle(await polishArticle(c, body, draft));
+    let article = cleanupModelArticle(await polishArticle(c, body, draft));
     let polishedIssues = articleIssues(article, body, c.title);
     let spellingIssues = hunspellIssues(article, body, c.title);
     const repairIssues=[...new Set([...polishedIssues,...spellingIssues])];
