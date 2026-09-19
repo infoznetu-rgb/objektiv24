@@ -114,7 +114,10 @@ const PRACTICAL = [
   "daň","prizn","platb","zamest","služb","pobočk","úrad","doklad","elektron",
   "podvod","bezpeč","spotreb","reklam","výpadok","odstávk","septembr","októbr",
   "odklad","poplat","žiados","registr","karta","vlak","autobus","tunel","uzáver",
-  "výrobok","varovan","vakcin","besnot","stiahnut","výživn"
+  "výrobok","varovan","vakcin","besnot","stiahnut","výživn",
+  "hypoték","úver","úrok","bank","inflác","cena","energi","poistenec","prepoist",
+  "zdravotn","lekár","ambulanc","nemocnic","vyšetren","erecept","mamograf",
+  "telekom","internet","operátor","signál","5g","nabíjac","grant","dotáci","príspevok","financovan"
 ];
 const PRIORITY_SIGNALS=[
   {weight:4,terms:["termín","lehota","do konca","najneskôr","od 1.","do 30."]},
@@ -122,6 +125,9 @@ const PRIORITY_SIGNALS=[
   {weight:3,terms:["dôchod","dávk","poisten","sociálna poisťovňa","daň","prizn","szčo","výživné"]},
   {weight:3,terms:["výpadok","odstávk","zatvor","pobočk","úrad","pošta"]},
   {weight:3,terms:["vakcin","besnot","zdravotné upozornenie"]},
+  {weight:3,terms:["hypoték","úver","úrok","prepoist","poistenec"]},
+  {weight:3,terms:["vyšetren","erecept","mamograf","ambulanc","nemocnic"]},
+  {weight:2,terms:["internet","telekom","operátor","signál","5g"]},
   {weight:2,terms:["uzáver","výluka","tunel","diaľnic","oprava","obmedz"]}
 ];
 const POLITICAL = [
