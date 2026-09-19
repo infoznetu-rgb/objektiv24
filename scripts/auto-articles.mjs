@@ -766,7 +766,7 @@ function fixKnownLanguageTypos(article) {
   const out={...article};
   for(const key of ["title","intro","what_happened","what_it_means","next_step"]) {
     out[key]=String(out[key]||"")
-      .replace(/\bohrožení\b/giu,"ohrození");
+      .replace(/(?<![\p{L}\p{N}_])ohrožení(?![\p{L}\p{N}_])/giu,"ohrození");
   }
   return out;
 }
