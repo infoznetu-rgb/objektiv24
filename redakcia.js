@@ -486,6 +486,7 @@ async function publishCurrentDraft(){
   $("#draft-status").textContent="Publikujem…";
   try{
     $("#state").value="published";
+    if(window.ensureAutomaticImageFallback) window.ensureAutomaticImageFallback();
     const saved=await saveDraft();
     if(window.requestEditorialImageGeneration){
       window.requestEditorialImageGeneration(saved.id,{mode:"auto",force:false,silent:true})
