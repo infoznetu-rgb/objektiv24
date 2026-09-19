@@ -487,6 +487,10 @@ async function publishCurrentDraft(){
   try{
     $("#state").value="published";
     const saved=await saveDraft();
+    if(window.requestEditorialImageGeneration){
+      window.requestEditorialImageGeneration(saved.id,{mode:"auto",force:false,silent:true})
+        .catch(error=>console.error("Automatické AI generovanie obrázka sa nepodarilo spustiť:",error));
+    }
     const visible=await isPubliclyVisible(saved.id);
     if(visible){
       try{
