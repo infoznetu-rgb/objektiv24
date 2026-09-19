@@ -22,6 +22,7 @@ const WORKSPACE_FIELD_IDS=["title","seo-title","meta-description","category","in
 let workspaceDirty=false;
 let workspaceSaveTimer=null;
 let workspaceRestoring=false;
+let preserveEditorScroll=false;
 
 function workspaceSnapshot(){
   const fields={};
@@ -276,7 +277,7 @@ function selectDraft(id){
   renderDraftList();
   workspaceDirty=false;
   scheduleWorkspaceSave(0);
-  window.scrollTo({top:0,behavior:"smooth"});
+  if(!preserveEditorScroll)window.scrollTo({top:0,behavior:"smooth"});
 }
 
 function readForm(){
@@ -349,8 +350,11 @@ async function saveDraft(){
 
   if(result.error)throw result.error;
   const saved=dbToDraft(result.data);
+  const savedScrollY=window.scrollY||0;
   await refreshDrafts();
-  selectDraft(saved.id);
+  preserveEditorScroll=true;
+  try{selectDraft(saved.id)}finally{preserveEditorScroll=false}
+  requestAnimationFrame(()=>window.scrollTo({top:savedScrollY,left:0,behavior:"auto"}));
   workspaceDirty=false;
   saveEditorWorkspace();
   $("#draft-status").textContent="Uložené "+new Date().toLocaleTimeString("sk-SK",{hour:"2-digit",minute:"2-digit"});
