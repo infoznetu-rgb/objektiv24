@@ -83,11 +83,14 @@ async function autosaveDraftToServer(){
   const draft=readForm();
   if(!hasMeaningfulDraftContent(draft))return null;
 
+  const selected=drafts.find(x=>x.id===draft.id);
+  const mayForkPublished=Boolean(selected&&(selected.seed||selected.state==="published"));
+  if(draft.state!=="draft"&&!mayForkPublished)return null;
+
   serverAutosaveRunning=true;
   serverAutosaveQueued=false;
   const status=$("#draft-status");
-  const selected=drafts.find(x=>x.id===draft.id);
-  const mustFork=Boolean(selected&&(selected.seed||selected.state==="published"));
+  const mustFork=mayForkPublished;
   const payload=draftToDb({...draft,state:"draft"});
 
   try{
@@ -576,11 +579,16 @@ $("#draft-search").addEventListener("input",renderDraftList);
     scheduleServerAutosave();
   });
 });
-["#category","#state"].forEach(id=>$(id)?.addEventListener("change",()=>{
+$("#category")?.addEventListener("change",()=>{
   workspaceDirty=true;
+  updateLivePreview();
   scheduleWorkspaceSave();
   scheduleServerAutosave(700);
-}));
+});
+$("#state")?.addEventListener("change",()=>{
+  workspaceDirty=true;
+  scheduleWorkspaceSave();
+});
 document.addEventListener("visibilitychange",()=>{
   if(document.visibilityState==="hidden"){
     saveEditorWorkspace();
