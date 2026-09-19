@@ -882,7 +882,7 @@ if (QA_SELF_TEST) {
     next_step:"Pri pochybnostiach je vhodné použiť oficiálny kontakt inštitúcie a správu neposúvať ďalej. ".repeat(2)
   });
   if(/\bohrožení\b/iu.test(JSON.stringify(typoFixed))) fail("known Slovak typo was not fixed");
-  if(!/\bohrození\b/iu.test(typoFixed.intro)) fail("expected corrected Slovak form is missing");
+  if(!String(typoFixed.intro).includes("ohrození")) fail("expected corrected Slovak form is missing");
 
   const numericFixture={
     title:"Testovací článok o bezpečnosti osobných údajov",
