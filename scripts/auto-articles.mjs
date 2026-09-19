@@ -108,6 +108,26 @@ const SOURCES = [
   },
 ];
 
+const RADAR_SOURCES = [
+  { name: "Pravda · Domáce", type: "rss", url: "https://www.pravda.sk/spravy/domace/rss/xml" },
+  { name: "Pravda · Užitočná pravda", type: "rss", url: "https://www.pravda.sk/uzitocna/rss/xml" },
+  { name: "STVR · Slovensko", type: "html", url: "https://spravy.stvr.sk/kategoria/slovensko/", accept: (u) => /spravy\.stvr\.sk\/\d{4}\/\d{2}\/[^/?#]+\/?$/i.test(u), limit: 18 },
+  { name: "STVR · Ekonomika", type: "html", url: "https://spravy.stvr.sk/kategoria/ekonomika/", accept: (u) => /spravy\.stvr\.sk\/\d{4}\/\d{2}\/[^/?#]+\/?$/i.test(u), limit: 18 },
+  { name: "TA3 · Slovensko", type: "html", url: "https://www.ta3.com/slovensko", accept: (u) => /ta3\.com\/clanok\/\d+\//i.test(u), limit: 18 },
+  { name: "TA3 · Ekonomika", type: "html", url: "https://www.ta3.com/tag/335427/ekonomika", accept: (u) => /ta3\.com\/clanok\/\d+\//i.test(u), limit: 18 },
+];
+
+const RADAR_OFFICIAL_DOMAINS = new Map([
+  ["socpoist.sk","Sociálna poisťovňa"],["financnasprava.sk","Finančná správa"],["slovensko.sk","Slovensko.sk"],
+  ["ndsas.sk","Národná diaľničná spoločnosť"],["posta.sk","Slovenská pošta"],["soi.sk","Slovenská obchodná inšpekcia"],
+  ["svps.sk","Štátna veterinárna a potravinová správa"],["upsvr.gov.sk","Ústredie práce, sociálnych vecí a rodiny"],
+  ["employment.gov.sk","Ministerstvo práce, sociálnych vecí a rodiny SR"],["health.gov.sk","Ministerstvo zdravotníctva SR"],
+  ["uvzsr.sk","Úrad verejného zdravotníctva SR"],["nbs.sk","Národná banka Slovenska"],["teleoff.gov.sk","Regulačný úrad pre elektronické komunikácie a poštové služby"],
+  ["economy.gov.sk","Ministerstvo hospodárstva SR"],["vszp.sk","Všeobecná zdravotná poisťovňa"],["mindop.sk","Ministerstvo dopravy SR"],
+  ["minedu.sk","Ministerstvo školstva SR"],["minv.sk","Ministerstvo vnútra SR"],["urso.gov.sk","Úrad pre reguláciu sieťových odvetví"],
+  ["udzs-sk.sk","Úrad pre dohľad nad zdravotnou starostlivosťou"],["statistics.sk","Štatistický úrad SR"],
+]);
+
 const PRACTICAL = [
   "termín","lehota","do konca","upozor","zmena","mení","otvor","zatvor","obmedz",
   "výluka","oprava","diaľnic","cest","premáv","povinn","poisten","dôchod","dávk",
@@ -267,6 +287,52 @@ function parseHtmlLinks(html, source) {
   }
   return out;
 }
+function radarOfficialInfo(rawUrl="") {
+  try {
+    const u=new URL(rawUrl);
+    const host=u.hostname.toLowerCase().replace(/^www\./,"");
+    for(const [domain,name] of RADAR_OFFICIAL_DOMAINS) {
+      if(host===domain || host.endsWith("."+domain)) return {name,domain,url:u.href};
+    }
+  } catch {}
+  return null;
+}
+function extractRadarOfficialLinks(html, baseUrl) {
+  const out=[];
+  const seen=new Set();
+  for(const m of String(html||"").matchAll(/<a\b[^>]*href=["']([^"']+)["'][^>]*>/gi)) {
+    const href=absUrl(m[1],baseUrl);
+    const info=radarOfficialInfo(href);
+    if(!info)continue;
+    let u;
+    try{u=new URL(href)}catch{continue}
+    if(!u.pathname || u.pathname==="/" || u.pathname.length<8)continue;
+    const key=canonicalUrl(href);
+    if(seen.has(key))continue;
+    seen.add(key);
+    out.push({...info,url:href});
+    if(out.length>=8)break;
+  }
+  return out;
+}
+function pageTitleFromHtml(html="") {
+  for(const tag of String(html).match(/<meta\b[^>]*>/gi)||[]) {
+    const key=(htmlAttr(tag,"property")||htmlAttr(tag,"name")).toLowerCase();
+    if(key==="og:title"||key==="twitter:title") {
+      const value=htmlAttr(tag,"content");
+      if(value)return value.trim();
+    }
+  }
+  const m=String(html).match(/<title\b[^>]*>([\s\S]*?)<\/title>/i);
+  return m?stripTags(m[1]).trim():"";
+}
+function sharedTitleStemCount(a="",b="") {
+  const aa=new Set(titleStems(a)),bb=new Set(titleStems(b));
+  let n=0;
+  for(const x of aa)if(bb.has(x))n++;
+  return n;
+}
+
 function articleText(html) {
   let s = html
     .replace(/<script\b[\s\S]*?<\/script>/gi," ")
@@ -1078,6 +1144,63 @@ for (const source of SOURCES) {
   } catch (e) {
     console.warn("Zdroj zlyhal:", source.name, e.message || e);
   }
+}
+
+let radarCandidates=[];
+for(const source of RADAR_SOURCES) {
+  try {
+    const {text}=await fetchText(source.url,18000,1);
+    const found=source.type==="rss"?parseRss(text,source):parseHtmlLinks(text,source);
+    const useful=found.map(item=>({...item,radarSource:source.name,radarScore:score(item.title,item.description)}))
+      .filter(item=>item.radarScore>0).sort((a,b)=>b.radarScore-a.radarScore).slice(0,10);
+    console.log("Radar "+source.name+": praktických tém "+useful.length+" / kandidátov "+found.length);
+    radarCandidates.push(...useful);
+  } catch(e) {
+    console.warn("Radar zdroj zlyhal:",source.name,e.message||e);
+  }
+}
+
+radarCandidates.sort((a,b)=>b.radarScore-a.radarScore);
+radarCandidates=radarCandidates.slice(0,18);
+const radarResolved=[];
+const radarSeenOfficial=new Set();
+for(const radar of radarCandidates) {
+  try {
+    const mediaPage=await fetchText(radar.link,16000,1);
+    const officialLinks=extractRadarOfficialLinks(mediaPage.text,mediaPage.finalUrl||radar.link);
+    let matched=0;
+    for(const info of officialLinks) {
+      const officialKey=canonicalUrl(info.url);
+      if(radarSeenOfficial.has(officialKey)||knownSources.has(officialKey))continue;
+      try {
+        const officialPage=await fetchText(info.url,16000,1);
+        const officialUrl=officialPage.finalUrl||info.url;
+        const finalInfo=radarOfficialInfo(officialUrl);
+        if(!finalInfo)continue;
+        const officialTitle=pageTitleFromHtml(officialPage.text);
+        const overlap=sharedTitleStemCount(radar.title,officialTitle);
+        const officialScore=score(officialTitle,radar.description);
+        if(!officialTitle || officialScore<=0 || (overlap<2 && !likelyDuplicate(radar.title,officialTitle)))continue;
+        const finalKey=canonicalUrl(officialUrl);
+        if(radarSeenOfficial.has(finalKey)||knownSources.has(finalKey))continue;
+        radarSeenOfficial.add(finalKey);
+        radarResolved.push({sourceName:finalInfo.name,title:officialTitle,description:"",sourceContent:"",link:officialUrl,pubDate:radar.pubDate||"",radarSource:radar.radarSource,radarTitle:radar.title});
+        matched++;
+        console.log("Radar našiel primárny podklad:",radar.radarSource,"→",finalInfo.name,"|",officialTitle);
+        if(matched>=2)break;
+      } catch(e) {
+        console.warn("Radar primárny odkaz sa nepodarilo overiť:",info.url,e.message||e);
+      }
+    }
+  } catch(e) {
+    console.warn("Radar článok sa nepodarilo načítať:",radar.radarSource,radar.title,e.message||e);
+  }
+}
+if(radarResolved.length) {
+  console.log("Radar pridal oficiálnych kandidátov:",radarResolved.length);
+  candidates.push(...radarResolved);
+} else {
+  console.log("Radar tentoraz nenašiel nový overiteľný primárny podklad.");
 }
 
 const unique = new Map();
