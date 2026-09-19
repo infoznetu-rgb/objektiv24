@@ -359,6 +359,39 @@
     }
   }
 
+  function fallbackForCategory(category='') {
+    if (category === 'Peniaze a práca') return '/assets/fallback/money.svg';
+    if (category === 'Doprava a regióny') return '/assets/fallback/transport.svg';
+    if (category === 'Úrady a služby') return '/assets/fallback/services.svg';
+    if (category === 'Rodina a zdravie') return '/assets/fallback/health.svg';
+    if (category === 'Spotrebiteľ a bezpečnosť') return '/assets/fallback/consumer.svg';
+    return '/assets/fallback/general.svg';
+  }
+
+  function ensureAutomaticImageFallback() {
+    if ((currentImageData || '').trim()) return currentImageData;
+    const title=($('#title')?.value || '').trim();
+    const relative=fallbackForCategory(($('#category')?.value || '').trim());
+    const url='https://objektiv24.sk'+relative;
+    currentImageData=url;
+    imageMeta={
+      type:'',
+      alt:('Ilustračná grafika k téme: '+title).slice(0,270),
+      sourceUrl:url,
+      credit:'Objektív24',
+      license:'Interná ilustračná grafika',
+      position:'50% 50%',
+      searchQuery:suggestQuery(),
+      reviewed:true
+    };
+    showPreview(currentImageData);
+    syncFieldsFromMeta();
+    updateLivePreview();
+    updateFallbackWarning();
+    return currentImageData;
+  }
+  window.ensureAutomaticImageFallback=ensureAutomaticImageFallback;
+
   async function resizeToBlob(file) {
     const dataUrl = await new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(String(r.result || '')); r.onerror = reject; r.readAsDataURL(file); });
     const img = await new Promise((resolve, reject) => { const i = new Image(); i.onload = () => resolve(i); i.onerror = reject; i.src = dataUrl; });
