@@ -1,5 +1,5 @@
-const CACHE='objektiv24-pwa-v23';
-const CORE=['/','/index.html','/styles.css','/app.js','/clanok.html','/clanok.js','/pwa.js','/analytics.js','/image-meta-public.js','/ako-pracujeme.html','/kontakt.html','/kontakt-odoslane.html','/manifest.webmanifest','/assets/app-mark-modern.svg','/assets/app-icon.svg','/assets/app-icon-192.svg','/assets/app-icon-512.svg','/assets/app-icon-maskable-512.svg'];
+const CACHE='objektiv24-pwa-v24';
+const CORE=['/','/index.html','/styles.css','/app.js','/clanok.html','/clanok.js','/pwa.js','/social-share.js','/analytics.js','/image-meta-public.js','/ako-pracujeme.html','/kontakt.html','/kontakt-odoslane.html','/manifest.webmanifest','/assets/app-mark-modern.svg','/assets/app-icon.svg','/assets/app-icon-192.svg','/assets/app-icon-512.svg','/assets/app-icon-maskable-512.svg'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
