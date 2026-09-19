@@ -16,6 +16,76 @@ let publishedDrafts=[];
 let currentImageData="";
 let currentUser=null;
 
+const WORKSPACE_STORAGE_KEY="objektiv24-redakcia-workspace-v1";
+const WORKSPACE_MAX_AGE=7*24*60*60*1000;
+const WORKSPACE_FIELD_IDS=["title","seo-title","meta-description","category","intro","what-happened","what-it-means","next-step","sources","state"];
+let workspaceDirty=false;
+let workspaceSaveTimer=null;
+let workspaceRestoring=false;
+
+function workspaceSnapshot(){
+  const fields={};
+  for(const id of WORKSPACE_FIELD_IDS){
+    const el=document.getElementById(id);
+    if(el)fields[id]=el.value;
+  }
+  return {
+    version:1,
+    savedAt:Date.now(),
+    draftId:$("#draft-id")?.value||"",
+    dirty:workspaceDirty,
+    fields,
+    image:currentImageData||"",
+    scrollY:Math.max(0,window.scrollY||0)
+  };
+}
+function saveEditorWorkspace(){
+  if(workspaceRestoring||$("#editor-shell")?.hidden)return;
+  try{
+    localStorage.setItem(WORKSPACE_STORAGE_KEY,JSON.stringify(workspaceSnapshot()));
+    window.dispatchEvent(new CustomEvent("objektiv24-workspace-saved",{detail:{dirty:workspaceDirty}}));
+  }catch(error){console.warn("Workspace save failed",error)}
+}
+function scheduleWorkspaceSave(delay=450){
+  clearTimeout(workspaceSaveTimer);
+  workspaceSaveTimer=setTimeout(saveEditorWorkspace,delay);
+}
+function restoreEditorWorkspace(){
+  let snapshot=null;
+  try{snapshot=JSON.parse(localStorage.getItem(WORKSPACE_STORAGE_KEY)||"null")}catch{}
+  if(!snapshot||snapshot.version!==1||Date.now()-Number(snapshot.savedAt||0)>WORKSPACE_MAX_AGE)return false;
+
+  workspaceRestoring=true;
+  try{
+    const id=String(snapshot.draftId||"");
+    const existing=id?drafts.find(d=>d.id===id):null;
+    if(existing)selectDraft(id);
+    else resetForm();
+
+    if(snapshot.dirty&&snapshot.fields&&(!id||existing)){
+      for(const fieldId of WORKSPACE_FIELD_IDS){
+        const el=document.getElementById(fieldId);
+        if(el&&Object.prototype.hasOwnProperty.call(snapshot.fields,fieldId))el.value=String(snapshot.fields[fieldId]??"");
+      }
+      if(snapshot.image){
+        currentImageData=String(snapshot.image);
+        showPreview(currentImageData);
+      }
+      workspaceDirty=true;
+      updateLivePreview();
+      $("#draft-status").textContent="Rozpracované zmeny obnovené";
+    }else{
+      workspaceDirty=false;
+    }
+
+    const y=Math.max(0,Number(snapshot.scrollY||0));
+    requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top:y,left:0,behavior:"auto"})));
+    return true;
+  }finally{
+    workspaceRestoring=false;
+  }
+}
+
 const builtInDrafts=[
   {
     id:"working-road-rules",seed:true,state:"draft",updated:"16. 09. 2026",
@@ -170,6 +240,7 @@ function renderDraftList(){
 }
 
 function resetForm(){
+  workspaceDirty=false;
   $("#article-form").reset();
   $("#draft-id").value="";
   $("#category").value="Slovensko";
@@ -180,6 +251,7 @@ function resetForm(){
   $("#delete-draft").hidden=true;
   updateLivePreview();
   renderDraftList();
+  scheduleWorkspaceSave(0);
 }
 
 function selectDraft(id){
@@ -202,6 +274,8 @@ function selectDraft(id){
   $("#delete-draft").hidden=!!d.seed;
   updateLivePreview();
   renderDraftList();
+  workspaceDirty=false;
+  scheduleWorkspaceSave(0);
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -277,6 +351,8 @@ async function saveDraft(){
   const saved=dbToDraft(result.data);
   await refreshDrafts();
   selectDraft(saved.id);
+  workspaceDirty=false;
+  saveEditorWorkspace();
   $("#draft-status").textContent="Uložené "+new Date().toLocaleTimeString("sk-SK",{hour:"2-digit",minute:"2-digit"});
   $(".editor-heading").classList.remove("save-flash");void $(".editor-heading").offsetWidth;$(".editor-heading").classList.add("save-flash");
   return saved;
@@ -322,7 +398,7 @@ async function deleteDraft(){
   const {error}=await client.from("drafts").delete().eq("id",id);
   if(error)throw error;
   await refreshDrafts();
-  resetForm();
+  if(!restoreEditorWorkspace())resetForm();
 }
 
 async function showEditor(user){
@@ -398,9 +474,19 @@ $("#article-form").addEventListener("submit",async e=>{
   try{await saveDraft()}catch(err){console.error(err);alert("Návrh sa nepodarilo uložiť: "+err.message);$("#draft-status").textContent="Chyba pri ukladaní"}
 });
 
-$("#new-draft").addEventListener("click",resetForm);
+$("#new-draft").addEventListener("click",()=>{resetForm();window.scrollTo({top:0,behavior:"smooth"})});
 $("#draft-search").addEventListener("input",renderDraftList);
-["#title","#category","#intro","#what-happened","#what-it-means","#next-step","#sources"].forEach(id=>$(id).addEventListener("input",updateLivePreview));
+["#title","#category","#intro","#what-happened","#what-it-means","#next-step","#sources","#seo-title","#meta-description"].forEach(id=>{
+  $(id)?.addEventListener("input",()=>{
+    workspaceDirty=true;
+    updateLivePreview();
+    scheduleWorkspaceSave();
+  });
+});
+["#category","#state"].forEach(id=>$(id)?.addEventListener("change",()=>{workspaceDirty=true;scheduleWorkspaceSave()}));
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveEditorWorkspace()});
+window.addEventListener("pagehide",saveEditorWorkspace);
+window.addEventListener("scroll",()=>scheduleWorkspaceSave(700),{passive:true});
 
 $("#image-upload").addEventListener("change",async e=>{
   const f=e.target.files?.[0];if(!f)return;
