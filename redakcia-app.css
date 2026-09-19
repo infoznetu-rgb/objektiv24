@@ -234,3 +234,118 @@
   html.redakcia-app .editor-topbar{min-height:58px}
   html.redakcia-app .editor-quicknav{top:58px !important}
 }
+
+
+/* App overflow hardening: some dynamically injected editor modules have
+   desktop-oriented intrinsic widths. Keep every card inside the viewport. */
+@media (max-width:900px){
+  html.redakcia-app .editor-shell,
+  html.redakcia-app .editor-main,
+  html.redakcia-app .editor-main>*,
+  html.redakcia-app .editor-tools,
+  html.redakcia-app .editor-tools>*,
+  html.redakcia-app #article-form,
+  html.redakcia-app .form-section,
+  html.redakcia-app .live-card,
+  html.redakcia-app .image-editor,
+  html.redakcia-app .image-editor>*,
+  html.redakcia-app .image-panel{
+    min-width:0 !important;
+    max-width:100% !important;
+  }
+
+  html.redakcia-app .editor-main,
+  html.redakcia-app #article-form,
+  html.redakcia-app .form-section,
+  html.redakcia-app .editor-tools,
+  html.redakcia-app .live-card,
+  html.redakcia-app .image-editor,
+  html.redakcia-app .image-panel{
+    width:100% !important;
+  }
+
+  html.redakcia-app h1,
+  html.redakcia-app h2,
+  html.redakcia-app h3,
+  html.redakcia-app p,
+  html.redakcia-app small,
+  html.redakcia-app strong,
+  html.redakcia-app label,
+  html.redakcia-app .mode-note{
+    overflow-wrap:anywhere;
+    word-break:normal;
+  }
+
+  html.redakcia-app img,
+  html.redakcia-app video,
+  html.redakcia-app canvas{
+    max-width:100% !important;
+  }
+
+  /* Compact the first screen so the actual form is reached quickly. */
+  html.redakcia-app .checklist{
+    grid-template-columns:1fr 1fr;
+    gap:7px 10px;
+  }
+  html.redakcia-app .checklist li{
+    min-width:0;
+    font-size:.76rem;
+    line-height:1.3;
+  }
+  html.redakcia-app .live-image{height:96px}
+  html.redakcia-app .live-card h3{
+    font-size:.95rem;
+    line-height:1.25;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  html.redakcia-app .live-card p{
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+
+  /* Dynamically added image controls must wrap instead of widening the page. */
+  html.redakcia-app .image-editor-head,
+  html.redakcia-app .image-generation-box,
+  html.redakcia-app .image-fallback-warning{
+    min-width:0;
+    max-width:100%;
+  }
+  html.redakcia-app .image-generation-box{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  html.redakcia-app .image-generation-actions{
+    flex-wrap:wrap;
+    width:100%;
+  }
+  html.redakcia-app .image-generation-actions button{
+    flex:1 1 140px;
+    min-width:0;
+  }
+  html.redakcia-app .image-search-row,
+  html.redakcia-app .image-provider-row{
+    grid-template-columns:minmax(0,1fr);
+  }
+  html.redakcia-app .image-search-row button,
+  html.redakcia-app .image-provider-row button{
+    width:100%;
+  }
+  html.redakcia-app .image-tabs{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+  }
+  html.redakcia-app .image-tabs button{
+    min-width:0;
+    width:100%;
+    white-space:normal;
+  }
+}
+
+@media (max-width:420px){
+  html.redakcia-app .checklist{grid-template-columns:1fr}
+}
