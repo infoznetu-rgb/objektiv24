@@ -827,9 +827,22 @@ function validArticle(a, sourceText="", sourceTitle="") {
   return articleIssues(a,sourceText,sourceTitle).length===0;
 }
 
-const token = await oidcToken();
-const status = await ingest(token, { action:"status" });
-console.log("Objektív24 status:", JSON.stringify(status));
+let status;
+if (QA_DRY_RUN) {
+  status = {
+    ok:true,
+    published_last_24h:0,
+    daily_cap:15,
+    recent_titles:[],
+    recent_source_urls:[],
+    known_sources:[]
+  };
+  console.log("QA dry-run: produkčný ingest sa nekontaktuje.");
+} else {
+  const statusToken = await oidcToken();
+  status = await ingest(statusToken, { action:"status" });
+  console.log("Objektív24 status:", JSON.stringify(status));
+}
 const dailyCap = Math.max(1, Number(status.daily_cap) || 8);
 if ((status.published_last_24h || 0) >= dailyCap) {
   console.log("Denný limit je naplnený; tento beh nič nevydá.");
