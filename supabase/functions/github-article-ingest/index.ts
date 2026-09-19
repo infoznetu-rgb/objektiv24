@@ -64,32 +64,45 @@ function fallbackMetaDescription(intro: string) {
   return /[.!?]$/.test(cut)?cut:cut+".";
 }
 
-function allowedSource(raw: string) {
+const ALLOWED_SOURCE_DOMAINS = [
+  "socpoist.sk",
+  "financnasprava.sk",
+  "ndsas.sk",
+  "soi.sk",
+  "zssk.sk",
+  "slposta.sk",
+  "posta.sk",
+  "slovensko.sk",
+  "minv.sk",
+  "employment.gov.sk",
+  "health.gov.sk",
+  "mindop.sk",
+  "economy.gov.sk",
+  "svps.sk",
+  "upsvr.gov.sk",
+  "nbs.sk",
+  "vszp.sk",
+  "udzs-sk.sk",
+  "statistics.sk",
+  "minedu.sk",
+  "uvzsr.sk",
+  "urso.gov.sk",
+  "teleoff.gov.sk",
+];
+
+function sourceHost(raw: string) {
   try {
-    const host = new URL(raw).hostname.toLowerCase().replace(/^www\./, "");
-    return [
-      "socpoist.sk",
-      "financnasprava.sk",
-      "ndsas.sk",
-      "soi.sk",
-      "zssk.sk",
-      "slposta.sk",
-      "posta.sk",
-      "slovensko.sk",
-      "minv.sk",
-      "employment.gov.sk",
-      "health.gov.sk",
-      "mindop.sk",
-      "economy.gov.sk",
-      "svps.sk",
-      "nbs.sk",
-      "vszp.sk",
-      "udzs-sk.sk",
-      "statistics.sk",
-    ].includes(host) || host.endsWith(".gov.sk");
+    return new URL(raw).hostname.toLowerCase().replace(/^www\./, "");
   } catch {
-    return false;
+    return "";
   }
+}
+
+function allowedSource(raw: string) {
+  const host = sourceHost(raw);
+  if (!host) return false;
+  return ALLOWED_SOURCE_DOMAINS.some((domain) => host === domain || host.endsWith("." + domain))
+    || host.endsWith(".gov.sk");
 }
 
 function fallbackFor(category: string) {
@@ -199,7 +212,7 @@ Deno.serve(async (req: Request) => {
     const seoTitle = clean(a.seo_title) || fallbackSeoTitle(title);
     const metaDescription = clean(a.meta_description) || fallbackMetaDescription(intro);
 
-    if (!allowedSource(sourceUrl)) return json({ error: "source URL is not allowed" }, 400);
+    if (!allowedSource(sourceUrl)) return json({ error: "source URL is not allowed", source_host: sourceHost(sourceUrl) || null }, 400);
     if (action === "reject") {
       const reason = clean(input?.reason || "rejected by local QA").slice(0, 800);
       const rejected = await supabase.from("automation_source_items").upsert({
