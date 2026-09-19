@@ -1136,7 +1136,7 @@ for (const source of SOURCES) {
         pubDate: source.pubDate || "",
       }];
     } else {
-      const { text } = await fetchText(source.url);
+      const { text } = await fetchText(source.url,15000,1);
       found = source.type === "rss" ? parseRss(text, source) : parseHtmlLinks(text, source);
     }
     console.log(source.name + ": nájdených kandidátov " + found.length);
@@ -1149,10 +1149,10 @@ for (const source of SOURCES) {
 let radarCandidates=[];
 for(const source of RADAR_SOURCES) {
   try {
-    const {text}=await fetchText(source.url,18000,1);
+    const {text}=await fetchText(source.url,5000,1);
     const found=source.type==="rss"?parseRss(text,source):parseHtmlLinks(text,source);
     const useful=found.map(item=>({...item,radarSource:source.name,radarScore:score(item.title,item.description)}))
-      .filter(item=>item.radarScore>0).sort((a,b)=>b.radarScore-a.radarScore).slice(0,10);
+      .filter(item=>item.radarScore>0).sort((a,b)=>b.radarScore-a.radarScore).slice(0,3);
     console.log("Radar "+source.name+": praktických tém "+useful.length+" / kandidátov "+found.length);
     radarCandidates.push(...useful);
   } catch(e) {
@@ -1161,19 +1161,19 @@ for(const source of RADAR_SOURCES) {
 }
 
 radarCandidates.sort((a,b)=>b.radarScore-a.radarScore);
-radarCandidates=radarCandidates.slice(0,18);
+radarCandidates=radarCandidates.slice(0,4);
 const radarResolved=[];
 const radarSeenOfficial=new Set();
 for(const radar of radarCandidates) {
   try {
-    const mediaPage=await fetchText(radar.link,16000,1);
-    const officialLinks=extractRadarOfficialLinks(mediaPage.text,mediaPage.finalUrl||radar.link);
+    const mediaPage=await fetchText(radar.link,5000,1);
+    const officialLinks=extractRadarOfficialLinks(mediaPage.text,mediaPage.finalUrl||radar.link).slice(0,2);
     let matched=0;
     for(const info of officialLinks) {
       const officialKey=canonicalUrl(info.url);
       if(radarSeenOfficial.has(officialKey)||knownSources.has(officialKey))continue;
       try {
-        const officialPage=await fetchText(info.url,16000,1);
+        const officialPage=await fetchText(info.url,5000,1);
         const officialUrl=officialPage.finalUrl||info.url;
         const finalInfo=radarOfficialInfo(officialUrl);
         if(!finalInfo)continue;
@@ -1187,7 +1187,7 @@ for(const radar of radarCandidates) {
         radarResolved.push({sourceName:finalInfo.name,title:officialTitle,description:"",sourceContent:"",link:officialUrl,pubDate:radar.pubDate||"",radarSource:radar.radarSource,radarTitle:radar.title});
         matched++;
         console.log("Radar našiel primárny podklad:",radar.radarSource,"→",finalInfo.name,"|",officialTitle);
-        if(matched>=2)break;
+        if(matched>=1)break;
       } catch(e) {
         console.warn("Radar primárny odkaz sa nepodarilo overiť:",info.url,e.message||e);
       }
