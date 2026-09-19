@@ -1244,7 +1244,10 @@ let dryRunPassed = 0;
 const publishedBySource=new Map();
 const maxToPublish = Math.min(5, Math.max(0, dailyCap - (status.published_last_24h || 0)));
 for (const c of candidates) {
-  if (published >= maxToPublish || attempts >= 10) break;
+  if (published >= maxToPublish || attempts >= 3) {
+    if (attempts >= 3 && published < maxToPublish) console.log("Beh končí po troch náročných AI pokusoch; ďalší kandidáti počkajú na nasledujúcu hodinu.");
+    break;
+  }
   if ((publishedBySource.get(c.sourceName)||0) >= 2) {
     console.log("Zdroj má v tomto behu už dva publikované články:",c.sourceName);
     continue;
