@@ -21,7 +21,7 @@
 
   const style = document.createElement('style');
   style.textContent = `
-    .image-editor{display:grid;gap:16px}.image-editor-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.image-editor-head p{margin:4px 0 0;color:#6f737b;font-size:.82rem;line-height:1.5}.image-trust{flex:none;border:1px solid #cfd1d7;border-radius:999px;padding:7px 10px;font-size:.66rem;font-weight:900;letter-spacing:.05em;color:#666b75;background:#fff}.image-trust.ok{border-color:#a7bd35;color:#4e6112;background:#f4fad6}.image-trust.ai{border-color:#8fa6be;color:#365675;background:#edf5fb}.image-trust.warn{border-color:#e6a85d;color:#784817;background:#fff5e7}.image-tabs{display:flex;gap:8px;flex-wrap:wrap}.image-tabs button{border:1px solid #cfd1d7;background:#fff;color:#3f4248;border-radius:999px;padding:9px 12px;font-weight:800;font-size:.78rem;cursor:pointer}.image-tabs button.is-active{background:#303136;color:#ceef26;border-color:#303136}.image-panel{border:1px solid #dfe1e5;background:#fbfbfc;border-radius:10px;padding:15px}.image-panel[hidden]{display:none}.image-search-row{display:grid;grid-template-columns:1fr auto;gap:8px}.image-search-row input{min-width:0}.image-search-row button,.image-small-button{border:0;background:#303136;color:#ceef26;border-radius:5px;padding:10px 13px;font-weight:800;cursor:pointer}.image-search-note{font-size:.75rem;color:#747882;margin:8px 0 0;line-height:1.45}.image-search-note strong{color:#42454c}.image-results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}.image-result{overflow:hidden;border:1px solid #d9dbe0;background:#fff;border-radius:9px;display:flex;flex-direction:column}.image-result img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#eef0f2}.image-result-body{padding:10px;display:flex;flex-direction:column;gap:6px;flex:1}.image-result-title{font-size:.76rem;font-weight:800;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.image-result-meta{font-size:.67rem;color:#6f737b;line-height:1.35}.image-license{display:inline-flex;align-self:flex-start;background:#eef3d5;color:#566414;border-radius:999px;padding:3px 7px;font-size:.61rem;font-weight:900}.image-result-actions{display:flex;gap:6px;margin-top:auto}.image-result-actions button,.image-result-actions a{flex:1;text-align:center;text-decoration:none;border:1px solid #cfd1d7;background:#fff;color:#3c3e44;border-radius:4px;padding:7px 8px;font-size:.68rem;font-weight:800;cursor:pointer}.image-result-actions button{background:#303136;color:#ceef26;border-color:#303136}.image-empty{grid-column:1/-1;padding:16px;border:1px dashed #cfd3d8;border-radius:8px;color:#777b84;font-size:.78rem}.image-ai-warning{border-left:3px solid #c4d63c;padding:9px 11px;background:#f8faea;color:#5b6041;font-size:.76rem;line-height:1.45;margin-bottom:12px}.image-ai-warning.is-sensitive{border-left-color:#c58957;background:#fff4e9;color:#775032}.image-generation-box{display:flex;justify-content:space-between;gap:14px;align-items:center;border:1px solid #d7dbe0;background:#fff;border-radius:9px;padding:12px;margin:0 0 14px}.image-generation-box strong{display:block;font-size:.78rem;color:#383b41}.image-generation-status{display:block;margin-top:3px;font-size:.7rem;line-height:1.4;color:#737780}.image-generation-status.running{color:#365675}.image-generation-status.done{color:#4e6112}.image-generation-status.failed,.image-generation-status.blocked_sensitive{color:#8a4d26}.image-generation-actions{display:flex;gap:7px;flex:none}.image-generation-actions button{border:0;background:#303136;color:#ceef26;border-radius:6px;padding:9px 11px;font-size:.72rem;font-weight:850;cursor:pointer}.image-generation-actions button.secondary{background:#fff;color:#45484e;border:1px solid #cfd1d7}.image-generation-actions button:disabled{opacity:.55;cursor:wait}.image-fallback-warning{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #f0c98f;border-radius:10px;padding:11px 12px;background:#fff8ed;color:#755023;font-size:.75rem;line-height:1.4}.image-fallback-warning[hidden]{display:none}.image-fallback-warning strong{display:block;color:#553311}.image-fallback-warning button{flex:none;border:0;border-radius:6px;background:#303136;color:#ceef26;padding:9px 11px;font-weight:850;cursor:pointer}.image-scene-title{margin:3px 0 8px;font-size:.76rem;font-weight:850;color:#40434a}.image-scene-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}.image-scene-tabs button{border:1px solid #cfd1d7;border-radius:9px;background:#fff;color:#50545b;padding:10px 8px;text-align:left;cursor:pointer}.image-scene-tabs button strong{display:block;font-size:.72rem}.image-scene-tabs button small{display:block;margin-top:3px;color:#858a93;font-size:.64rem;line-height:1.3}.image-scene-tabs button.is-active{border-color:#303136;background:#303136;color:#ceef26}.image-scene-tabs button.is-active small{color:#dce4ba}.image-scene-summary{margin:0 0 10px;padding:10px 11px;border-radius:8px;background:#eef1f3;color:#50545b;font-size:.74rem;line-height:1.45}.image-prompt{width:100%;min-height:210px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.76rem;line-height:1.5}.image-prompt-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}.image-upload-status{font-size:.75rem;color:#6f737b;margin-top:7px}.image-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}.image-meta-grid .wide{grid-column:1/-1}.image-review{display:flex;align-items:flex-start;gap:9px;margin:13px 0 0;font-size:.78rem;line-height:1.45;color:#5e626a}.image-review input{margin-top:3px}.image-preview-advanced{margin-top:0;max-width:none}.image-preview-advanced img{height:260px;object-fit:cover;background:#e9ebee}.focal-grid{display:grid;grid-template-columns:repeat(3,34px);gap:4px;margin-top:7px}.focal-grid button{width:34px;height:28px;border:1px solid #cfd1d7;background:#fff;border-radius:4px;cursor:pointer;color:#7a7e86}.focal-grid button.is-active{background:#303136;color:#ceef26;border-color:#303136}.image-source-fields.is-optional{opacity:.72}.image-source-fields.is-optional::before{content:'Voliteľné pri vlastnom alebo AI obrázku';display:block;font-size:.68rem;color:#858991;margin:6px 0 -4px}.commons-credit{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+    .image-editor{display:grid;gap:16px}.image-editor-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.image-editor-head p{margin:4px 0 0;color:#6f737b;font-size:.82rem;line-height:1.5}.image-trust{flex:none;border:1px solid #cfd1d7;border-radius:999px;padding:7px 10px;font-size:.66rem;font-weight:900;letter-spacing:.05em;color:#666b75;background:#fff}.image-trust.ok{border-color:#a7bd35;color:#4e6112;background:#f4fad6}.image-trust.ai{border-color:#8fa6be;color:#365675;background:#edf5fb}.image-trust.warn{border-color:#e6a85d;color:#784817;background:#fff5e7}.image-tabs{display:flex;gap:8px;flex-wrap:wrap}.image-tabs button{border:1px solid #cfd1d7;background:#fff;color:#3f4248;border-radius:999px;padding:9px 12px;font-weight:800;font-size:.78rem;cursor:pointer}.image-tabs button.is-active{background:#303136;color:#ceef26;border-color:#303136}.image-panel{border:1px solid #dfe1e5;background:#fbfbfc;border-radius:10px;padding:15px}.image-panel[hidden]{display:none}.image-search-row{display:grid;grid-template-columns:1fr auto;gap:8px}.image-search-row input{min-width:0}.image-search-row button,.image-small-button{border:0;background:#303136;color:#ceef26;border-radius:5px;padding:10px 13px;font-weight:800;cursor:pointer}.image-search-note{font-size:.75rem;color:#747882;margin:8px 0 0;line-height:1.45}.image-search-note strong{color:#42454c}.image-results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}.image-result{overflow:hidden;border:1px solid #d9dbe0;background:#fff;border-radius:9px;display:flex;flex-direction:column}.image-result img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#eef0f2}.image-result-body{padding:10px;display:flex;flex-direction:column;gap:6px;flex:1}.image-result-title{font-size:.76rem;font-weight:800;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.image-result-meta{font-size:.67rem;color:#6f737b;line-height:1.35}.image-license{display:inline-flex;align-self:flex-start;background:#eef3d5;color:#566414;border-radius:999px;padding:3px 7px;font-size:.61rem;font-weight:900}.image-result-actions{display:flex;gap:6px;margin-top:auto}.image-result-actions button,.image-result-actions a{flex:1;text-align:center;text-decoration:none;border:1px solid #cfd1d7;background:#fff;color:#3c3e44;border-radius:4px;padding:7px 8px;font-size:.68rem;font-weight:800;cursor:pointer}.image-result-actions button{background:#303136;color:#ceef26;border-color:#303136}.image-empty{grid-column:1/-1;padding:16px;border:1px dashed #cfd3d8;border-radius:8px;color:#777b84;font-size:.78rem}.image-ai-warning{border-left:3px solid #c4d63c;padding:9px 11px;background:#f8faea;color:#5b6041;font-size:.76rem;line-height:1.45;margin-bottom:12px}.image-ai-warning.is-sensitive{border-left-color:#c58957;background:#fff4e9;color:#775032}.image-generation-box{display:flex;justify-content:space-between;gap:14px;align-items:center;border:1px solid #d7dbe0;background:#fff;border-radius:9px;padding:12px;margin:0 0 14px}.image-generation-box strong{display:block;font-size:.78rem;color:#383b41}.image-generation-status{display:block;margin-top:3px;font-size:.7rem;line-height:1.4;color:#737780}.image-generation-status.running{color:#365675}.image-generation-status.done{color:#4e6112}.image-generation-status.failed,.image-generation-status.blocked_sensitive{color:#8a4d26}.image-generation-actions{display:flex;gap:7px;flex:none}.image-generation-actions button{border:0;background:#303136;color:#ceef26;border-radius:6px;padding:9px 11px;font-size:.72rem;font-weight:850;cursor:pointer}.image-generation-actions button.secondary{background:#fff;color:#45484e;border:1px solid #cfd1d7}.image-generation-actions button:disabled{opacity:.55;cursor:wait}.image-provider-setup{border:1px solid #d7dbe0;background:#f8f9fa;border-radius:9px;padding:12px;margin:-4px 0 14px}.image-provider-setup[hidden]{display:none}.image-provider-setup strong{display:block;font-size:.76rem;color:#3f4248}.image-provider-setup small{display:block;margin-top:7px;color:#777b84;font-size:.67rem;line-height:1.4}.image-provider-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:8px}.image-provider-row input{min-width:0}.image-provider-row button{border:0;background:#303136;color:#ceef26;border-radius:6px;padding:9px 11px;font-size:.72rem;font-weight:850;cursor:pointer}.image-provider-row button:disabled{opacity:.55;cursor:wait}.image-fallback-warning{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #f0c98f;border-radius:10px;padding:11px 12px;background:#fff8ed;color:#755023;font-size:.75rem;line-height:1.4}.image-fallback-warning[hidden]{display:none}.image-fallback-warning strong{display:block;color:#553311}.image-fallback-warning button{flex:none;border:0;border-radius:6px;background:#303136;color:#ceef26;padding:9px 11px;font-weight:850;cursor:pointer}.image-scene-title{margin:3px 0 8px;font-size:.76rem;font-weight:850;color:#40434a}.image-scene-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}.image-scene-tabs button{border:1px solid #cfd1d7;border-radius:9px;background:#fff;color:#50545b;padding:10px 8px;text-align:left;cursor:pointer}.image-scene-tabs button strong{display:block;font-size:.72rem}.image-scene-tabs button small{display:block;margin-top:3px;color:#858a93;font-size:.64rem;line-height:1.3}.image-scene-tabs button.is-active{border-color:#303136;background:#303136;color:#ceef26}.image-scene-tabs button.is-active small{color:#dce4ba}.image-scene-summary{margin:0 0 10px;padding:10px 11px;border-radius:8px;background:#eef1f3;color:#50545b;font-size:.74rem;line-height:1.45}.image-prompt{width:100%;min-height:210px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.76rem;line-height:1.5}.image-prompt-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}.image-upload-status{font-size:.75rem;color:#6f737b;margin-top:7px}.image-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}.image-meta-grid .wide{grid-column:1/-1}.image-review{display:flex;align-items:flex-start;gap:9px;margin:13px 0 0;font-size:.78rem;line-height:1.45;color:#5e626a}.image-review input{margin-top:3px}.image-preview-advanced{margin-top:0;max-width:none}.image-preview-advanced img{height:260px;object-fit:cover;background:#e9ebee}.focal-grid{display:grid;grid-template-columns:repeat(3,34px);gap:4px;margin-top:7px}.focal-grid button{width:34px;height:28px;border:1px solid #cfd1d7;background:#fff;border-radius:4px;cursor:pointer;color:#7a7e86}.focal-grid button.is-active{background:#303136;color:#ceef26;border-color:#303136}.image-source-fields.is-optional{opacity:.72}.image-source-fields.is-optional::before{content:'Voliteľné pri vlastnom alebo AI obrázku';display:block;font-size:.68rem;color:#858991;margin:6px 0 -4px}.commons-credit{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
     @media(max-width:760px){.image-results{grid-template-columns:1fr 1fr}.image-meta-grid{grid-template-columns:1fr}.image-meta-grid .wide{grid-column:auto}.image-editor-head{display:block}.image-trust{display:inline-flex;margin-top:10px}.image-scene-tabs{grid-template-columns:1fr}.image-fallback-warning{align-items:stretch;flex-direction:column}.image-fallback-warning button{width:100%}}
     @media(max-width:480px){.image-results{grid-template-columns:1fr}.image-search-row{grid-template-columns:1fr}.image-tabs button{flex:1}.image-preview-advanced img{height:210px}}
   `;
@@ -69,6 +69,14 @@
             <button id="generate-ai-image" type="button">Vygenerovať</button>
             <button id="regenerate-ai-image" class="secondary" type="button" hidden>Generovať znova</button>
           </div>
+        </div>
+        <div id="image-provider-setup" class="image-provider-setup" hidden>
+          <strong>Jednorazové nastavenie AI generátora</strong>
+          <div class="image-provider-row">
+            <input id="image-provider-key" type="password" autocomplete="off" spellcheck="false" placeholder="OpenAI API key (sk-…)">
+            <button id="save-image-provider-key" type="button">Aktivovať</button>
+          </div>
+          <small>Kľúč sa odošle iba na server Objektív24, uloží sa do chráneného interného úložiska a v prehliadači sa neuchováva.</small>
         </div>
         <p class="image-scene-title">Vyberte typ scény</p>
         <div class="image-scene-tabs" aria-label="Variant AI fotografie">
@@ -347,6 +355,7 @@
         ? 'Citlivá alebo konkrétna udalosť: používajte iba všeobecnú fotorealistickú ilustračnú scénu. Nevytvárajte falošný autentický záber konkrétnej osoby, nehody, zásahu alebo politickej udalosti.'
         : 'AI fotografia má pôsobiť ako dôveryhodná redakčná fotografia, ale na webe zostane jasne označená ako AI. Vyhýbame sa grafom, ikonám, veľkým symbolom a reklamnej estetike.';
       refreshAiPrompt();
+      refreshImageProviderStatus().catch(()=>{});
     }
   }
 
@@ -500,6 +509,62 @@
     }
   }
 
+  async function imageProviderCall(body) {
+    const {data:{session}}=await client.auth.getSession();
+    if(!session?.access_token) throw new Error('Najprv sa prihláste do Redakcie.');
+    const response=await fetch(SUPABASE_URL+'/functions/v1/generate-editorial-image',{
+      method:'POST',
+      headers:{
+        Authorization:'Bearer '+session.access_token,
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify(body)
+    });
+    const text=await response.text();
+    let result={};
+    try{result=JSON.parse(text)}catch{result={error:text}}
+    return {response,result};
+  }
+
+  async function refreshImageProviderStatus() {
+    try {
+      const {response,result}=await imageProviderCall({action:'provider_status'});
+      if(!response.ok) throw new Error(result?.error || 'Stav generátora sa nepodarilo načítať.');
+      const setup=$('#image-provider-setup');
+      if(setup) setup.hidden=Boolean(result?.configured);
+      return Boolean(result?.configured);
+    } catch(error) {
+      console.error('Kontrola AI generátora zlyhala:',error);
+      return false;
+    }
+  }
+
+  async function configureImageProvider() {
+    const input=$('#image-provider-key');
+    const button=$('#save-image-provider-key');
+    const key=(input?.value || '').trim();
+    if(!key){alert('Vložte OpenAI API kľúč.');input?.focus();return}
+    if(button) button.disabled=true;
+    try {
+      setGenerationStatus('pending','Overujem API kľúč…');
+      const {response,result}=await imageProviderCall({action:'configure_provider',api_key:key});
+      if(!response.ok) throw new Error(result?.error || 'API kľúč sa nepodarilo uložiť.');
+      if(input) input.value='';
+      const setup=$('#image-provider-setup');
+      if(setup) setup.hidden=true;
+      setGenerationStatus('','AI generátor je aktivovaný.');
+      $('#draft-status').textContent='AI generátor aktivovaný';
+      const id=$('#draft-id')?.value || '';
+      if(id) await generateForCurrentDraft(false);
+    } catch(error) {
+      console.error(error);
+      setGenerationStatus('failed',error?.message || String(error));
+      alert('AI generátor sa nepodarilo aktivovať: '+(error?.message || error));
+    } finally {
+      if(button) button.disabled=false;
+    }
+  }
+
   async function requestEditorialImageGeneration(draftId, options={}) {
     if (!draftId) return {ok:false,error:'Chýba ID článku'};
     const {data:{session}}=await client.auth.getSession();
@@ -522,6 +587,10 @@
         ? 'Chýba jednorazové nastavenie obrazového API kľúča.'
         : (result?.error || 'Generovanie sa nepodarilo.');
       setGenerationStatus('failed',message);
+      if(result?.code === 'provider_not_configured'){
+        const setup=$('#image-provider-setup');
+        if(setup) setup.hidden=false;
+      }
       if(!options.silent) alert(message);
       return {ok:false,...result};
     }
@@ -568,6 +637,7 @@
   });
   $('#generate-ai-image')?.addEventListener('click',()=>generateForCurrentDraft(false));
   $('#regenerate-ai-image')?.addEventListener('click',()=>generateForCurrentDraft(true));
+  $('#save-image-provider-key')?.addEventListener('click',configureImageProvider);
   document.querySelectorAll('[data-ai-scene]').forEach(b => b.addEventListener('click', () => {
     aiSceneMode = b.dataset.aiScene || 'human';
     refreshAiPrompt();
@@ -653,6 +723,8 @@
     li?.classList.toggle('ok', Boolean(currentImageData && typeOk && imageMeta.alt.length >= 8 && sourceOk && imageMeta.reviewed));
     updateTrust();
   };
+
+  refreshImageProviderStatus().catch(()=>{});
 
   $('#publish-draft')?.addEventListener('click', event => {
     if (!(currentImageData || '').trim()) return;
