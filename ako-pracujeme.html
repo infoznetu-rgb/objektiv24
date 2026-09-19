@@ -41,8 +41,9 @@
     <div class="prose">
       <section>
         <h2>Čo je teraz zapojené</h2>
-        <p>Objektív24 používa automatizovaný redakčný systém, ktorý pravidelne kontroluje vybrané oficiálne zdroje, vyhľadáva nové praktické informácie a pripravuje z nich články. Časovo viazané texty po uplynutí termínu oddeľujeme od aktuálneho obsahu.</p>
-        <p>Automatizácia neznamená, že sa zverejní každá nájdená položka. Kandidáti prechádzajú kontrolou duplicít, praktickej relevancie, čísel a faktických tvrdení, jazykovou korektúrou, kontrolou pravopisu a finálnou redakčnou QA. Článok sa automaticky publikuje iba vtedy, keď týmito kontrolami prejde.</p>
+        <p>Objektív24 používa automatizovaný redakčný systém, ktorý pravidelne kontroluje vybrané oficiálne zdroje a hľadá nové praktické informácie pre ľudí na Slovensku. Sledujeme najmä termíny, dávky a poistenie, dane, úrady a služby, dopravu, spotrebiteľské upozornenia, zdravie, financie a ďalšie zmeny, pri ktorých má čitateľ vedieť, čo sa stalo a čo môže urobiť ďalej.</p>
+        <p>Automatizácia neznamená, že sa zverejní každá nájdená položka. Kandidáti prechádzajú automatizovanou kontrolou duplicít, praktickej relevancie, podloženia čísel a faktických tvrdení, štruktúry, jazyka a pravopisu. Článok sa automaticky publikuje iba vtedy, keď týmito kontrolami prejde. Ak je podklad príliš krátky, nejasný alebo kontrola nájde problém, systém článok nevydá.</p>
+        <p>Časovo viazané informácie po skončení ich platnosti oddeľujeme od aktuálneho obsahu. Vlastník redakcie môže automaticky pripravený článok následne upraviť, doplniť, zmeniť obrázok alebo ho stiahnuť.</p>
       </section>
 
       <section>
@@ -51,7 +52,7 @@
           <li><strong>Udalosť pred cudzím textom.</strong> Vychádzame z primárnych dokumentov a overiteľných informácií. Samotná zámena slov v cudzom článku nie je vlastná žurnalistika.</li>
           <li><strong>Fakt oddelene od názoru.</strong> Vysvetlenie označujeme ako vysvetlenie a nevydávame domnienku za potvrdený fakt.</li>
           <li><strong>Postup s hranicami.</strong> Pri praktických návodoch uvádzame, koho sa týkajú, prvý krok, kontakt a známe obmedzenia.</li>
-          <li><strong>Kontrola podľa rizika.</strong> Citlivé právne, zdravotné a finančné témy posudzujeme prísnejšie a podľa potreby ich kontrolujeme aj manuálne. Automatizácia ani AI nenahrádzajú zodpovednosť redakcie.</li>
+          <li><strong>Kontrola podľa rizika.</strong> Citlivé právne, zdravotné, finančné a udalostne špecifické témy posudzujeme prísnejšie. Niektoré z nich automatika nepublikuje alebo pri nich vypína automatické generovanie obrázkov. Automatizácia ani AI nenahrádzajú zodpovednosť prevádzkovateľa za zverejnený obsah.</li>
           <li><strong>Aktualizácie a opravy.</strong> Sledujeme dátum podkladov a časovo neaktuálne texty oddeľujeme od aktuálneho prúdu.</li>
           <li><strong>Práva a nezávislosť.</strong> Zdroje, fotografie, citácie a prípadnú reklamu oddeľujeme od redakčného obsahu.</li>
         </ol>
@@ -60,16 +61,29 @@
       <section>
         <h2>Zodpovednosť za publikovanie</h2>
         <p>Za rozhodnutie zverejniť obsah na Objektív24.sk zodpovedá Objektív24. Odkaz na externý zdroj, dokument, fotografiu alebo vyjadrenie neznamená, že príslušná osoba alebo inštitúcia článok schválila alebo je partnerom webu.</p>
-        <p>Pri článkoch zobrazujeme dátum zverejnenia, dátum aktualizácie a dátum poslednej kontroly podkladov. Ak sa podstatný údaj zmení, článok aktualizujeme alebo ho pri časovo viazanej informácii oddelíme od aktuálneho obsahu.</p>
+        <p>Pri článkoch uvádzame dostupné časové údaje o zverejnení alebo aktualizácii a pri redakčnej práci evidujeme aj kontrolu podkladov. Ak sa podstatný údaj zmení, článok môžeme aktualizovať, opraviť alebo ho pri časovo viazanej informácii oddeliť od aktuálneho obsahu.</p>
       </section>
 
       <section>
         <h2>Ako používame automatizáciu</h2>
         <div class="callout">
           <strong>Aktuálny režim:</strong>
-          <p>1. systém pravidelne kontroluje vybrané oficiálne RSS a webové zdroje, 2. odfiltruje známe položky, duplicity a nevhodné témy, 3. z podkladu pripraví vlastný stručný článok, 4. návrh prejde faktickou, číselnou, jazykovou a pravopisnou kontrolou, 5. iba úspešne skontrolovaný článok sa uloží ako publikovaný a následne sa zobrazí na webe.</p>
+          <p>1. systém pravidelne kontroluje vybrané oficiálne RSS a webové zdroje, 2. odfiltruje známe položky, duplicity a nevhodné témy, 3. z dostatočného podkladu pripraví vlastný stručný článok, 4. návrh prejde faktickou, číselnou, štrukturálnou, jazykovou a pravopisnou kontrolou, 5. iba úspešne skontrolovaný článok sa uloží ako publikovaný a zobrazí sa na webe.</p>
         </div>
         <p>Pri automatickom spracovaní pracujeme prednostne s primárnymi a oficiálnymi zdrojmi. Zdrojový text používame ako faktický podklad, nie ako text na kopírovanie. Ak kontrola odhalí problém, článok sa nezverejní a zdroj môže byť evidovaný ako odmietnutý alebo preskočený.</p>
+        <p>Okrem priamych zdrojov používame vybrané slovenské médiá aj ako <strong>radar tém</strong>. Ich článok môže upozorniť systém na praktickú tému, ale nie je automaticky použitý ako podklad na prepis. Pred vytvorením článku sa systém pokúsi dohľadať primárny alebo oficiálny zdroj a až ten používa ako faktický podklad. Ak vhodný primárny podklad nenájde, článok z tejto témy automaticky nevydá.</p>
+      </section>
+
+      <section>
+        <h2>Obrázky, fotografie a AI</h2>
+        <p>Pri článkoch používame vlastné alebo oprávnene použiteľné fotografie a grafiku, obrázky z otvorených zdrojov s príslušnou licenciou a pri časti článkov aj AI-generované ilustračné fotografie. Pri externých obrázkoch evidujeme podľa dostupnosti zdroj, autora alebo kredit a licenciu.</p>
+        <p>AI obrázok označujeme na verejnom webe ako <strong>„Ilustračný obrázok · AI“</strong>. Má ilustrovať tému článku, nie predstierať, že ide o autentickú fotografiu konkrétnej udalosti. Pri automatickom generovaní nepoužívame rozpoznateľné reálne osoby, logá, ochranné známky, watermarky, čitateľné úradné dokumenty ani presnú vizuálnu identitu inštitúcie. Citlivé a udalostne špecifické témy môžu byť z automatického AI generovania vyradené.</p>
+        <p>Popis obrázka má pomenovať to, čo je na obrázku skutočne zobrazené. Nemá tvrdiť, že anonymná ilustračná osoba je človek spomenutý v článku alebo že generovaná scéna zachytáva reálnu udalosť.</p>
+      </section>
+
+      <section>
+        <h2>Čo automatika sama nerobí</h2>
+        <p>Systém nemá za cieľ maximalizovať počet článkov za každú cenu. Nevydá článok len preto, že je téma populárna. Nevymýšľa chýbajúce čísla, termíny alebo citácie a pri nedostatočnom podklade má článok radšej preskočiť. Politické, kriminálne, tragické a ďalšie citlivé témy majú prísnejšie obmedzenia a niektoré automatické funkcie sú pri nich vypnuté.</p>
       </section>
 
       <section id="reklama">
