@@ -153,7 +153,9 @@ function dbToDraft(row){
     id:row.id,
     seed:false,
     state:row.state||"draft",
-    updated:row.updated_at?new Intl.DateTimeFormat("sk-SK",{day:"2-digit",month:"2-digit",year:"numeric"}).format(new Date(row.updated_at)):"",
+    updated:(row.state==="published"&&row.published_at?row.published_at:row.updated_at)
+      ?new Intl.DateTimeFormat("sk-SK",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}).format(new Date(row.state==="published"&&row.published_at?row.published_at:row.updated_at))
+      :"",
     title:row.title||"",
     seoTitle:row.seo_title||"",
     metaDescription:row.meta_description||"",
