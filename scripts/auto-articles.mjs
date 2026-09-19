@@ -697,7 +697,7 @@ ${JSON.stringify(article)}
 Oprav len chyby uvedené vyššie. Ak chyba obsahuje názov poľa za dvojbodkou, sústreď sa presne na toto pole. Fakty a význam zachovaj.`;
 
   const ctrl=new AbortController();
-  const timer=setTimeout(()=>ctrl.abort(),300000);
+  const timer=setTimeout(()=>ctrl.abort(),1800000);
   let response;
   try{
     response=await fetch("http://127.0.0.1:11434/api/chat",{
