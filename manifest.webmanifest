@@ -6,23 +6,23 @@
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#061018",
-  "theme_color": "#061018",
+  "background_color": "#050d14",
+  "theme_color": "#050d14",
   "icons": [
     {
-      "src": "/assets/app-icon-192.svg?v=20260918-2",
+      "src": "/assets/app-mark-modern.svg?v=20260919-1",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "/assets/app-icon-512.svg?v=20260918-2",
+      "src": "/assets/app-mark-modern.svg?v=20260919-1",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "/assets/app-icon-maskable-512.svg?v=20260918-2",
+      "src": "/assets/app-mark-modern.svg?v=20260919-1",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "maskable"
