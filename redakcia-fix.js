@@ -91,8 +91,14 @@
       ensureImageChecklist();
       ensureVideoDivider();
       if (typeof currentUser !== "undefined" && currentUser) {
-        try { await refreshDrafts(); resetForm(); }
-        catch (error) { console.error("Obnova zoznamu návrhov zlyhala:", error); }
+        try {
+          await refreshDrafts();
+          if (typeof restoreEditorWorkspace === "function") {
+            if (!restoreEditorWorkspace()) resetForm();
+          } else {
+            resetForm();
+          }
+        } catch (error) { console.error("Obnova zoznamu návrhov zlyhala:", error); }
       }
     }, 250);
   });
