@@ -171,8 +171,278 @@
       else showDock();
     },9000)
   }
+  const promoKey='objektiv24_app_promo_dismissed_until_v1';
+  const isHome=/^\/(?:index\.html)?$/.test(location.pathname);
+  function createAppPromo(){
+    if(standalone||!isHome||document.querySelector('#objektiv24-app-promo'))return null;
+    const promo=document.createElement('aside');
+    promo.id='objektiv24-app-promo';
+    promo.className='app-promo';
+    promo.setAttribute('role','dialog');
+    promo.setAttribute('aria-label','Objektív24 aplikácia');
+    promo.innerHTML=`
+      <button class="app-promo-close" type="button" aria-label="Zavrieť ponuku aplikácie">×</button>
+      <div class="app-promo-brand">
+        <span class="app-promo-phone" aria-hidden="true">▯</span>
+        <span>APLIKÁCIA</span>
+      </div>
+      <div class="app-promo-copy">
+        <strong>Majte <em>Objektív24</em> vždy poruke</strong>
+        <p>Aktuálne správy každých 30 minút, prehľadne a rýchlo v aplikácii.</p>
+        <a href="/" class="app-promo-url">◉ www.objektiv24.sk</a>
+      </div>
+      <div class="app-promo-benefits" aria-hidden="true">
+        <span><b>⚡</b> každých<br>30 minút</span>
+        <span><b>▯</b> rýchly<br>prístup</span>
+        <span><b>◌</b> Slovensko<br>aj svet</span>
+      </div>
+      <button class="app-promo-cta" type="button">Otvoriť v aplikácii <span>→</span></button>
+    `;
+    document.body.appendChild(promo);
+
+    const close=()=>{
+      promo.classList.remove('is-visible');
+      localStorage.setItem(promoKey,String(Date.now()+7*864e5));
+      setTimeout(()=>promo.remove(),900);
+      track('app_promo_dismissed');
+    };
+    promo.querySelector('.app-promo-close')?.addEventListener('click',close);
+    promo.querySelector('.app-promo-url')?.addEventListener('click',()=>track('app_promo_site_click'));
+    promo.querySelector('.app-promo-cta')?.addEventListener('click',async()=>{
+      track('app_promo_clicked');
+      localStorage.setItem(promoKey,String(Date.now()+14*864e5));
+      promo.classList.remove('is-visible');
+      setTimeout(()=>promo.remove(),650);
+      if(deferredPrompt){
+        try{
+          deferredPrompt.prompt();
+          await deferredPrompt.userChoice;
+          deferredPrompt=null;
+        }catch{openCard(true)}
+      }else{
+        openCard(true);
+      }
+    });
+    requestAnimationFrame(()=>requestAnimationFrame(()=>promo.classList.add('is-visible')));
+    track('app_promo_shown');
+    return promo;
+  }
+
+  function scheduleAppPromo(){
+    if(standalone||!isHome)return;
+    const dismissed=Number(localStorage.getItem(promoKey))||0;
+    if(Date.now()<dismissed)return;
+    setTimeout(()=>{
+      if(document.body?.classList.contains('analytics-consent-open')){
+        setTimeout(scheduleAppPromo,3500);
+        return;
+      }
+      createAppPromo();
+    },7000);
+  }
+
+  const promoStyle=document.createElement('style');
+  promoStyle.id='objektiv24-app-promo-style';
+  promoStyle.textContent=`
+    .app-promo{
+      position:fixed;
+      z-index:117;
+      left:50%;
+      top:50%;
+      width:min(1180px,calc(100% - 44px));
+      min-height:168px;
+      display:grid;
+      grid-template-columns:auto minmax(300px,1.4fr) auto auto;
+      align-items:center;
+      gap:28px;
+      padding:24px 28px;
+      border:1px solid rgba(217,255,40,.48);
+      border-radius:30px;
+      background:linear-gradient(105deg,rgba(9,24,18,.985),rgba(3,14,20,.985));
+      box-shadow:0 24px 75px rgba(0,0,0,.48),0 0 34px rgba(217,255,40,.055);
+      color:#f7fafb;
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+      opacity:0;
+      visibility:hidden;
+      transform:translate(-125vw,-50%);
+      transition:transform 1.65s cubic-bezier(.18,.78,.22,1),opacity .7s ease,visibility .7s ease;
+      will-change:transform,opacity;
+    }
+    .app-promo.is-visible{
+      opacity:1;
+      visibility:visible;
+      transform:translate(-50%,-50%);
+    }
+    .app-promo-close{
+      position:absolute;
+      top:11px;
+      right:14px;
+      width:34px;
+      height:34px;
+      border:0;
+      background:transparent;
+      color:#87939a;
+      font:300 29px/1 system-ui;
+      cursor:pointer;
+    }
+    .app-promo-close:hover{color:#fff}
+    .app-promo-brand{
+      display:grid;
+      grid-template-columns:62px auto;
+      align-items:center;
+      gap:13px;
+      padding-right:24px;
+      border-right:1px solid rgba(217,255,40,.18);
+      color:#d9ff28;
+      font-size:.74rem;
+      font-weight:950;
+      letter-spacing:.13em;
+    }
+    .app-promo-phone{
+      width:62px;
+      height:62px;
+      display:grid;
+      place-items:center;
+      border-radius:17px;
+      background:rgba(217,255,40,.075);
+      border:1px solid rgba(217,255,40,.11);
+      color:#d9ff28;
+      font-size:2rem;
+      line-height:1;
+    }
+    .app-promo-copy{min-width:0}
+    .app-promo-copy strong{
+      display:block;
+      margin:0;
+      color:#f8fafb;
+      font-size:clamp(1.35rem,2.2vw,2.15rem);
+      line-height:1.04;
+      letter-spacing:-.035em;
+    }
+    .app-promo-copy strong em{
+      color:#d9ff28;
+      font-style:normal;
+    }
+    .app-promo-copy p{
+      margin:9px 0 12px;
+      color:#c0cbd0;
+      font-size:.92rem;
+      line-height:1.45;
+    }
+    .app-promo-url{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border:1px solid rgba(217,255,40,.24);
+      border-radius:999px;
+      padding:8px 12px;
+      color:#d9ff28;
+      background:rgba(217,255,40,.045);
+      text-decoration:none;
+      font-size:.78rem;
+      font-weight:900;
+      letter-spacing:.015em;
+    }
+    .app-promo-benefits{
+      display:grid;
+      grid-template-columns:repeat(3,86px);
+      gap:10px;
+      text-align:center;
+      color:#d7e0e4;
+      font-size:.68rem;
+      line-height:1.28;
+    }
+    .app-promo-benefits span{
+      min-height:80px;
+      display:grid;
+      place-content:center;
+      border-left:1px solid rgba(217,255,40,.12);
+    }
+    .app-promo-benefits span:first-child{border-left:0}
+    .app-promo-benefits b{
+      display:block;
+      margin-bottom:5px;
+      color:#d9ff28;
+      font-size:1.25rem;
+    }
+    .app-promo-cta{
+      min-width:188px;
+      border:0;
+      border-radius:999px;
+      background:#d9ff28;
+      color:#061018;
+      padding:18px 22px;
+      font:950 .88rem/1.1 Inter,ui-sans-serif,system-ui;
+      cursor:pointer;
+      box-shadow:0 10px 28px rgba(217,255,40,.12);
+      white-space:nowrap;
+    }
+    .app-promo-cta span{margin-left:7px;font-size:1.1rem}
+    .app-promo-cta:hover{filter:brightness(.96);transform:translateY(-1px)}
+    .analytics-consent-open .app-promo{display:none!important}
+
+    @media(max-width:980px){
+      .app-promo{
+        width:min(720px,calc(100% - 26px));
+        grid-template-columns:auto minmax(0,1fr) auto;
+        gap:16px;
+        padding:22px;
+      }
+      .app-promo-benefits{display:none}
+      .app-promo-brand{
+        grid-template-columns:50px;
+        padding-right:16px;
+      }
+      .app-promo-brand>span:last-child{display:none}
+      .app-promo-phone{width:50px;height:50px;border-radius:14px}
+      .app-promo-cta{min-width:160px;padding:16px 18px}
+    }
+    @media(max-width:620px){
+      .app-promo{
+        top:auto;
+        bottom:max(14px,env(safe-area-inset-bottom));
+        width:calc(100% - 18px);
+        min-height:0;
+        grid-template-columns:46px minmax(0,1fr);
+        gap:11px 12px;
+        padding:16px;
+        border-radius:22px;
+        transform:translateX(-125vw);
+        transition:transform 1.45s cubic-bezier(.18,.78,.22,1),opacity .7s ease,visibility .7s ease;
+      }
+      .app-promo.is-visible{transform:translateX(-50%)}
+      .app-promo-close{top:8px;right:8px}
+      .app-promo-brand{
+        grid-row:1/3;
+        grid-template-columns:46px;
+        padding:0;
+        border:0;
+        align-self:start;
+      }
+      .app-promo-phone{width:46px;height:46px;font-size:1.55rem}
+      .app-promo-copy{padding-right:22px}
+      .app-promo-copy strong{font-size:1.18rem;line-height:1.08}
+      .app-promo-copy p{margin:6px 0 9px;font-size:.78rem}
+      .app-promo-url{padding:6px 9px;font-size:.7rem}
+      .app-promo-cta{
+        grid-column:2;
+        width:100%;
+        min-width:0;
+        padding:13px 15px;
+        font-size:.8rem;
+      }
+    }
+    @media(prefers-reduced-motion:reduce){
+      .app-promo,.app-promo.is-visible{transition:opacity .2s ease;transform:translate(-50%,-50%)}
+      @media(max-width:620px){
+        .app-promo,.app-promo.is-visible{transform:translateX(-50%)}
+      }
+    }
+  `;
+  document.head.appendChild(promoStyle);
+
   window.objektiv24OpenSubscriptionPanel=()=>openCard(true);
-  bindMenuLinks();dock();addBackToTop();scheduleMobilePanel();
+  bindMenuLinks();dock();addBackToTop();scheduleAppPromo();
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;const existing=document.querySelector('#pwa-install-card');if(existing&&!existing.hidden)openCard(true)});
   window.addEventListener('appinstalled',()=>{track('app_installed');deferredPrompt=null;localStorage.removeItem('objektiv24_installed');const existing=document.querySelector('#pwa-install-card');if(existing&&!existing.hidden)openCard(true);showDock()});
 })();
