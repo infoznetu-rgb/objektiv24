@@ -58,6 +58,9 @@ jobs:
       - name: Validate editorial QA script
         run: node --check editorial-qa.js
 
+      - name: Validate production readiness script
+        run: node --check production-readiness.js
+
       - name: Validate PWA script
         run: node --check pwa.js
 
