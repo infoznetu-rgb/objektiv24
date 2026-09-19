@@ -157,21 +157,33 @@ function score(title, desc="") {
 function absUrl(href, base) {
   try { return new URL(decode(href), base).href; } catch { return ""; }
 }
-async function fetchText(url, ms=18000) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(()=>ctrl.abort(), ms);
-  try {
-    const r = await fetch(url, {
-      redirect: "follow",
-      signal: ctrl.signal,
-      headers: {
-        "User-Agent": "Objektiv24Automation/1.0 (+https://objektiv24.sk/ako-pracujeme.html)",
-        "Accept": "text/html,application/rss+xml,application/xml;q=0.9,*/*;q=0.8",
+async function fetchText(url, ms=25000, attempts=2) {
+  let lastError;
+  for (let attempt=1; attempt<=attempts; attempt++) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(()=>ctrl.abort(), ms);
+    try {
+      const r = await fetch(url, {
+        redirect: "follow",
+        signal: ctrl.signal,
+        headers: {
+          "User-Agent": "Objektiv24Automation/1.0 (+https://objektiv24.sk/ako-pracujeme.html)",
+          "Accept": "text/html,application/rss+xml,application/xml;q=0.9,*/*;q=0.8",
+        }
+      });
+      if (!r.ok) throw new Error(url + " -> HTTP " + r.status);
+      return { text: await r.text(), finalUrl: r.url };
+    } catch (e) {
+      lastError=e;
+      if (attempt < attempts) {
+        console.warn("Načítanie zdroja zlyhalo, opakujem pokus:", url, e?.message || e);
+        await new Promise(resolve=>setTimeout(resolve, 900 * attempt));
       }
-    });
-    if (!r.ok) throw new Error(url + " -> HTTP " + r.status);
-    return { text: await r.text(), finalUrl: r.url };
-  } finally { clearTimeout(timer); }
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  throw lastError || new Error("Načítanie zdroja zlyhalo: " + url);
 }
 function parseRss(xml, source) {
   const items = [];
@@ -220,6 +232,51 @@ function articleText(html) {
     .replace(/<(br|p|div|section|article|li|h1|h2|h3)[^>]*>/gi,"\n");
   s = stripTags(s).replace(/\s+/g," ").trim();
   return s.slice(0, 5000);
+}
+function htmlAttr(tag, name) {
+  const m=String(tag).match(new RegExp("\\b"+name+"\\s*=\\s*([\\\"\'])(.*?)\\1","i"));
+  return m ? decode(m[2]).replace(/\s+/g," ").trim() : "";
+}
+function metadataArticleText(html) {
+  const chunks=[];
+  const push=(value)=>{
+    const text=stripTags(String(value||"")).replace(/\s+/g," ").trim();
+    if(text.length>=40) chunks.push(text);
+  };
+
+  for(const tag of String(html).match(/<meta\b[^>]*>/gi)||[]) {
+    const key=(htmlAttr(tag,"name")||htmlAttr(tag,"property")||htmlAttr(tag,"itemprop")).toLowerCase();
+    if(["description","og:description","twitter:description"].includes(key)) push(htmlAttr(tag,"content"));
+  }
+
+  const visit=(node,depth=0)=>{
+    if(depth>6||node==null)return;
+    if(Array.isArray(node)){for(const item of node)visit(item,depth+1);return;}
+    if(typeof node!=="object")return;
+    if(typeof node.articleBody==="string")push(node.articleBody);
+    if(typeof node.description==="string")push(node.description);
+    if(node["@graph"])visit(node["@graph"],depth+1);
+    if(node.mainEntity)visit(node.mainEntity,depth+1);
+  };
+  for(const m of String(html).matchAll(/<script\b[^>]*type=["\']application\/ld\+json["\'][^>]*>([\s\S]*?)<\/script>/gi)) {
+    try { visit(JSON.parse(decode(m[1]).trim())); } catch {}
+  }
+
+  return chunks.join(" ").slice(0,5000);
+}
+function sourceArticleText(html, candidate={}) {
+  const parts=[articleText(html),metadataArticleText(html),String(candidate.description||"")];
+  const out=[];
+  const seen=new Set();
+  for(const raw of parts) {
+    const text=stripTags(String(raw||"")).replace(/\s+/g," ").trim();
+    if(text.length<40)continue;
+    const key=norm(text).slice(0,240);
+    if(!key||seen.has(key))continue;
+    seen.add(key);
+    out.push(text);
+  }
+  return out.join(" ").slice(0,5000);
 }
 function isFresh(pubDate) {
   if (!pubDate) return true;
@@ -913,6 +970,15 @@ if (QA_SELF_TEST) {
     fail("cleanupModelArticle left a suspicious one-letter ending");
   }
 
+  const extractionFixture='<html><head>' +
+    '<meta name="description" content="Oficiálne upozornenie vysvetľuje praktickú zmenu služby a uvádza, koho sa týka. Tento text je súčasťou metadát stránky.">' +
+    '<script type="application/ld+json">{"@type":"NewsArticle","articleBody":"Oficiálna inštitúcia zverejnila podrobné upozornenie pre používateľov služby. Vysvetľuje rozsah zmeny, dotknuté skupiny a odporúčaný postup. Informácie pochádzajú priamo z oficiálneho oznámenia a slúžia ako podklad na vecné spracovanie článku bez dopĺňania nových faktov."}</script>' +
+    '</head><body><main><p>Krátky viditeľný text stránky.</p></main></body></html>';
+  const extractedSource=sourceArticleText(extractionFixture,{description:"RSS popis dopĺňa, že používateľ si má pred vykonaním úkonu skontrolovať aktuálne podmienky na oficiálnom webe inštitúcie."});
+  if(extractedSource.length<420) fail("structured source fallback did not provide enough trusted source text");
+  if(!extractedSource.includes("Oficiálna inštitúcia")) fail("JSON-LD articleBody was not extracted");
+  if(!extractedSource.includes("RSS popis")) fail("RSS description fallback was not included");
+
   console.log("QA SAFEGUARD SELF-TEST PASSED");
   process.exit(0);
 }
@@ -1019,10 +1085,14 @@ for (const c of candidates) {
     const isQaRetrySource = QA_DRY_RUN && QA_RETRY_SOURCE_URL &&
       canonicalUrl(c.link) === canonicalUrl(QA_RETRY_SOURCE_URL);
     if (!isQaRetrySource && knownSources.has(canonicalUrl(c.link))) continue;
-    const body = articleText(page.text);
-    if (body.length < 700) {
-      console.log("Preskočené pre málo textu:", c.title);
+    const visibleBody = articleText(page.text);
+    const body = sourceArticleText(page.text,c);
+    if (body.length < 420) {
+      console.log("Preskočené pre málo podkladov:", c.title, "| viditeľný text:", visibleBody.length, "| obohatený podklad:", body.length);
       continue;
+    }
+    if (visibleBody.length < 700) {
+      console.log("Použitý obohatený podklad pre krátku/dynamickú stránku:", c.title, "| viditeľný text:", visibleBody.length, "| podklad:", body.length);
     }
     attempts++;
     let draft = await generate(c, body);
