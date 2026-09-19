@@ -82,6 +82,10 @@ function allowedSource(raw: string) {
       "mindop.sk",
       "economy.gov.sk",
       "svps.sk",
+      "nbs.sk",
+      "vszp.sk",
+      "udzs-sk.sk",
+      "statistics.sk",
     ].includes(host) || host.endsWith(".gov.sk");
   } catch {
     return false;
