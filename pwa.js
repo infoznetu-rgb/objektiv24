@@ -3,7 +3,7 @@
   window.__objektiv24PwaLoaded=true;
   if(document.querySelector('link[rel="manifest"]')===null){const m=document.createElement('link');m.rel='manifest';m.href='/manifest.webmanifest';document.head.appendChild(m)}
   if(document.querySelector('link[rel="apple-touch-icon"]')===null){const i=document.createElement('link');i.rel='apple-touch-icon';i.href='/assets/app-icon-192.svg?v=20260918-2';document.head.appendChild(i)}
-  if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js?v=23',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js?v=24',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
   const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true,ua=navigator.userAgent||'',isIOS=/iphone|ipad|ipod/i.test(ua),isAndroid=/android/i.test(ua),isMobile=isIOS||isAndroid,isChrome=/chrome|crios/i.test(ua)&&!/edg|opr|opera/i.test(ua),isInApp=/wv|FBAN|FBAV|Instagram|WhatsApp|Messenger/i.test(ua);
   const dismissKey='objektiv24_mobile_panel_dismissed_until_v15';let deferredPrompt=null,shown=false,dockTimer=null;
   const track=type=>{if(typeof window.objektiv24Track==='function')window.objektiv24Track(type)};
