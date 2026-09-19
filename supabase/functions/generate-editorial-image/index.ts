@@ -227,8 +227,7 @@ Deno.serve(async (req: Request) => {
   });
 
   if (req.method === "GET") {
-    const configured = Boolean(await providerKey(supabase));
-    return json({ok:true, provider:"openai", model:OPENAI_IMAGE_MODEL, configured});
+    return json({ok:true, provider:"openai", model:OPENAI_IMAGE_MODEL});
   }
   if (req.method !== "POST") return json({error:"Method not allowed"},405);
 
@@ -240,6 +239,34 @@ Deno.serve(async (req: Request) => {
     if (!authz.ok) return json({error:authz.error}, authz.status);
 
     const input = await req.json().catch(() => ({}));
+    const action = clean(input?.action || "generate", 80);
+
+    if (action === "provider_status") {
+      return json({ok:true, provider:"openai", model:OPENAI_IMAGE_MODEL, configured:Boolean(await providerKey(supabase))});
+    }
+
+    if (action === "configure_provider") {
+      if (authz.kind !== "editor") return json({error:"Only the editor can configure the image provider"},403);
+      const apiKey = clean(input?.api_key || "", 20000);
+      if (apiKey.length < 24 || !apiKey.startsWith("sk-")) return json({error:"Neplatný formát OpenAI API kľúča"},400);
+
+      const verify = await fetch("https://api.openai.com/v1/models", {
+        headers:{"Authorization":"Bearer " + apiKey},
+      });
+      if (!verify.ok) {
+        const raw = clean(await verify.text(), 700);
+        return json({error:"OpenAI API kľúč sa nepodarilo overiť: " + raw},400);
+      }
+
+      const saved = await supabase.from("internal_secrets").upsert({
+        secret_key:"openai_api_key",
+        secret_value:apiKey,
+        updated_at:new Date().toISOString(),
+      }, {onConflict:"secret_key"});
+      if (saved.error) throw saved.error;
+      return json({ok:true, configured:true, provider:"openai", model:OPENAI_IMAGE_MODEL});
+    }
+
     const draftId = clean(input?.draft_id || input?.draftId, 100);
     const mode = input?.mode === "manual" ? "manual" : "auto";
     const force = Boolean(input?.force);
