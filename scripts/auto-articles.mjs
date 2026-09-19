@@ -491,7 +491,8 @@ async function repairArticleOnce(candidate, sourceBody, article, issues, stage="
     "Nepridávaj nový fakt, číslo, dátum, percento, sumu, lehotu, meno, podmienku ani interpretáciu.",
     "Ak QA hlási unsupported-number, odstráň nepodložený číselný údaj alebo ho nahraď nečíselnou formuláciou, ktorá nemení význam. Nevymýšľaj náhradné číslo.",
     "Ak QA hlási spell:, nahraď chybné slovo jednoduchým bežným slovenským výrazom; nevymýšľaj odborný termín.",
-    "Ak QA hlási suspicious-one-letter-ending alebo unfinished-field, prepíš celú poslednú vetu daného poľa do úplnej prirodzenej vety.",
+    "Ak QA hlási suspicious-one-letter-ending:<pole> alebo unfinished-field, oprav presne označené pole. Prepíš celú poslednú vetu tohto poľa, nie iba posledné slovo.",
+    "Pole po oprave nesmie končiť samostatným jednopísmenovým slovom pred bodkou (napr. a., v., z., s., o.). Posledná veta musí byť významovo úplná a prirodzená.",
     "Ak QA hlási repeated alebo overlap, odstráň opakovanie a zachovaj rozdielne úlohy sekcií.",
     "Čísla a dátumy zo zdroja neprepočítavaj a nepreformátuj spôsobom, ktorý vytvorí nový číselný údaj.",
     "Výsledok musí zostať prirodzenou, spisovnou slovenčinou a všetky polia musia byť úplné.",
@@ -512,10 +513,16 @@ URL: ${candidate.link}
 Text:
 ${sourceBody.slice(0,3600)}
 
+KONCE POLÍ (na diagnostiku nedokončených viet):
+intro: ${String(article?.intro||"").slice(-180)}
+what_happened: ${String(article?.what_happened||"").slice(-180)}
+what_it_means: ${String(article?.what_it_means||"").slice(-180)}
+next_step: ${String(article?.next_step||"").slice(-180)}
+
 ČLÁNOK NA OPRAVU:
 ${JSON.stringify(article)}
 
-Oprav len chyby uvedené vyššie. Fakty a význam zachovaj.`;
+Oprav len chyby uvedené vyššie. Ak chyba obsahuje názov poľa za dvojbodkou, sústreď sa presne na toto pole. Fakty a význam zachovaj.`;
 
   const ctrl=new AbortController();
   const timer=setTimeout(()=>ctrl.abort(),300000);
@@ -788,8 +795,16 @@ function articleIssues(a, sourceText="", sourceTitle="") {
   const means=String(a.what_it_means||"").trim();
   const next=String(a.next_step||"").trim();
   const fields=[intro,happened,means,next];
+  const namedFields=[
+    ["intro",intro],
+    ["what_happened",happened],
+    ["what_it_means",means],
+    ["next_step",next]
+  ];
   if(/\b(a|aj|ale|alebo|do|na|o|od|po|pod|pre|pri|s|so|v|vo|z|za|zo|že)$/i.test(title)) issues.push("title-incomplete");
-  if(fields.some(suspiciousOneLetterEnding)) issues.push("suspicious-one-letter-ending");
+  namedFields.forEach(([name,value])=>{
+    if(suspiciousOneLetterEnding(value)) issues.push("suspicious-one-letter-ending:"+name);
+  });
   const grammarText=[title,...fields].join(" ");
   if(/\bnie všetky študenti\b/i.test(grammarText)) issues.push("grammar-studenti-vsetky");
   if(/\bštudenti\b[^.!?]{0,100}\bnemusí\b/i.test(grammarText)) issues.push("grammar-plural-singular");
