@@ -529,7 +529,7 @@ Spotrebiteľ a bezpečnosť
   };
 
   const ctrl = new AbortController();
-  const timer = setTimeout(()=>ctrl.abort(), 300000);
+  const timer = setTimeout(()=>ctrl.abort(), 720000);
   let r;
   try {
     r = await fetch("http://127.0.0.1:11434/api/chat", {
@@ -607,7 +607,7 @@ ${JSON.stringify(draft)}
 Uprav návrh do profesionálnej redakčnej slovenčiny. Nemeň fakty ani čísla.`;
 
   const ctrl = new AbortController();
-  const timer = setTimeout(()=>ctrl.abort(), 300000);
+  const timer = setTimeout(()=>ctrl.abort(), 720000);
   let response;
   try {
     response = await fetch("http://127.0.0.1:11434/api/chat", {
@@ -755,7 +755,7 @@ FINÁLNY ČLÁNOK:
 ${JSON.stringify(article)}`;
 
   const ctrl=new AbortController();
-  const timer=setTimeout(()=>ctrl.abort(),300000);
+  const timer=setTimeout(()=>ctrl.abort(), 720000);
   let response;
   try {
     response=await fetch("http://127.0.0.1:11434/api/chat",{
@@ -808,7 +808,7 @@ ${JSON.stringify({
 
 Vytvor samostatný SEO title a meta description. H1 sa nemení.`;
   const ctrl=new AbortController();
-  const timer=setTimeout(()=>ctrl.abort(),300000);
+  const timer=setTimeout(()=>ctrl.abort(), 720000);
   let response;
   try{
     response=await fetch("http://127.0.0.1:11434/api/chat",{
@@ -1246,7 +1246,7 @@ const publishedBySource=new Map();
 const maxToPublish = Math.min(5, Math.max(0, dailyCap - (status.published_last_24h || 0)));
 for (const c of candidates) {
   if (published >= maxToPublish || attempts >= 3) {
-    if (attempts >= 3 && published < maxToPublish) console.log("Beh končí po troch náročných AI pokusoch; ďalší kandidáti počkajú na ďalší 15-minútový beh.");
+    if (attempts >= 3 && published < maxToPublish) console.log("Beh končí po troch náročných AI pokusoch; ďalší kandidáti počkajú na ďalší dvojhodinový beh.");
     break;
   }
   if ((publishedBySource.get(c.sourceName)||0) >= 2) {
