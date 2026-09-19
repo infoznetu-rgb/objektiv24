@@ -67,9 +67,10 @@ const SOURCES = [
   },
   {
     name: "Ministerstvo zdravotníctva SR",
-    type: "rss",
-    url: "https://www.health.gov.sk/Clanky?rss=",
-    accept: (u) => /health\.gov\.sk\/Clanok\?/i.test(u),
+    type: "html",
+    url: "https://www.health.gov.sk/Clanky",
+    accept: (u) => /health\.gov\.sk\/Clanok/i.test(u),
+    limit: 15,
   },
   {
     name: "Národná banka Slovenska",
@@ -81,15 +82,15 @@ const SOURCES = [
   {
     name: "Regulačný úrad pre elektronické komunikácie a poštové služby",
     type: "html",
-    url: "https://www.teleoff.gov.sk/aktuality/",
-    accept: (u) => /teleoff\.gov\.sk\/urad\/aktuality\/(?:tlacove-spravy|oznamy)\/.+\.html$/i.test(u),
+    url: "https://www.teleoff.gov.sk/aktuality/tlacove-spravy/",
+    accept: (u) => /teleoff\.gov\.sk\/urad\/aktuality\/tlacove-spravy\/.+\.html$/i.test(u),
     limit: 12,
   },
   {
     name: "Ministerstvo hospodárstva SR",
     type: "html",
-    url: "https://www.economy.gov.sk/",
-    accept: (u) => /economy\.gov\.sk\/aktuality\/[^/?#]+\/?$/i.test(u),
+    url: "https://www.economy.gov.sk/aktuality",
+    accept: (u) => /economy\.gov\.sk\/(?:index\.php\/)?aktuality\/[^/?#]+\/?$/i.test(u),
     limit: 12,
   },
   {
