@@ -12,7 +12,7 @@ const ALLOWED_CATEGORIES = new Set([
   "Šport",
 ]);
 
-const DAILY_CAP = 15;
+const DAILY_CAP = 9;
 
 const JWKS = createRemoteJWKSet(new URL("https://token.actions.githubusercontent.com/.well-known/jwks"));
 const json = (data: unknown, status = 200) =>
