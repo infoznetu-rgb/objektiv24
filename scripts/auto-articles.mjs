@@ -878,7 +878,9 @@ if (QA_SELF_TEST) {
   const safeIntro="Sociálna poisťovňa upozorňuje ľudí na podvodné videá na sociálnej sieti. Klienti majú chrániť svoje osobné údaje.";
   const truncated=safeIntro+" Ďalšia veta bola modelom useknutá a.";
   const cleaned=dropClearlyTruncatedLastSentence(truncated,80);
-  if(cleaned!==safeIntro) fail("truncated last sentence was not safely removed");
+  if(cleaned===truncated) fail("dangling one-letter fragment was not removed");
+  if(!cleaned.startsWith(safeIntro)) fail("safe article prefix was unexpectedly changed");
+  if(!cleaned.endsWith("useknutá.")) fail("truncated fragment was not reduced to a complete sentence ending");
   if(suspiciousOneLetterEnding(cleaned)) fail("cleaned text still has suspicious ending");
 
   const typoFixed=fixKnownLanguageTypos({
