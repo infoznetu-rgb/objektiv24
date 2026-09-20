@@ -430,11 +430,28 @@ function updateLivePreview(){
 async function resizeImage(file){
   const dataUrl=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result||""));r.onerror=reject;r.readAsDataURL(file)});
   const img=await new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=reject;i.src=dataUrl});
-  const maxW=1200,maxH=900,scale=Math.min(1,maxW/img.width,maxH/img.height);
+
+  // Jednotný publikačný formát 3:2. Šírka 1200 px spĺňa požiadavku
+  // na veľký náhľad a zároveň drží rozumnú veľkosť súboru.
+  const targetW=1200,targetH=800;
   const canvas=document.createElement("canvas");
-  canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);
-  canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
-  return canvas.toDataURL("image/jpeg",.76);
+  canvas.width=targetW;canvas.height=targetH;
+  const ctx=canvas.getContext("2d");
+
+  // Jemne rozmazaná výplň odstráni tvrdé prázdne pásy pri zvislých
+  // alebo netypických fotografiách, pričom ostrý originál sa neoreže.
+  const cover=Math.max(targetW/img.width,targetH/img.height);
+  const coverW=img.width*cover,coverH=img.height*cover;
+  ctx.save();
+  ctx.filter="blur(28px) brightness(.58)";
+  ctx.drawImage(img,(targetW-coverW)/2,(targetH-coverH)/2,coverW,coverH);
+  ctx.restore();
+
+  const contain=Math.min(targetW/img.width,targetH/img.height);
+  const drawW=img.width*contain,drawH=img.height*contain;
+  ctx.drawImage(img,(targetW-drawW)/2,(targetH-drawH)/2,drawW,drawH);
+
+  return canvas.toDataURL("image/jpeg",.84);
 }
 
 async function saveDraft(){
