@@ -536,7 +536,17 @@ async function showEditor(user){
   $("#session-user").textContent=user.email||"Prihlásený používateľ";
   $("#logout-button").hidden=false;
   await refreshDrafts();
-  if(!restoreEditorWorkspace())resetForm();
+
+  const requestedDraft=new URLSearchParams(location.search).get("draft")||"";
+  if(requestedDraft&&drafts.some(x=>x.id===requestedDraft)){
+    preserveEditorScroll=true;
+    selectDraft(requestedDraft);
+    preserveEditorScroll=false;
+    history.replaceState(null,"","/redakcia.html");
+  }else if(!restoreEditorWorkspace()){
+    resetForm();
+  }
+  window.dispatchEvent(new CustomEvent("objektiv24-editor-ready"));
 }
 
 function showLogin(){
