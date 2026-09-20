@@ -653,35 +653,29 @@ async function isPubliclyVisible(id){
   }catch{return false}
 }
 
-async function sendPublishedPush(saved){
-  if(!saved?.id)return;
-  const {data:row,error:rowError}=await client.from("drafts").select("id,title,intro,slug,push_sent_at").eq("id",saved.id).single();
-  if(rowError)throw rowError;
-  if(row.push_sent_at)return;
+async function waitForPublishedPush(saved,timeoutMs=12000){
+  if(!saved?.id)return false;
+  const deadline=Date.now()+timeoutMs;
+  let lastError=null;
 
-  const {data:{session}}=await client.auth.getSession();
-  if(!session?.access_token)throw new Error("Chýba prihlásenie pre odoslanie upozornenia.");
+  while(Date.now()<=deadline){
+    const {data:row,error}=await client.from("drafts")
+      .select("push_sent_at")
+      .eq("id",saved.id)
+      .single();
 
-  const articleUrl=row.slug
-    ? "https://objektiv24.sk/clanky/"+encodeURIComponent(row.slug)+"/"
-    : "https://objektiv24.sk/clanok.html?id="+encodeURIComponent(row.id);
+    if(error){
+      lastError=error;
+    }else if(row?.push_sent_at){
+      return true;
+    }
 
-  const response=await fetch(SUPABASE_URL+"/functions/v1/send-push-notification",{
-    method:"POST",
-    headers:{
-      Authorization:"Bearer "+session.access_token,
-      "Content-Type":"application/json"
-    },
-    body:JSON.stringify({
-      title:row.title,
-      body:row.intro||"Na Objektív24 vyšiel nový článok.",
-      url:articleUrl
-    })
-  });
-  if(!response.ok)throw new Error("Push upozornenie sa nepodarilo odoslať: "+await response.text());
+    if(Date.now()>=deadline)break;
+    await new Promise(resolve=>setTimeout(resolve,700));
+  }
 
-  const {error:markError}=await client.from("drafts").update({push_sent_at:new Date().toISOString()}).eq("id",row.id).is("push_sent_at",null);
-  if(markError)throw markError;
+  if(lastError)console.warn("Kontrola potvrdenia pushu zlyhala:",lastError);
+  return false;
 }
 
 async function findPublishedDuplicate(currentId,title,sources){
@@ -715,6 +709,7 @@ async function publishCurrentDraft(){
   const intro=$("#intro").value.trim();
   const sources=$("#sources").value.trim();
   const currentId=$("#draft-id").value||"";
+  const wasPublished=Boolean(currentId&&drafts.find(x=>x.id===currentId)?.state==="published");
   if(!title){alert("Pred publikovaním doplňte titulok.");return}
   if(!intro){alert("Pred publikovaním doplňte krátky úvod.");return}
 
@@ -735,14 +730,19 @@ async function publishCurrentDraft(){
     // Redaktor ho doplní ručne alebo spustí generovanie vedome z obrazového editora.
     const visible=await isPubliclyVisible(saved.id);
     if(visible){
-      try{
-        await sendPublishedPush(saved);
-        $("#draft-status").textContent="Publikované · upozornenie odoslané";
-        alert("Článok je publikovaný a push upozornenie bolo automaticky odoslané.");
-      }catch(pushError){
-        console.error(pushError);
-        $("#draft-status").textContent="Publikované · push sa nepodaril";
-        alert("Článok je publikovaný, ale push upozornenie sa nepodarilo odoslať: "+(pushError?.message||pushError));
+      if(wasPublished){
+        $("#draft-status").textContent="Publikované · článok aktualizovaný";
+        alert("Článok bol aktualizovaný. Pri úprave už vydaného článku sa nové push upozornenie neposiela.");
+      }else{
+        $("#draft-status").textContent="Publikované · čakám na potvrdenie pushu…";
+        const pushConfirmed=await waitForPublishedPush(saved);
+        if(pushConfirmed){
+          $("#draft-status").textContent="Publikované · upozornenie odoslané";
+          alert("Článok je publikovaný a server potvrdil odoslanie push upozornenia.");
+        }else{
+          $("#draft-status").textContent="Publikované · push zatiaľ nepotvrdený";
+          alert("Článok je publikovaný. Server zatiaľ nepotvrdil odoslanie push upozornenia; skontrolujte stav systému o chvíľu.");
+        }
       }
     }else{
       $("#draft-status").textContent="Vydané v databáze";
