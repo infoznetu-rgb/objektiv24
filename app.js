@@ -149,6 +149,50 @@ function ensureHeroStyles(){
   }
 }
 @media(max-width:680px){
+  html.objektiv24-standalone .hero-main.hero-rotating{
+    min-height:410px!important;
+    height:410px!important;
+    aspect-ratio:auto!important;
+  }
+  html.objektiv24-standalone .hero-main.hero-rotating .hero-photo{
+    inset:0 0 auto 0!important;
+    height:235px!important;
+  }
+  html.objektiv24-standalone .hero-main.hero-rotating .hero-shade{
+    background:linear-gradient(
+      180deg,
+      rgba(2,8,12,0) 0%,
+      rgba(2,8,12,.03) 43%,
+      rgba(2,8,12,.42) 58%,
+      rgba(2,8,12,.94) 72%,
+      rgba(2,8,12,.99) 100%
+    )!important;
+  }
+  html.objektiv24-standalone .hero-main.hero-rotating .hero-content{
+    padding:16px 18px 20px!important;
+    gap:11px!important;
+  }
+  html.objektiv24-standalone .hero-main.hero-rotating .hero-content h1,
+  html.objektiv24-standalone .hero-main.hero-title-long .hero-content h1,
+  html.objektiv24-standalone .hero-main.hero-title-xlong .hero-content h1{
+    font-size:clamp(1.34rem,6.1vw,1.78rem)!important;
+    line-height:1.03!important;
+  }
+  html.objektiv24-standalone .hero-main.hero-rotating .primary-cta{
+    padding:9px 14px!important;
+  }
+}
+@media(max-width:380px){
+  html.objektiv24-standalone .hero-main.hero-rotating{
+    min-height:395px!important;
+    height:395px!important;
+  }
+  html.objektiv24-standalone .hero-main.hero-rotating .hero-photo{
+    height:220px!important;
+  }
+}
+
+@media(max-width:680px){
   .hero-main.hero-rotating .hero-shade{
     background:linear-gradient(
       180deg,
