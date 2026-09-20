@@ -51,3 +51,15 @@ jobs:
           done
           echo "::error::Shutdown page was not visible on objektiv24.sk"
           exit 1
+
+      - name: Verify former public content is gone
+        shell: bash
+        run: |
+          set -euo pipefail
+          for url in             "https://objektiv24.sk/clanky/zelena-solidarita-30-september/"             "https://objektiv24.sk/redakcia.html"             "https://objektiv24.sk/sitemap.xml"             "https://objektiv24.sk/app.js"; do
+            code="$(curl --silent --show-error --location --output /dev/null --write-out '%{http_code}' "$url")"
+            if [ "$code" != "404" ]; then
+              echo "::error::$url returned HTTP $code instead of 404"
+              exit 1
+            fi
+          done
