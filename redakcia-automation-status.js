@@ -188,7 +188,7 @@
     meter('#auto-queue-meter',pending,queueCap);
 
     document.querySelector('#auto-produced').textContent=prepared+' / '+dailyCap;
-    document.querySelector('#auto-produced-note').textContent='Zostáva kapacita '+Math.max(0,dailyCap-prepared)+' návrhov v pohyblivom 24 h okne.';
+    document.querySelector('#auto-produced-note').textContent='Zostáva '+Math.max(0,dailyCap-prepared)+' miest · publikované za 24 h: '+Number(status.published_last_24h||0)+'.';
     meter('#auto-produced-meter',prepared,dailyCap);
 
     const latest=status.latest_drafted;
@@ -263,5 +263,6 @@
   refresh();
   setInterval(updateCountdown,1000);
   setInterval(refresh,5*60*1000);
+  window.addEventListener('objektiv24-editor-ready',refresh);
   window.addEventListener('objektiv24-workspace-saved',()=>{ if(!latestStatus) refresh(); },{once:true});
 })();
