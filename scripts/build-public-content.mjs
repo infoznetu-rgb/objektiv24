@@ -695,9 +695,9 @@ const sitemapUrls=[
   ...topicSitemapUrls,
   {loc:SITE+"/ako-pracujeme.html"},
   {loc:SITE+"/kontakt.html"},
-  ...articles.map(a=>({loc:canonicalFor(a.slug),lastmod:asDate(a.modifiedAt||a.publishedAt||a.verifiedAt)}))
+  ...articles.map(a=>({loc:canonicalFor(a.slug),lastmod:asDate(a.modifiedAt||a.publishedAt||a.verifiedAt),image:a.image?absoluteUrl(a.image):""}))
 ];
-const pagesSitemap=`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapUrls.map(x=>`  <url><loc>${xml(x.loc)}</loc>${x.lastmod?`<lastmod>${xml(x.lastmod)}</lastmod>`:""}</url>`).join("\n")}\n</urlset>\n`;
+const pagesSitemap=`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${sitemapUrls.map(x=>`  <url><loc>${xml(x.loc)}</loc>${x.lastmod?`<lastmod>${xml(x.lastmod)}</lastmod>`:""}${x.image?`<image:image><image:loc>${xml(x.image)}</image:loc></image:image>`:""}</url>`).join("\n")}\n</urlset>\n`;
 await write("sitemap-pages.xml",pagesSitemap);
 
 const newsCutoff=Date.now()-48*60*60*1000;
