@@ -89,6 +89,20 @@ const SOURCES = [
     limit: 15,
   },
   {
+    name: "Ministerstvo dopravy SR",
+    type: "headings",
+    url: "https://www.mindop.sk/pre-verejnost/tlacove-spravy",
+    accept: (u) => /mindop\.sk\/media\/tlacove-spravy\/detail\/[^/?#]+\/?$/i.test(u),
+    limit: 15,
+  },
+  {
+    name: "Úrad pre dohľad nad zdravotnou starostlivosťou",
+    type: "headings",
+    url: "https://www.udzs-sk.sk/urad/zakladne-informacie/",
+    accept: (u) => /udzs-sk\.sk\/blog\/\d{4}\/\d{2}\/\d{2}\/[^/?#]+\/?$/i.test(u),
+    limit: 12,
+  },
+  {
     name: "Národná banka Slovenska",
     type: "html",
     url: "https://nbs.sk/",
