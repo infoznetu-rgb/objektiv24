@@ -1102,7 +1102,9 @@ if (QA_DRY_RUN) {
   status = {
     ok:true,
     published_last_24h:0,
-    daily_cap:9,
+    prepared_last_24h:0,
+    daily_cap:12,
+    cooldown_sources:[],
     recent_titles:[],
     recent_source_urls:[],
     known_sources:[]
