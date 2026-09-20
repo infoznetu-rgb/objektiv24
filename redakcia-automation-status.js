@@ -150,6 +150,9 @@
       const when=new Date(run.created_at);
       const age=Date.now()-when.getTime();
       const runStatus=String(run?.metadata?.status||'');
+      if(run.event==='run_superseded'||run.level==='warning'||runStatus==='cancelled'||runStatus==='canceled'){
+        return {cls:'warn',text:'● Predošlý beh nahradil novší',detail:'Novší beh prevzal spracovanie po '+dateTimeFmt.format(when)};
+      }
       if(run.level==='error'||run.event==='run_failed'||(runStatus&&runStatus!=='success')){
         return {cls:'bad',text:'● Posledný beh zlyhal',detail:dateTimeFmt.format(when)};
       }
@@ -231,7 +234,7 @@
     if(status.last_run?.created_at){
       lastRun.textContent=dateTimeFmt.format(new Date(status.last_run.created_at));
       const mode=String(status.last_run?.metadata?.run_mode||'');
-      lastResult.textContent=(status.last_run.event==='run_failed'?'Beh skončil chybou.':'Serverový heartbeat prijatý.')+(mode==='false'?' Fronta/limit nevyžadovali AI.':'');
+      lastResult.textContent=(status.last_run.event==='run_failed'?'Beh skončil chybou.':status.last_run.event==='run_superseded'?'Beh bol nahradený novším spustením.':'Serverový heartbeat prijatý.')+(mode==='false'?' Fronta/limit nevyžadovali AI.':'');
     }else if(status.latest_item?.updated_at){
       lastRun.textContent=dateTimeFmt.format(new Date(status.latest_item.updated_at));
       lastResult.textContent='Do prvého heartbeat-u zobrazujem poslednú aktivitu databázy.';
