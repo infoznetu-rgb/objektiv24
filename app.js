@@ -86,7 +86,8 @@ function ensureHeroStyles(){
 .hero-main.hero-rotating .hero-photo:after{display:none!important}
 .hero-main.hero-rotating .hero-photo img{
   position:absolute;z-index:1;inset:0;width:100%;height:100%;
-  object-fit:cover!important;object-position:center center!important;
+  object-fit:contain!important;object-position:center center!important;
+  background:#08131a;
   transform:none!important;transition:opacity .28s ease
 }
 .hero-main.hero-switching .hero-photo img{opacity:.32}
