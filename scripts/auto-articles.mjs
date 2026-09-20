@@ -1266,16 +1266,36 @@ for (const c of candidates) {
   }
 
   try {
+    if (!QA_DRY_RUN) {
+      const claimToken = await oidcToken();
+      const claim = await ingest(claimToken, {
+        action:"claim",
+        article:{
+          source_url:c.link,
+          source_name:c.sourceName,
+          source_title:c.title,
+        }
+      });
+      if (!claim.claimed) {
+        console.log("Zdroj už rieši iný beh alebo je v cooldown:", c.title, "|", claim.reason || claim.status || "preskočené");
+        continue;
+      }
+    }
+
     const page = await fetchText(c.link,20000,2);
     c.link = page.finalUrl || c.link;
     const isQaRetrySource = QA_DRY_RUN && QA_RETRY_SOURCE_URL &&
       canonicalUrl(c.link) === canonicalUrl(QA_RETRY_SOURCE_URL);
-    if (!isQaRetrySource && knownSources.has(canonicalUrl(c.link))) continue;
+    if (!isQaRetrySource && knownSources.has(canonicalUrl(c.link))) {
+      if (!QA_DRY_RUN) await recordRejected(c, "source became known after claim");
+      continue;
+    }
 
     const visibleBody = articleText(page.text);
     const body = sourceArticleText(page.text,c);
     if (body.length < 220) {
       console.log("Preskočené pre málo podkladov:", c.title, "| viditeľný text:", visibleBody.length, "| obohatený podklad:", body.length);
+      if (!QA_DRY_RUN) await recordRejected(c, "insufficient source material: " + body.length + " chars");
       continue;
     }
     if (visibleBody.length < 700) {
