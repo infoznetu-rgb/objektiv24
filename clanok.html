@@ -12,13 +12,13 @@
   <meta name="theme-color" content="#03080d">
   <meta property="og:site_name" content="Objektív24">
   <meta property="og:type" content="article">
-  <link rel="stylesheet" href="/styles.css?v=20260916-mobilefix2">
+  <link rel="stylesheet" href="/styles.css?v=20260920-imagefit1">
   <style>
     html,body{max-width:100%;overflow-x:hidden}
     .article-page,.article-detail,.article-detail-header,.article-detail-grid,.article-detail-copy{min-width:0;max-width:100%}
     .article-detail-header h1{overflow-wrap:break-word;word-break:normal}
-    .article-detail-image{max-width:100%;overflow:hidden}
-    .article-detail-image img{display:block;width:100%;height:auto;max-height:680px;aspect-ratio:16/9;object-fit:cover;object-position:center}
+    .article-detail-image{max-width:100%;overflow:hidden;background:#08131a}
+    .article-detail-image img{display:block;width:100%;height:auto;max-height:none;aspect-ratio:auto;object-fit:contain;object-position:center;background:#08131a}
     @media(max-width:800px){
       .site-header .topbar{width:calc(100% - 32px);min-width:0;gap:12px}
       .site-header .brand{flex:0 1 auto;min-width:0}
@@ -33,7 +33,7 @@
       .article-lead{font-size:1rem!important;line-height:1.55;max-width:100%}
       .article-detail-meta{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:.75rem}
       .article-detail-image{margin-top:28px;border-radius:20px}
-      .article-detail-image img{max-height:none;aspect-ratio:16/10;object-fit:cover}
+      .article-detail-image img{max-height:none;aspect-ratio:auto;object-fit:contain}
       .article-detail-grid{grid-template-columns:minmax(0,1fr)!important;gap:22px!important;margin-top:30px!important}
       .article-detail-side{min-width:0}
     }
@@ -44,10 +44,10 @@
       .site-header .brand-tagline{font-size:.65rem;max-width:125px}
       .article-detail-header h1{font-size:clamp(2rem,10vw,2.7rem)!important;line-height:1.04!important;letter-spacing:-.04em!important}
       .article-detail-image{border-radius:16px}
-      .article-detail-image img{aspect-ratio:4/3}
+      .article-detail-image img{aspect-ratio:auto;object-fit:contain}
     }
   </style>
-  <script src="/clanok.js?v=20260919-routefix1" defer></script>
+  <script src="/clanok.js?v=20260920-imagefit1" defer></script>
   <script src="/social-share.js?v=20260919-1" defer></script>
 </head>
 <body>
