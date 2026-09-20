@@ -18,7 +18,7 @@ permissions:
 
 concurrency:
   group: objektiv24-auto-articles
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 jobs:
   generate:
