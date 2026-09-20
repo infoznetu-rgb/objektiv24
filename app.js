@@ -150,45 +150,86 @@ function ensureHeroStyles(){
 }
 @media(max-width:680px){
   html.objektiv24-standalone .hero-main.hero-rotating{
-    min-height:410px!important;
-    height:410px!important;
+    min-height:405px!important;
+    height:405px!important;
     aspect-ratio:auto!important;
+    background:#061018!important;
   }
   html.objektiv24-standalone .hero-main.hero-rotating .hero-photo{
     inset:0 0 auto 0!important;
-    height:235px!important;
+    height:245px!important;
+    display:grid!important;
+    place-items:center!important;
+    overflow:hidden!important;
+    background:#08131a!important;
+  }
+  html.objektiv24-standalone .hero-main.hero-rotating .hero-photo:before{
+    content:""!important;
+    display:block!important;
+    position:absolute!important;
+    inset:-18px!important;
+    background:var(--hero-app-image) center/cover no-repeat!important;
+    filter:blur(18px) brightness(.48)!important;
+    opacity:.72!important;
+    transform:scale(1.08)!important;
+    z-index:0!important;
+    pointer-events:none!important;
+  }
+  html.objektiv24-standalone .hero-main.hero-rotating .hero-photo img{
+    position:relative!important;
+    inset:auto!important;
+    z-index:1!important;
+    width:100%!important;
+    height:100%!important;
+    object-fit:contain!important;
+    object-position:center center!important;
+    margin:auto!important;
+    background:transparent!important;
+  }
+  html.objektiv24-standalone .hero-main.hero-rotating .hero-photo figcaption{
+    z-index:3!important;
   }
   html.objektiv24-standalone .hero-main.hero-rotating .hero-shade{
-    background:linear-gradient(
-      180deg,
-      rgba(2,8,12,0) 0%,
-      rgba(2,8,12,.03) 43%,
-      rgba(2,8,12,.42) 58%,
-      rgba(2,8,12,.94) 72%,
-      rgba(2,8,12,.99) 100%
-    )!important;
+    top:245px!important;
+    bottom:0!important;
+    background:linear-gradient(180deg,#08131a 0%,#061018 100%)!important;
   }
   html.objektiv24-standalone .hero-main.hero-rotating .hero-content{
-    padding:16px 18px 20px!important;
-    gap:11px!important;
+    top:245px!important;
+    bottom:0!important;
+    height:160px!important;
+    padding:15px 18px 17px!important;
+    gap:10px!important;
+    justify-content:center!important;
+    align-items:flex-start!important;
   }
   html.objektiv24-standalone .hero-main.hero-rotating .hero-content h1,
   html.objektiv24-standalone .hero-main.hero-title-long .hero-content h1,
   html.objektiv24-standalone .hero-main.hero-title-xlong .hero-content h1{
-    font-size:clamp(1.34rem,6.1vw,1.78rem)!important;
+    font-size:clamp(1.3rem,5.9vw,1.72rem)!important;
     line-height:1.03!important;
+    margin:0!important;
+    max-width:100%!important;
   }
   html.objektiv24-standalone .hero-main.hero-rotating .primary-cta{
     padding:9px 14px!important;
+    margin:0!important;
   }
 }
 @media(max-width:380px){
   html.objektiv24-standalone .hero-main.hero-rotating{
-    min-height:395px!important;
-    height:395px!important;
+    min-height:390px!important;
+    height:390px!important;
   }
   html.objektiv24-standalone .hero-main.hero-rotating .hero-photo{
-    height:220px!important;
+    height:232px!important;
+  }
+  html.objektiv24-standalone .hero-main.hero-rotating .hero-shade{
+    top:232px!important;
+  }
+  html.objektiv24-standalone .hero-main.hero-rotating .hero-content{
+    top:232px!important;
+    height:158px!important;
   }
 }
 
@@ -257,6 +298,7 @@ function setupHero(){
     const a=items[current],titleText=String(a.title||"");
     img.src=a.image;
     img.alt=a.imageAlt||titleText;
+    hero.style.setProperty("--hero-app-image",'url("'+String(a.image||"").replace(/"/g,'%22')+'")');
     hero.classList.remove("hero-title-long","hero-title-xlong");
     if(titleText.length>92)hero.classList.add("hero-title-xlong");
     else if(titleText.length>68)hero.classList.add("hero-title-long");
