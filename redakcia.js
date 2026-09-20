@@ -320,12 +320,18 @@ function stateLabel(d){
   return "NÁVRH";
 }
 
+function stateClass(d){
+  if(d.state==="published")return "is-published";
+  if(d.state==="archived")return "is-archived";
+  return "is-draft";
+}
+
 function renderDraftList(){
   const q=($("#draft-search").value||"").toLocaleLowerCase("sk");
   const v=drafts.filter(d=>(d.title||"Bez názvu").toLocaleLowerCase("sk").includes(q));
   $("#draft-count").textContent=drafts.length;
   $("#draft-list").innerHTML=v.map(d=>`
-    <button type="button" class="draft-card ${$("#draft-id").value===d.id?"is-active":""}" data-id="${escapeHtml(d.id)}">
+    <button type="button" class="draft-card ${stateClass(d)} ${$("#draft-id").value===d.id?"is-active":""}" data-id="${escapeHtml(d.id)}">
       <span class="badge">${stateLabel(d)} · ${d.seed?"zdrojový článok":"uložené v databáze"}</span>
       <h3>${escapeHtml(d.title||"Bez názvu")}</h3>
       <time>${escapeHtml(d.updated||"")}</time>
