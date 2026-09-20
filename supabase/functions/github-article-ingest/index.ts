@@ -12,7 +12,7 @@ const ALLOWED_CATEGORIES = new Set([
   "Šport",
 ]);
 
-const DAILY_CAP = 9;
+const DAILY_CAP = 12;
 
 const JWKS = createRemoteJWKSet(new URL("https://token.actions.githubusercontent.com/.well-known/jwks"));
 const json = (data: unknown, status = 200) =>
@@ -176,28 +176,40 @@ Deno.serve(async (req: Request) => {
 
     if (action === "status") {
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const [{ count }, recent, sourceItems] = await Promise.all([
+      const cooldownSince = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
+      const [publishedCount, preparedCount, recent, sourceItems] = await Promise.all([
         supabase.from("drafts").select("id", { count: "exact", head: true })
           .eq("state", "published").gte("published_at", since),
-        supabase.from("drafts").select("title,sources,published_at")
-          .eq("state", "published").order("published_at", { ascending: false }).limit(120),
-        supabase.from("automation_source_items").select("source_url")
-          .order("updated_at", { ascending: false }).limit(300),
+        supabase.from("automation_source_items").select("source_url", { count: "exact", head: true })
+          .in("status", ["drafted","published"]).gte("first_seen_at", since),
+        supabase.from("drafts").select("title,sources,state,published_at,updated_at")
+          .in("state", ["draft","published"]).order("updated_at", { ascending: false }).limit(180),
+        supabase.from("automation_source_items").select("source_url,status,updated_at")
+          .order("updated_at", { ascending: false }).limit(500),
       ]);
       const recentRows = recent.data || [];
       const draftUrls = recentRows.flatMap((x: any) => extractUrls(x.sources || ""));
+      const items = sourceItems.data || [];
+      const permanentlyKnown = items
+        .filter((x: any) => ["drafted","published","skipped"].includes(String(x.status || "")))
+        .map((x: any) => canonicalUrl(x.source_url));
+      const cooldownSources = items
+        .filter((x: any) => ["rejected","failed"].includes(String(x.status || "")) && String(x.updated_at || "") >= cooldownSince)
+        .map((x: any) => canonicalUrl(x.source_url));
       return json({
         ok: true,
-        published_last_24h: count || 0,
+        published_last_24h: publishedCount.count || 0,
+        prepared_last_24h: preparedCount.count || 0,
         daily_cap: DAILY_CAP,
         recent_titles: recentRows.map((x: any) => x.title),
         recent_source_urls: [...new Set(draftUrls.map(canonicalUrl))],
-        known_sources: (sourceItems.data || []).map((x: any) => canonicalUrl(x.source_url)),
+        known_sources: [...new Set(permanentlyKnown)],
+        cooldown_sources: [...new Set(cooldownSources)],
         run_sha: claims.sha || null,
       });
     }
 
-    if (action !== "publish" && action !== "reject") return json({ error: "unsupported action" }, 400);
+    if (action !== "publish" && action !== "draft" && action !== "reject") return json({ error: "unsupported action" }, 400);
 
     const a = input?.article || {};
     const sourceUrl = clean(a.source_url);
@@ -247,15 +259,29 @@ Deno.serve(async (req: Request) => {
 
     const sourceCanonical = canonicalUrl(sourceUrl);
     const allSourceItems = await supabase.from("automation_source_items")
-      .select("source_url,status,draft_id").limit(500);
-    if ((allSourceItems.data || []).some((x: any) => canonicalUrl(x.source_url) === sourceCanonical)) {
+      .select("source_url,status,draft_id,updated_at").limit(500);
+    const processed = (allSourceItems.data || []).find((x: any) => canonicalUrl(x.source_url) === sourceCanonical);
+    if (processed && ["drafted","published","skipped"].includes(String(processed.status || ""))) {
       return json({ skipped: true, reason: "source already processed" });
+    }
+    if (processed && ["rejected","failed"].includes(String(processed.status || ""))) {
+      const retryAt = Date.parse(String(processed.updated_at || "")) + 6 * 60 * 60 * 1000;
+      if (Number.isFinite(retryAt) && Date.now() < retryAt) {
+        return json({ skipped: true, reason: "source is in retry cooldown" });
+      }
     }
 
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const daily = await supabase.from("drafts").select("id", { count: "exact", head: true })
-      .eq("state", "published").gte("published_at", since);
-    if ((daily.count || 0) >= DAILY_CAP) return json({ skipped: true, reason: "24h publication cap reached" });
+    if (action === "draft") {
+      const prepared = await supabase.from("automation_source_items")
+        .select("source_url", { count: "exact", head: true })
+        .in("status", ["drafted","published"]).gte("first_seen_at", since);
+      if ((prepared.count || 0) >= DAILY_CAP) return json({ skipped: true, reason: "24h draft preparation cap reached" });
+    } else {
+      const daily = await supabase.from("drafts").select("id", { count: "exact", head: true })
+        .eq("state", "published").gte("published_at", since);
+      if ((daily.count || 0) >= DAILY_CAP) return json({ skipped: true, reason: "24h publication cap reached" });
+    }
 
     const recent = await supabase.from("drafts").select("id,title,sources")
       .in("state", ["draft", "published"]).order("updated_at", { ascending: false }).limit(250);
@@ -287,6 +313,7 @@ Deno.serve(async (req: Request) => {
     const userId = users.data.users[0].id;
 
     const image = "https://objektiv24.sk" + fallbackFor(category);
+    const createAsDraft = action === "draft";
     const insert = await supabase.from("drafts").insert({
       user_id: userId,
       title,
@@ -298,7 +325,7 @@ Deno.serve(async (req: Request) => {
       what_it_means: whatItMeans,
       next_step: nextStep,
       sources: sourceUrl,
-      state: "published",
+      state: createAsDraft ? "draft" : "published",
       image_url: image,
       image_type: "",
       image_alt: clean(a.image_alt) || ("Ilustračná grafika k téme: " + title),
@@ -307,12 +334,12 @@ Deno.serve(async (req: Request) => {
       image_license: "Interná ilustračná grafika",
       image_position: "50% 50%",
       image_search_query: clean(a.image_search_query),
-      image_reviewed: true,
-      image_generation_status: "pending",
-      image_generation_mode: "auto",
+      image_reviewed: !createAsDraft,
+      image_generation_status: createAsDraft ? null : "pending",
+      image_generation_mode: createAsDraft ? null : "auto",
       image_error: null,
       verified_at: new Date().toISOString(),
-    }).select("id,title,slug,published_at,push_sent_at").single();
+    }).select("id,title,slug,published_at,push_sent_at,state").single();
 
     if (insert.error) {
       await supabase.from("automation_source_items").upsert({
@@ -326,39 +353,41 @@ Deno.serve(async (req: Request) => {
       source_url: sourceUrl,
       source_name: sourceName,
       source_title: sourceTitle,
-      status: "published",
+      status: createAsDraft ? "drafted" : "published",
       draft_id: insert.data.id,
-      last_error: "",
+      last_error: clean(a.editor_notes || ""),
       updated_at: new Date().toISOString(),
     });
 
-    // Image generation is deliberately non-blocking: the article remains published
-    // even when the external image provider is temporarily unavailable.
-    EdgeRuntime.waitUntil(
-      fetch((Deno.env.get("SUPABASE_URL") || "") + "/functions/v1/generate-editorial-image", {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + key,
-          "apikey": key,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          draft_id: insert.data.id,
-          mode: "auto",
-          force: false,
-        }),
-      }).then(async (r) => {
-        if (!r.ok) console.warn("Automatic image generation request failed:", r.status, await r.text());
-      }).catch((error) => {
-        console.warn("Automatic image generation request failed:", error?.message || error);
-      })
-    );
+    if (!createAsDraft) {
+      // Automatic image generation stays only on the legacy direct-publish path.
+      EdgeRuntime.waitUntil(
+        fetch((Deno.env.get("SUPABASE_URL") || "") + "/functions/v1/generate-editorial-image", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + key,
+            "apikey": key,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            draft_id: insert.data.id,
+            mode: "auto",
+            force: false,
+          }),
+        }).then(async (r) => {
+          if (!r.ok) console.warn("Automatic image generation request failed:", r.status, await r.text());
+        }).catch((error) => {
+          console.warn("Automatic image generation request failed:", error?.message || error);
+        })
+      );
+    }
 
     return json({
       ok: true,
-      published: true,
+      drafted: createAsDraft,
+      published: !createAsDraft,
       article: insert.data,
-      public_url: "https://objektiv24.sk/clanky/" + insert.data.slug + "/",
+      public_url: createAsDraft ? null : "https://objektiv24.sk/clanky/" + insert.data.slug + "/",
     });
   } catch (e) {
     console.error(e);
