@@ -529,7 +529,7 @@ Spotrebiteľ a bezpečnosť
   };
 
   const ctrl = new AbortController();
-  const timer = setTimeout(()=>ctrl.abort(), 720000);
+  const timer = setTimeout(()=>ctrl.abort(), 300000);
   let r;
   try {
     r = await fetch("http://127.0.0.1:11434/api/chat", {
@@ -697,7 +697,7 @@ ${JSON.stringify(article)}
 Oprav len chyby uvedené vyššie. Ak chyba obsahuje názov poľa za dvojbodkou, sústreď sa presne na toto pole. Fakty a význam zachovaj.`;
 
   const ctrl=new AbortController();
-  const timer=setTimeout(()=>ctrl.abort(),1800000);
+  const timer=setTimeout(()=>ctrl.abort(),300000);
   let response;
   try{
     response=await fetch("http://127.0.0.1:11434/api/chat",{
@@ -1113,13 +1113,18 @@ if (QA_DRY_RUN) {
   status = await ingest(statusToken, { action:"status" });
   console.log("Objektív24 status:", JSON.stringify(status));
 }
-const dailyCap = Math.max(1, Number(status.daily_cap) || 8);
-if ((status.published_last_24h || 0) >= dailyCap) {
-  console.log("Denný limit je naplnený; tento beh nič nevydá.");
+const dailyCap = Math.max(1, Number(status.daily_cap) || 12);
+const preparedLast24h = Math.max(0, Number(status.prepared_last_24h) || 0);
+if (preparedLast24h >= dailyCap) {
+  console.log("Fronta je naplnená:", preparedLast24h, "/", dailyCap, "draftov za posledných 24 hodín.");
   process.exit(0);
 }
 const knownSources = new Set(
-  [...(status.known_sources||[]), ...(status.recent_source_urls||[])].map(canonicalUrl)
+  [
+    ...(status.known_sources||[]),
+    ...(status.recent_source_urls||[]),
+    ...(status.cooldown_sources||[])
+  ].map(canonicalUrl)
 );
 const recentTitles = status.recent_titles || [];
 const knownTitles = new Set(recentTitles.map(norm));
@@ -1238,130 +1243,107 @@ if (QA_RETRY_SOURCE_URL) {
   console.log("Po filtroch zostalo kandidátov:", candidates.length);
 }
 
-let published = 0;
+let drafted = 0;
 let attempts = 0;
 let repairedCandidates = 0;
 let dryRunPassed = 0;
-const publishedBySource=new Map();
-const maxToPublish = Math.min(5, Math.max(0, dailyCap - (status.published_last_24h || 0)));
+const draftedBySource=new Map();
+const maxToDraft = Math.min(4, Math.max(0, dailyCap - preparedLast24h));
+const maxAttempts = 8;
+
 for (const c of candidates) {
-  if (published >= maxToPublish || attempts >= 3) {
-    if (attempts >= 3 && published < maxToPublish) console.log("Beh končí po troch náročných AI pokusoch; ďalší kandidáti počkajú na ďalší dvojhodinový beh.");
+  if (drafted >= maxToDraft || attempts >= maxAttempts) {
+    if (attempts >= maxAttempts && drafted < maxToDraft) {
+      console.log("Beh končí po", maxAttempts, "AI pokusoch; ďalší kandidáti počkajú na ďalší beh.");
+    }
     break;
   }
-  if ((publishedBySource.get(c.sourceName)||0) >= 2) {
-    console.log("Zdroj má v tomto behu už dva publikované články:",c.sourceName);
+  if ((draftedBySource.get(c.sourceName)||0) >= 2) {
+    console.log("Zdroj má v tomto behu už dva pripravené drafty:",c.sourceName);
     continue;
   }
+
   try {
-    const page = await fetchText(c.link);
+    const page = await fetchText(c.link,20000,2);
     c.link = page.finalUrl || c.link;
     const isQaRetrySource = QA_DRY_RUN && QA_RETRY_SOURCE_URL &&
       canonicalUrl(c.link) === canonicalUrl(QA_RETRY_SOURCE_URL);
     if (!isQaRetrySource && knownSources.has(canonicalUrl(c.link))) continue;
+
     const visibleBody = articleText(page.text);
     const body = sourceArticleText(page.text,c);
-    if (body.length < 300) {
+    if (body.length < 220) {
       console.log("Preskočené pre málo podkladov:", c.title, "| viditeľný text:", visibleBody.length, "| obohatený podklad:", body.length);
       continue;
     }
     if (visibleBody.length < 700) {
       console.log("Použitý obohatený podklad pre krátku/dynamickú stránku:", c.title, "| viditeľný text:", visibleBody.length, "| podklad:", body.length);
     }
+
     attempts++;
     let draft = await generate(c, body);
+
     if (QA_DRY_RUN && QA_FORCE_REPAIR_FIXTURE) {
       const introBase=String(draft.intro||"").replace(/[.!?]\s*$/,"").trim().slice(0,195);
       draft={...draft,intro:introBase+" 987654321."};
       console.log("QA smoke fixture: do návrhu bol zámerne vložený nepodložený číselný údaj.");
     }
-    let draftIssues = basicArticleIssues(draft, body, c.title);
-    if (draftIssues.length) {
-      console.log("Prvý návrh neprešiel faktickou/štrukturálnou kontrolou; skúšam jednu cielenú opravu:", c.title, draftIssues.join(","));
+
+    let hardIssues = basicArticleIssues(draft, body, c.title);
+    if (hardIssues.length) {
+      console.log("Draft má faktickú/štrukturálnu chybu; skúšam jednu opravu:", c.title, hardIssues.join(","));
       repairedCandidates++;
-      draft = await repairArticleOnce(c, body, draft, draftIssues, "first-stage QA");
-      draftIssues = basicArticleIssues(draft, body, c.title);
-      if (draftIssues.length) {
-        console.log("Opravený prvý návrh stále neprešiel:", c.title, draftIssues.join(","));
-        await recordRejected(c, "first-stage QA after repair: " + draftIssues.join(","));
+      draft = await repairArticleOnce(c, body, draft, hardIssues, "draft factual QA");
+      hardIssues = basicArticleIssues(draft, body, c.title);
+      if (hardIssues.length) {
+        console.log("Draft po oprave stále nie je bezpečný:", c.title, hardIssues.join(","));
+        await recordRejected(c, "draft factual QA after repair: " + hardIssues.join(","));
         continue;
       }
     }
 
-    let article = cleanupModelArticle(await polishArticle(c, body, draft));
-    let polishedIssues = articleIssues(article, body, c.title);
-    let spellingIssues = hunspellIssues(article, body, c.title+" "+c.sourceName);
-    const repairIssues=[...new Set([...polishedIssues,...spellingIssues])];
-
-    if (repairIssues.length) {
-      console.log("Finálny text má opraviteľné QA chyby; skúšam jednu cielenú opravu:", c.title, repairIssues.join(" | "));
-      repairedCandidates++;
-      article = await repairArticleOnce(c, body, article, repairIssues, "polished/dictionary QA");
-      polishedIssues = articleIssues(article, body, c.title);
-      spellingIssues = hunspellIssues(article, body, c.title+" "+c.sourceName);
-      const afterRepair=[...new Set([...polishedIssues,...spellingIssues])];
-      if (afterRepair.length) {
-        console.log("Text po opravnom pokuse stále neprešiel QA:", c.title, afterRepair.join(" | "));
-        await recordRejected(c, "QA after repair: " + afterRepair.join(" | "));
-        continue;
-      }
-    }
-
-    const finalReview = await reviewArticleLanguage(c, body, article);
-    const finalReviewOk = Boolean(
-      finalReview?.ok &&
-      finalReview?.title_ok &&
-      finalReview?.intro_ok &&
-      finalReview?.what_happened_ok &&
-      finalReview?.what_it_means_ok &&
-      finalReview?.next_step_ok &&
-      Array.isArray(finalReview?.issues) &&
-      finalReview.issues.length===0
-    );
-    if (!finalReviewOk) {
-      const finalIssues = (finalReview?.issues||[]).join(" | ") || "field-level language QA failed";
-      console.log("Finálna jazyková QA odmietla:", c.title, finalIssues);
-      await recordRejected(c, "final language QA: " + finalIssues);
-      continue;
-    }
-    const seo = await generateSeoMetadata(article);
-    const seoIssues=seoMetadataIssues(seo,article);
-    if(seoIssues.length){
-      console.log("SEO metadata neprešli QA:",c.title,seoIssues.join(","));
-      await recordRejected(c,"SEO metadata QA: "+seoIssues.join(","));
-      continue;
-    }
-    article.seo_title=String(seo.seo_title||"").replace(/\s+/g," ").trim().replace(/[.!?]+$/,"");
-    article.meta_description=String(seo.meta_description||"").replace(/\s+/g," ").trim();
+    const editorIssues=[...new Set([
+      ...articleIssues(draft, body, c.title),
+      ...hunspellIssues(draft, body, c.title+" "+c.sourceName)
+    ])];
+    const editorNotes=editorIssues.length
+      ? "Pred publikovaním skontrolovať: "+editorIssues.slice(0,12).join(" | ")
+      : "Automatický draft prešiel základnou faktickou a štrukturálnou kontrolou.";
 
     if (QA_DRY_RUN) {
       dryRunPassed++;
-      console.log("QA DRY RUN PASSED:", article.title, "| opravné zásahy:", repairedCandidates);
+      console.log("QA DRY RUN DRAFT PASSED:", draft.title, "| poznámky:", editorNotes);
       continue;
     }
 
-    const publishToken = await oidcToken();
-    const result = await ingest(publishToken, {
-      action:"publish",
+    const draftToken = await oidcToken();
+    const result = await ingest(draftToken, {
+      action:"draft",
       article:{
-        ...article,
+        ...draft,
+        seo_title:"",
+        meta_description:"",
+        editor_notes:editorNotes,
         source_url:c.link,
         source_name:c.sourceName,
         source_title:c.title,
       }
     });
-    if (result.published) {
-      published++;
-      publishedBySource.set(c.sourceName,(publishedBySource.get(c.sourceName)||0)+1);
-      console.log("PUBLIKOVANÉ:", result.article?.title, result.public_url);
+
+    if (result.drafted) {
+      drafted++;
+      draftedBySource.set(c.sourceName,(draftedBySource.get(c.sourceName)||0)+1);
+      console.log("PRIPRAVENÝ DRAFT:", result.article?.title, "| id:", result.article?.id);
     } else {
-      console.log("NEPUBLIKOVANÉ:", c.title, result.reason || result);
+      console.log("NEPRIPRAVENÉ:", c.title, result.reason || result);
     }
   } catch (e) {
     console.warn("Kandidát zlyhal:", c.title, e.message || e);
+    await recordRejected(c, "runtime failure: " + String(e?.message || e).slice(0,500));
   }
 }
-console.log("Beh dokončený. Publikované:", published, "Pokusy:", attempts, "Cielené opravy:", repairedCandidates, "Dry-run OK:", dryRunPassed);
+
+console.log("Beh dokončený. Drafty:", drafted, "Pokusy:", attempts, "Cielené opravy:", repairedCandidates, "Dry-run OK:", dryRunPassed);
 if (QA_DRY_RUN && dryRunPassed < 1) {
-  throw new Error("QA dry-run did not produce a fully QA-approved article");
+  throw new Error("QA dry-run did not produce a safe draft");
 }
