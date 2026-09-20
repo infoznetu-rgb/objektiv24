@@ -181,7 +181,7 @@ Deno.serve(async (req: Request) => {
         supabase.from("drafts").select("id", { count: "exact", head: true })
           .eq("state", "published").gte("published_at", since),
         supabase.from("automation_source_items").select("source_url", { count: "exact", head: true })
-          .in("status", ["drafted","published"]).gte("updated_at", since),
+          .eq("status", "drafted").gte("updated_at", since),
         supabase.from("drafts").select("title,sources,state,published_at,updated_at")
           .in("state", ["draft","published"]).order("updated_at", { ascending: false }).limit(180),
         supabase.from("automation_source_items").select("source_url,status,updated_at")
