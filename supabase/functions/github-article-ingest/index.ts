@@ -12,7 +12,8 @@ const ALLOWED_CATEGORIES = new Set([
   "Šport",
 ]);
 
-const DAILY_CAP = 12;
+const DAILY_CAP = 36;
+const QUEUE_CAP = 15;
 
 const JWKS = createRemoteJWKSet(new URL("https://token.actions.githubusercontent.com/.well-known/jwks"));
 const json = (data: unknown, status = 200) =>
@@ -177,11 +178,13 @@ Deno.serve(async (req: Request) => {
     if (action === "status") {
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
       const cooldownSince = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
-      const [publishedCount, preparedCount, recent, sourceItems] = await Promise.all([
+      const [publishedCount, preparedCount, pendingDraftCount, recent, sourceItems] = await Promise.all([
         supabase.from("drafts").select("id", { count: "exact", head: true })
           .eq("state", "published").gte("published_at", since),
         supabase.from("automation_source_items").select("source_url", { count: "exact", head: true })
           .eq("status", "drafted").gte("updated_at", since),
+        supabase.from("drafts").select("id", { count: "exact", head: true })
+          .eq("state", "draft"),
         supabase.from("drafts").select("title,sources,state,published_at,updated_at")
           .in("state", ["draft","published"]).order("updated_at", { ascending: false }).limit(180),
         supabase.from("automation_source_items").select("source_url,status,updated_at")
@@ -204,7 +207,9 @@ Deno.serve(async (req: Request) => {
         ok: true,
         published_last_24h: publishedCount.count || 0,
         prepared_last_24h: preparedCount.count || 0,
+        pending_drafts: pendingDraftCount.count || 0,
         daily_cap: DAILY_CAP,
+        queue_cap: QUEUE_CAP,
         recent_titles: recentRows.map((x: any) => x.title),
         recent_source_urls: [...new Set(draftUrls.map(canonicalUrl))],
         known_sources: [...new Set(permanentlyKnown)],
@@ -334,10 +339,16 @@ Deno.serve(async (req: Request) => {
 
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     if (action === "draft") {
-      const prepared = await supabase.from("automation_source_items")
-        .select("source_url", { count: "exact", head: true })
-        .eq("status", "drafted").gte("updated_at", since);
+      const [prepared, pendingDrafts] = await Promise.all([
+        supabase.from("automation_source_items")
+          .select("source_url", { count: "exact", head: true })
+          .eq("status", "drafted").gte("updated_at", since),
+        supabase.from("drafts")
+          .select("id", { count: "exact", head: true })
+          .eq("state", "draft"),
+      ]);
       if ((prepared.count || 0) >= DAILY_CAP) return json({ skipped: true, reason: "24h draft preparation cap reached" });
+      if ((pendingDrafts.count || 0) >= QUEUE_CAP) return json({ skipped: true, reason: "pending draft queue cap reached" });
     } else {
       const daily = await supabase.from("drafts").select("id", { count: "exact", head: true })
         .eq("state", "published").gte("published_at", since);
