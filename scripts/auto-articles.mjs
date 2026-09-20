@@ -73,6 +73,22 @@ const SOURCES = [
     limit: 15,
   },
   {
+    name: "Ministerstvo školstva SR",
+    type: "headings",
+    url: "https://www.minedu.sk/aktuality/",
+    accept: (u) => /minedu\.sk\/[a-z0-9][a-z0-9-]{12,}\/?$/i.test(u)
+      && !/\/aktuality\/?$/i.test(u),
+    limit: 15,
+  },
+  {
+    name: "Úrad pre reguláciu sieťových odvetví",
+    type: "headings",
+    url: "https://www.urso.gov.sk/aktuality/",
+    accept: (u) => /urso\.gov\.sk\/[a-z0-9][a-z0-9-]{8,}\/?$/i.test(u)
+      && !/\/(aktuality|urad|spotrebitel|regulovany-subjekt|rozhodnutia|opravnenia)\/?$/i.test(u),
+    limit: 15,
+  },
+  {
     name: "Národná banka Slovenska",
     type: "html",
     url: "https://nbs.sk/",
@@ -288,6 +304,24 @@ function parseHtmlLinks(html, source) {
   }
   return out;
 }
+function parseHtmlHeadingLinks(html, source) {
+  const out = [];
+  for (const m of String(html||"").matchAll(/<h[2-3]\b[^>]*>[\s\S]*?<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>[\s\S]*?<\/h[2-3]>/gi)) {
+    const link = absUrl(m[1], source.url);
+    const title = stripTags(m[2]);
+    if (!link || title.length < 25 || title.length > 190) continue;
+    try {
+      const u = new URL(link);
+      const base = new URL(source.url);
+      if (u.hostname.replace(/^www\./,"") !== base.hostname.replace(/^www\./,"")) continue;
+    } catch { continue; }
+    if (source.accept && !source.accept(link, title)) continue;
+    if (score(title) <= 0) continue;
+    out.push({ sourceName: source.name, title, description: "", link, pubDate: "" });
+    if (source.limit && out.length >= source.limit) break;
+  }
+  return out;
+}
 function radarOfficialInfo(rawUrl="") {
   try {
     const u=new URL(rawUrl);
@@ -342,7 +376,7 @@ function articleText(html) {
     .replace(/<nav\b[\s\S]*?<\/nav>/gi," ")
     .replace(/<header\b[\s\S]*?<\/header>/gi," ")
     .replace(/<footer\b[\s\S]*?<\/footer>/gi," ")
-    .replace(/<form\b[\s\S]*?<\/form>/gi," ")
+    .replace(/<\/?form\b[^>]*>/gi," ")
     .replace(/<(br|p|div|section|article|li|h1|h2|h3)[^>]*>/gi,"\n");
   s = stripTags(s).replace(/\s+/g," ").trim();
   return s.slice(0, 5000);
@@ -1153,7 +1187,7 @@ for (const source of SOURCES) {
       }];
     } else {
       const { text } = await fetchText(source.url,15000,1);
-      found = source.type === "rss" ? parseRss(text, source) : parseHtmlLinks(text, source);
+      found = source.type === "rss" ? parseRss(text, source) : source.type === "headings" ? parseHtmlHeadingLinks(text, source) : parseHtmlLinks(text, source);
     }
     console.log(source.name + ": nájdených kandidátov " + found.length);
     candidates.push(...found);
@@ -1258,8 +1292,8 @@ let attempts = 0;
 let repairedCandidates = 0;
 let dryRunPassed = 0;
 const draftedBySource=new Map();
-const maxToDraft = Math.min(4, Math.max(0, dailyCap - preparedLast24h), Math.max(0, queueCap - pendingDrafts));
-const maxAttempts = 8;
+const maxToDraft = Math.min(6, Math.max(0, dailyCap - preparedLast24h), Math.max(0, queueCap - pendingDrafts));
+const maxAttempts = 12;
 
 for (const c of candidates) {
   if (drafted >= maxToDraft || attempts >= maxAttempts) {
