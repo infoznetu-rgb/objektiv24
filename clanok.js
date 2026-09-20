@@ -48,6 +48,8 @@ function dbRowToArticle(row){
     steps:String(row.next_step||"").split(/\n\s*\n|\r?\n/).map(x=>x.trim()).filter(Boolean),
     contact:"",
     sources:String(row.sources||"").split(/\r?\n/).map(x=>x.trim()).filter(Boolean),
+    correctionNote:row.correction_note||"",
+    correctedAt:row.corrected_at||"",
     migrationStatus:"full"
   };
 }
@@ -87,8 +89,9 @@ function renderArticle(article){
   const archiveBanner=article.archived?'<div class="article-archive-banner"><strong>Archív:</strong> táto informácia bola viazaná na už uplynutý termín. Pred konaním si overte aktuálny stav.</div>':"";
   const watchSection=article.watch?'<section class="watch-section"><p class="overline">NA ČO SI DAŤ POZOR</p>'+paragraph(article.watch)+'</section>':"";
   const contactSection=article.contact?'<section><p class="overline">KAM SA OBRÁTIŤ</p>'+paragraph(article.contact)+'</section>':"";
+  const correctionSection=article.correctionNote?'<section class="article-correction" aria-label="Oprava článku"><span>OPRAVA'+(article.correctedAt?' · '+escapeHtml(String(article.correctedAt).slice(0,10)):'')+'</span><p>'+escapeHtml(article.correctionNote)+'</p></section>':"";
   root.innerHTML='<a class="article-back" href="/clanky/">← Všetky články</a>'+archiveBanner+
-  '<header class="article-detail-header"><span class="eyebrow">'+escapeHtml(article.category)+'</span><h1>'+escapeHtml(article.title)+'</h1><p class="article-lead">'+escapeHtml(article.summary)+'</p><div class="article-detail-meta"><span>Podklady overené '+escapeHtml(article.verified)+'</span><span>'+escapeHtml(article.author||"Objektív24")+'</span></div></header>'+
+  '<header class="article-detail-header"><span class="eyebrow">'+escapeHtml(article.category)+'</span><h1>'+escapeHtml(article.title)+'</h1><p class="article-lead">'+escapeHtml(article.summary)+'</p><div class="article-detail-meta"><span>Podklady overené '+escapeHtml(article.verified)+'</span><span>'+escapeHtml(article.author||"Objektív24")+'</span></div></header>'+correctionSection+
   (article.image?'<figure class="article-detail-image" style="margin-inline:auto;width:100%;max-width:1200px;overflow:hidden;border-radius:24px;background:#08131a"><img src="'+escapeHtml(article.image)+'" alt="'+escapeHtml(article.imageAlt||"")+'" style="display:block;width:100%;height:auto;max-height:none;object-fit:contain;object-position:center;background:#08131a"><figcaption>'+imageLabel(article.image)+(article.imageLicense&&!/\/assets\/(?:ai|fallback)\//i.test(String(article.image||""))?' · '+escapeHtml(article.imageLicense):'')+'</figcaption></figure>':'')+
   '<div class="article-detail-grid"><div class="article-detail-copy"><section><p class="overline">ČO VIEME ZO ZDROJOV</p>'+paragraph(article.facts||article.summary)+'</section><section><p class="overline">ČO TO ZNAMENÁ PRE VÁS</p>'+paragraph(article.meaning||"Pri praktických informáciách si skontrolujte dátum overenia podkladov a svoju konkrétnu situáciu.")+'</section>'+watchSection+stepsHtml(article.steps)+contactSection+sourcesHtml(article.sources)+'</div><aside class="article-detail-side"><div class="article-side-card"><span class="eyebrow">OVERENIE</span><strong>'+escapeHtml(article.verified)+'</strong><p>Dátum poslednej kontroly podkladov evidovaný pri článku.</p></div><div class="article-side-card"><span class="eyebrow">OPRAVY</span><p>Žiadosti o uverejnenie opravy: <a href="mailto:objektiv24.opravy@gmail.com">objektiv24.opravy@gmail.com</a>. <a href="/pravne-informacie.html">Postup →</a></p></div><div class="article-side-card"><span class="eyebrow">REDAKČNÝ REŽIM</span><p>'+(article.migrationStatus==="full"?"Text je v plnej štruktúre Objektív24 a zdroje sú uvedené priamo nižšie.":"Text je zatiaľ v skrátenej verzii.")+'</p></div></aside></div>';
 }
