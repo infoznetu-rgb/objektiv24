@@ -1283,13 +1283,10 @@ for (const c of candidates) {
     }
 
     const page = await fetchText(c.link,20000,2);
-    c.link = page.finalUrl || c.link;
+    // Keep the claimed source URL stable even when the server redirects between
+    // www/non-www variants. The fetched final URL is only transport metadata.
     const isQaRetrySource = QA_DRY_RUN && QA_RETRY_SOURCE_URL &&
       canonicalUrl(c.link) === canonicalUrl(QA_RETRY_SOURCE_URL);
-    if (!isQaRetrySource && knownSources.has(canonicalUrl(c.link))) {
-      if (!QA_DRY_RUN) await recordRejected(c, "source became known after claim");
-      continue;
-    }
 
     const visibleBody = articleText(page.text);
     const body = sourceArticleText(page.text,c);
