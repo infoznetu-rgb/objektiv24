@@ -1,38 +1,11 @@
-name: Objektív24 evergreen source check
+name: evergreen-check (disabled)
 
 on:
-  schedule:
-    - cron: "40 4,16 * * *"
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/evergreen-check.yml"
-      - "scripts/check-evergreen-sources.mjs"
-
-permissions:
-  contents: read
-  id-token: write
-
-concurrency:
-  group: objektiv24-evergreen-source-check
-  cancel-in-progress: true
 
 jobs:
-  evergreen-check:
+  disabled:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-
-      - name: Validate checker
-        run: node --check scripts/check-evergreen-sources.mjs
-
-      - name: Check official evergreen sources
-        run: node scripts/check-evergreen-sources.mjs
+      - name: Disabled
+        run: echo "Objektív24 public operation has ended; this workflow is intentionally disabled."
