@@ -1,11 +1,9 @@
-name: Deploy Objektív24 to GitHub Pages
+name: Deploy Objektív24 shutdown page
 
 on:
   push:
     branches: ["main"]
   workflow_dispatch:
-  schedule:
-    - cron: "*/10 * * * *"
 
 permissions:
   contents: read
@@ -14,7 +12,7 @@ permissions:
 
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -26,90 +24,30 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-
-      - name: Build public SEO content
-        run: node scripts/build-public-content.mjs
-
-      - name: Write deployment marker
-        shell: bash
-        run: |
-          node - <<'NODE'
-          const fs = require("node:fs");
-          fs.writeFileSync(
-            "deploy-health.json",
-            JSON.stringify({
-              status: "ok",
-              commit: process.env.GITHUB_SHA,
-              generated_at: new Date().toISOString()
-            }) + "\n"
-          );
-          NODE
-
-      - name: Validate editor health script
-        run: node --check redakcia-health.js
-
-      - name: Validate analytics dashboard script
-        run: node --check analytics-dashboard.js
-
-      - name: Validate editorial QA script
-        run: node --check editorial-qa.js
-
-      - name: Validate production readiness script
-        run: node --check production-readiness.js
-
-      - name: Validate PWA script
-        run: node --check pwa.js
-
-      - name: Validate analytics script
-        run: node --check analytics.js
-
-      - name: Validate generated public content
-        run: node scripts/validate-public-build.mjs
-
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
           enablement: true
 
-      - name: Upload site artifact
+      - name: Upload shutdown site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: shutdown-site
 
-      - name: Deploy to GitHub Pages
+      - name: Deploy shutdown site
         id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Verify live deployment
+      - name: Verify public shutdown
         shell: bash
         run: |
           set -euo pipefail
-
-          health_url="https://objektiv24.sk/deploy-health.json?sha=${GITHUB_SHA}"
-          ok=0
-
           for attempt in $(seq 1 12); do
-            if curl --fail --silent --show-error --location \
-              --connect-timeout 10 --max-time 30 \
-              "$health_url" -o /tmp/objektiv24-health.json; then
-              if grep -Fq "$GITHUB_SHA" /tmp/objektiv24-health.json; then
-                ok=1
-                break
-              fi
+            body="$(curl --fail --silent --show-error --location --connect-timeout 10 --max-time 30 https://objektiv24.sk/ || true)"
+            if printf '%s' "$body" | grep -Fq "Spravodajský obsah už nie je verejne dostupný."; then
+              exit 0
             fi
             sleep 5
           done
-
-          if [ "$ok" -ne 1 ]; then
-            echo "::error::Live site did not expose deployment marker for commit $GITHUB_SHA"
-            exit 1
-          fi
-
-          curl --fail --silent --show-error --location --retry 3 --retry-delay 3 \
-            https://objektiv24.sk/ -o /dev/null
-          curl --fail --silent --show-error --location --retry 3 --retry-delay 3 \
-            https://objektiv24.sk/sitemap.xml -o /dev/null
+          echo "::error::Shutdown page was not visible on objektiv24.sk"
+          exit 1
