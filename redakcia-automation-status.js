@@ -36,21 +36,21 @@
   root.className='auto-articles-status';
   root.innerHTML=`
     <article class="auto-main" id="auto-health-card">
-      <span class="auto-articles-kicker">AUTOMATICKÉ ČLÁNKY</span>
+      <span class="auto-articles-kicker">AUTOMATICKÁ FRONTA</span>
       <strong id="auto-run-summary">Kontrolujem automatiku…</strong>
-      <small id="auto-run-note">Každých 15 minút sa kontrolujú zdroje. Nový článok vznikne iba vtedy, keď vhodná téma prejde filtrami a QA. Po dosiahnutí 9 článkov za 24 hodín sa AI už nespúšťa.</small>
+      <small id="auto-run-note">Každých 15 minút sa kontrolujú zdroje a bezpečné témy sa ukladajú ako návrhy do Redakcie. Nič sa už automaticky nepublikuje. Limit je 12 pripravených návrhov za 24 hodín.</small>
       <button id="auto-run-refresh" class="auto-articles-refresh" type="button">Obnoviť stav</button>
     </article>
 
     <article>
-      <span class="auto-articles-kicker">DNES PUBLIKOVANÉ</span>
+      <span class="auto-articles-kicker">DRAFTY NA ÚPRAVU</span>
       <strong id="auto-today-count">—</strong>
       <div id="auto-today-times" class="auto-times"></div>
-      <small id="auto-today-note">Načítavam dnešné články…</small>
+      <small id="auto-today-note">Načítavam pripravené návrhy…</small>
     </article>
 
     <article>
-      <span class="auto-articles-kicker">POSLEDNÝ ČLÁNOK</span>
+      <span class="auto-articles-kicker">POSLEDNÝ DRAFT</span>
       <strong id="auto-last-article">—</strong>
       <small id="auto-last-article-title" class="auto-last-title">Načítavam…</small>
     </article>
@@ -128,10 +128,9 @@
 
   async function fetchTodayArticles(){
     const query=new URLSearchParams();
-    query.set('state','eq.published');
-    query.set('published_at','gte.'+localMidnightIso());
-    query.set('select','id,title,published_at,updated_at');
-    query.set('order','published_at.desc');
+    query.set('state','eq.draft');
+    query.set('select','id,title,created_at,updated_at');
+    query.set('order','updated_at.desc');
     query.set('limit','100');
     const response=await fetch(PUBLIC_SUPABASE_URL+'/rest/v1/drafts?'+query.toString(),{
       headers:{
@@ -157,33 +156,34 @@
     if(count)count.textContent=String(rows.length);
     if(times){
       times.innerHTML='';
-      rows.slice().reverse().forEach(row=>{
-        if(!row.published_at)return;
+      rows.slice(0,8).reverse().forEach(row=>{
+        const when=row.updated_at||row.created_at;
+        if(!when)return;
         const chip=document.createElement('span');
         chip.className='auto-time-chip';
-        chip.textContent=timeFmt.format(new Date(row.published_at));
-        chip.title=row.title||'Publikovaný článok';
+        chip.textContent=timeFmt.format(new Date(when));
+        chip.title=row.title||'Pripravený draft';
         times.appendChild(chip);
       });
     }
 
     if(!rows.length){
-      if(note)note.textContent='Dnes zatiaľ nevyšiel žiadny automatický článok.';
-      if(lastTime)lastTime.textContent='Dnes zatiaľ nič';
-      if(lastTitle)lastTitle.textContent='Automatika môže bežať správne aj bez publikovania, ak nič neprejde QA.';
+      if(note)note.textContent='Fronta je prázdna — automatika hľadá ďalšiu použiteľnú tému.';
+      if(lastTime)lastTime.textContent='Žiadny draft';
+      if(lastTitle)lastTitle.textContent='Nové témy sa ukladajú sem na ručnú úpravu, nie priamo na web.';
       return;
     }
 
     const latest=rows[0];
-    const publishedAt=new Date(latest.published_at||latest.updated_at);
-    if(note)note.textContent=rows.length===1?'1 článok dnes':'Časy dnešných publikovaní';
-    if(lastTime)lastTime.textContent=timeFmt.format(publishedAt);
-    if(lastTitle)lastTitle.textContent=latest.title||'Posledný publikovaný článok';
+    const preparedAt=new Date(latest.updated_at||latest.created_at);
+    if(note)note.textContent=rows.length===1?'1 návrh čaká na úpravu':rows.length+' návrhov čaká na úpravu';
+    if(lastTime)lastTime.textContent=timeFmt.format(preparedAt);
+    if(lastTitle)lastTitle.textContent=latest.title||'Posledný pripravený draft';
   }
 
   function articleSilenceHours(){
     if(todayArticles.length){
-      const d=new Date(todayArticles[0].published_at||todayArticles[0].updated_at);
+      const d=new Date(todayArticles[0].updated_at||todayArticles[0].created_at);
       return Math.max(0,(Date.now()-d.getTime())/3600000);
     }
     const midnight=new Date();
@@ -211,15 +211,15 @@
 
     if(silentHours>=4){
       summary.className='auto-run-state warn';
-      summary.textContent='● Automatika beží, ale dlhšie nič nevydala';
-      note.textContent=(todayArticles.length?'Od posledného článku uplynulo približne '+Math.floor(silentHours)+' h.':'Dnes zatiaľ nevyšiel článok.')+' Nemusí ísť o chybu — nové témy mohli byť slabé alebo neprešli QA.';
+      summary.textContent='● Automatika beží, fronta sa dlhšie nedoplnila';
+      note.textContent=(todayArticles.length?'Od posledného draftu uplynulo približne '+Math.floor(silentHours)+' h.':'Fronta je zatiaľ prázdna.')+' Systém ďalej kontroluje nové zdroje a nepublikuje bez ručnej kontroly.';
       card.classList.add('auto-warning');
       return;
     }
 
     summary.className='auto-run-state '+workflow.cls;
     summary.textContent=workflow.text;
-    note.textContent='Dnešné publikovania: '+todayArticles.length+'. '+workflow.detail+'.';
+    note.textContent='Drafty pripravené na úpravu: '+todayArticles.length+'. '+workflow.detail+'.';
   }
 
   async function refreshWorkflow(){
