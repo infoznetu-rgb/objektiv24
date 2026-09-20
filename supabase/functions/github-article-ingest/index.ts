@@ -308,16 +308,32 @@ Deno.serve(async (req: Request) => {
 
     if (action === "heartbeat") {
       if (caller !== "github") return json({ error: "GitHub workflow required" }, 403);
-      const status = clean(input?.status || "unknown").slice(0, 40);
+      const status = clean(input?.status || "unknown").toLowerCase().slice(0, 40);
       const runMode = clean(input?.run_mode || "").slice(0, 40);
       const eventName = clean(input?.event || "").slice(0, 60);
-      const event = status === "success" ? "run_completed" : "run_failed";
-      const level = status === "success" ? "info" : "error";
+      const cancelled = status === "cancelled" || status === "canceled";
+      const event = status === "success" ? "run_completed" : cancelled ? "run_superseded" : "run_failed";
+      const level = status === "success" ? "info" : cancelled ? "warning" : "error";
+
+      if (cancelled) {
+        const processingSince = new Date(Date.now() - 90 * 60 * 1000).toISOString();
+        const retryReady = new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString();
+        await supabase.from("automation_source_items").update({
+          status: "rejected",
+          last_error: "workflow superseded before completion; ready for retry",
+          updated_at: retryReady,
+        }).eq("status", "processing").gte("updated_at", processingSince);
+      }
+
       const inserted = await supabase.from("system_health_events").insert({
         component: "auto-articles",
         level,
         event,
-        message: status === "success" ? "Automatic article workflow completed" : "Automatic article workflow did not complete successfully",
+        message: status === "success"
+          ? "Automatic article workflow completed"
+          : cancelled
+            ? "Automatic article workflow was superseded by a newer run"
+            : "Automatic article workflow did not complete successfully",
         metadata: {
           status,
           run_mode: runMode || null,
