@@ -1,31 +1,11 @@
-name: Objektív24 QA repair smoke test
+name: qa-repair-smoke (disabled)
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - "scripts/auto-articles.mjs"
-      - ".github/workflows/qa-repair-smoke.yml"
-
-permissions:
-  contents: read
-
-concurrency:
-  group: objektiv24-qa-repair-smoke
-  cancel-in-progress: true
 
 jobs:
-  qa-safeguards:
+  disabled:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Validate automation script
-        run: node --check scripts/auto-articles.mjs
-
-      - name: Run deterministic QA safeguards
-        env:
-          QA_SELF_TEST: "1"
-        run: node scripts/auto-articles.mjs
+      - name: Disabled
+        run: echo "Objektív24 public operation has ended; this workflow is intentionally disabled."
