@@ -82,101 +82,172 @@ function ensureHeroStyles(){
 .hero-main .hero-content{transition:opacity .28s ease,transform .28s ease}
 .hero-main.hero-switching .hero-content{opacity:.28}
 .hero-main.hero-rotating .hero-photo{overflow:hidden;background:#08131a}
-.hero-main.hero-rotating .hero-photo:before{
-  content:"";position:absolute;z-index:0;inset:-34px;
-  background-image:var(--hero-bg-image);background-size:cover;background-position:center;
-  filter:blur(28px) brightness(.42) saturate(.88);transform:scale(1.08);opacity:.78
-}
-.hero-main.hero-rotating .hero-photo:after{
-  content:"";position:absolute;z-index:1;inset:0;
-  background:linear-gradient(90deg,rgba(3,8,13,.34) 0%,rgba(3,8,13,.10) 48%,rgba(3,8,13,.03) 100%)
-}
+.hero-main.hero-rotating .hero-photo:before,
+.hero-main.hero-rotating .hero-photo:after{display:none!important}
 .hero-main.hero-rotating .hero-photo img{
-  position:absolute;z-index:2;top:0;right:0;width:58%;height:100%;
+  position:absolute;z-index:1;inset:0;width:100%;height:100%;
   object-fit:cover!important;object-position:center center!important;
   transform:none!important;transition:opacity .28s ease
 }
-.hero-main.hero-switching .hero-photo img{opacity:.28}
+.hero-main.hero-switching .hero-photo img{opacity:.32}
 .hero-main.hero-rotating .hero-photo figcaption{z-index:7}
 .hero-main.hero-rotating .hero-shade{
   z-index:3;
-  background:
-    linear-gradient(90deg,rgba(2,8,12,.98) 0%,rgba(2,8,12,.93) 32%,rgba(2,8,12,.72) 47%,rgba(2,8,12,.16) 67%,rgba(2,8,12,.04) 100%),
-    linear-gradient(180deg,rgba(2,8,12,.03) 46%,rgba(2,8,12,.46) 100%)
+  background:linear-gradient(
+    180deg,
+    rgba(2,8,12,0) 0%,
+    rgba(2,8,12,0) 54%,
+    rgba(2,8,12,.18) 66%,
+    rgba(2,8,12,.72) 84%,
+    rgba(2,8,12,.94) 100%
+  )!important
 }
 .hero-main.hero-rotating .hero-content{
-  z-index:5;left:0;right:auto;bottom:0;
-  width:min(57%,660px);max-width:660px;
-  padding:42px 0 42px 46px
+  z-index:5;left:0;right:0;bottom:0;
+  width:100%;max-width:none;
+  padding:30px 40px 34px;
+  display:flex;align-items:flex-end;justify-content:space-between;gap:28px
 }
 .hero-main.hero-rotating:hover .hero-photo img{transform:none!important}
-.hero-main.hero-rotating .meta-row{max-width:100%}
 .hero-main.hero-rotating .hero-content h1{
-  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden;
-  max-width:100%;font-size:clamp(2.15rem,3.65vw,4.25rem)!important;
-  line-height:.99!important;letter-spacing:-.055em!important;margin:16px 0 15px
+  flex:1 1 auto;display:block;overflow:visible;
+  max-width:calc(100% - 190px);
+  font-size:clamp(2rem,3.15vw,3.55rem)!important;
+  line-height:.99!important;letter-spacing:-.05em!important;
+  margin:0!important;text-wrap:balance;
+  text-shadow:0 3px 24px rgba(0,0,0,.95)
 }
 .hero-main.hero-title-long .hero-content h1{
-  font-size:clamp(2rem,3.2vw,3.7rem)!important;line-height:1!important
+  font-size:clamp(1.85rem,2.75vw,3.15rem)!important
 }
 .hero-main.hero-title-xlong .hero-content h1{
-  font-size:clamp(1.85rem,2.85vw,3.25rem)!important;line-height:1.02!important
+  font-size:clamp(1.68rem,2.35vw,2.75rem)!important;line-height:1.02!important
 }
-.hero-main.hero-rotating .hero-content p{
-  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;
-  max-width:570px;font-size:1rem!important;line-height:1.48!important;
-  color:#d7dfe3;margin:0 0 14px
+.hero-main.hero-rotating .primary-cta{
+  flex:none;margin:0 0 4px!important
 }
-.hero-main.hero-rotating .primary-cta{margin-top:4px}
 .hero-rotator{
-  position:absolute;right:18px;bottom:18px;z-index:8;display:flex;align-items:center;gap:8px;
+  position:absolute;left:18px;top:18px;right:auto;bottom:auto;z-index:8;
+  display:flex;align-items:center;gap:8px;
   padding:7px 9px;border:1px solid rgba(255,255,255,.16);border-radius:999px;
-  background:rgba(3,10,15,.72);backdrop-filter:blur(12px);box-shadow:0 8px 30px rgba(0,0,0,.22)
+  background:rgba(3,10,15,.66);backdrop-filter:blur(12px);
+  box-shadow:0 8px 30px rgba(0,0,0,.22)
 }
 .hero-rotator button{display:grid;place-items:center;width:30px;height:30px;border:0;border-radius:999px;background:rgba(255,255,255,.08);color:#fff;font:900 18px/1 system-ui;cursor:pointer}
 .hero-rotator button:hover,.hero-rotator button:focus-visible{background:#d9ff28;color:#061018;outline:0}
 .hero-dots{display:flex;gap:6px;align-items:center}
 .hero-dots button{width:8px;height:8px;padding:0;background:rgba(255,255,255,.38)}
 .hero-dots button.is-active{width:22px;background:#d9ff28}
-@media(max-width:980px) and (min-width:681px){
-  .hero-main.hero-rotating .hero-photo img{width:62%;object-position:62% center!important}
-  .hero-main.hero-rotating .hero-content{width:61%;padding:36px 0 36px 34px}
-  .hero-main.hero-rotating .hero-content h1{font-size:clamp(2rem,4vw,3.3rem)!important}
+@media(max-width:980px){
+  .hero-main.hero-rotating .hero-content{
+    padding:28px 30px 30px;gap:20px
+  }
+  .hero-main.hero-rotating .hero-content h1{
+    max-width:calc(100% - 165px);
+    font-size:clamp(1.85rem,4.3vw,3rem)!important
+  }
 }
 @media(max-width:680px){
-  .hero-main.hero-rotating .hero-photo:before{inset:-22px;filter:blur(18px) brightness(.52)}
-  .hero-main.hero-rotating .hero-photo img{
-    position:relative;right:auto;width:100%;height:100%;
-    object-fit:cover!important;object-position:center center!important
-  }
-  .hero-main.hero-rotating .hero-photo:after{background:rgba(3,8,13,.08)}
   .hero-main.hero-rotating .hero-shade{
-    background:linear-gradient(180deg,rgba(2,8,12,.08) 0%,rgba(2,8,12,.18) 34%,rgba(2,8,12,.82) 68%,rgba(2,8,12,.98) 100%)!important
+    background:linear-gradient(
+      180deg,
+      rgba(2,8,12,0) 0%,
+      rgba(2,8,12,0) 46%,
+      rgba(2,8,12,.24) 60%,
+      rgba(2,8,12,.82) 82%,
+      rgba(2,8,12,.97) 100%
+    )!important
   }
   .hero-main.hero-rotating .hero-content{
-    width:100%;max-width:100%;padding:20px 18px 22px
+    width:100%;max-width:100%;padding:20px 18px 22px;
+    flex-direction:column;align-items:flex-start;gap:14px
   }
   .hero-main.hero-rotating .hero-content h1,
   .hero-main.hero-title-long .hero-content h1,
   .hero-main.hero-title-xlong .hero-content h1{
-    -webkit-line-clamp:4;max-width:100%;
-    font-size:clamp(1.48rem,6.8vw,1.98rem)!important;line-height:1.04!important
+    max-width:100%;
+    font-size:clamp(1.48rem,6.5vw,1.95rem)!important;
+    line-height:1.04!important
   }
-  .hero-main.hero-rotating .hero-content p{
-    -webkit-line-clamp:3;max-width:92%!important;padding-right:82px;
-    font-size:.8rem!important;line-height:1.48!important
-  }
-  .hero-rotator{right:12px;bottom:12px;padding:6px 7px;gap:6px}
+  .hero-main.hero-rotating .primary-cta{margin:0!important}
+  .hero-rotator{left:12px;top:12px;padding:6px 7px;gap:6px}
   .hero-rotator button{width:27px;height:27px;font-size:16px}
   .hero-dots{gap:5px}
-  .hero-main.hero-rotating .primary-cta{margin-bottom:3px}
 }
 @media(prefers-reduced-motion:reduce){
   .hero-main .hero-photo img,.hero-main .hero-content{transition:none!important}
 }`;
   document.head.appendChild(s)
 }
-function setupHero(){const hero=document.querySelector(".hero-main");if(!hero)return;const items=state.articles.map((a,i)=>({a,i,time:Date.parse(a.published||a.verified||"")||0})).filter(x=>!x.a.archived&&x.a.image&&x.a.url).sort((x,y)=>y.time-x.time||x.i-y.i).slice(0,5).map(x=>x.a);if(!items.length)return;ensureHeroStyles();hero.classList.add("hero-rotating");const img=hero.querySelector(".hero-photo img"),caption=hero.querySelector(".hero-photo figcaption"),eyebrow=hero.querySelector(".hero-content .eyebrow"),meta=hero.querySelector(".hero-content .meta-row span:not(.eyebrow)"),title=hero.querySelector(".hero-content h1"),summary=hero.querySelector(".hero-content p"),cta=hero.querySelector(".hero-content .primary-cta");if(!img||!eyebrow||!title||!summary||!cta)return;let current=0,timer=null,swapTimer=null;const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;let controls=hero.querySelector(".hero-rotator");if(!controls){controls=document.createElement("div");controls.className="hero-rotator";controls.setAttribute("aria-label","Prepínanie hlavných článkov");controls.innerHTML='<button type="button" class="hero-prev" aria-label="Predchádzajúci článok">‹</button><div class="hero-dots" aria-label="Hlavné články"></div><button type="button" class="hero-next" aria-label="Nasledujúci článok">›</button>';hero.appendChild(controls)}const dots=controls.querySelector(".hero-dots");dots.innerHTML=items.map((_,i)=>`<button type="button" data-hero-index="${i}" aria-label="Zobraziť článok ${i+1}"></button>`).join("");function apply(){const a=items[current],titleText=String(a.title||"");img.src=a.image;img.alt=a.imageAlt||titleText;hero.style.setProperty("--hero-bg-image",`url(${JSON.stringify(String(a.image||""))})`);hero.classList.remove("hero-title-long","hero-title-xlong");if(titleText.length>92)hero.classList.add("hero-title-xlong");else if(titleText.length>68)hero.classList.add("hero-title-long");if(caption)caption.textContent=imageLabel(a.image)+(a.imageLicense?" · "+a.imageLicense:"");eyebrow.textContent=a.category||"Objektív24";if(meta)meta.textContent=a.verified?"Overené "+heroDate(a.verified):"Najnovšie";title.textContent=titleText;summary.textContent=a.summary||"";cta.href=a.url;cta.dataset.trackEvent="hero_click";cta.dataset.trackLabel=a.slug||a.url||"";controls.querySelectorAll("[data-hero-index]").forEach((b,i)=>{b.classList.toggle("is-active",i===current);b.setAttribute("aria-current",i===current?"true":"false")})}function show(index,animate=true){current=(index+items.length)%items.length;clearTimeout(swapTimer);if(animate&&!reduce){hero.classList.add("hero-switching");swapTimer=setTimeout(()=>{apply();requestAnimationFrame(()=>hero.classList.remove("hero-switching"))},140)}else{apply();hero.classList.remove("hero-switching")}}function stop(){clearInterval(timer);timer=null}function start(){stop();if(!reduce&&items.length>1)timer=setInterval(()=>show(current+1),7000)}function manual(index){show(index);start()}controls.querySelector(".hero-prev").addEventListener("click",()=>manual(current-1));controls.querySelector(".hero-next").addEventListener("click",()=>manual(current+1));controls.querySelectorAll("[data-hero-index]").forEach(b=>b.addEventListener("click",()=>manual(Number(b.dataset.heroIndex))));hero.addEventListener("mouseenter",stop);hero.addEventListener("mouseleave",start);hero.addEventListener("focusin",stop);hero.addEventListener("focusout",e=>{if(!hero.contains(e.relatedTarget))start()});apply();start()}
+function setupHero(){
+  const hero=document.querySelector(".hero-main");if(!hero)return;
+  const items=state.articles.map((a,i)=>({a,i,time:Date.parse(a.published||a.verified||"")||0}))
+    .filter(x=>!x.a.archived&&x.a.image&&x.a.url)
+    .sort((x,y)=>y.time-x.time||x.i-y.i)
+    .slice(0,5).map(x=>x.a);
+  if(!items.length)return;
+  ensureHeroStyles();
+  hero.classList.add("hero-rotating");
+
+  const img=hero.querySelector(".hero-photo img");
+  const caption=hero.querySelector(".hero-photo figcaption");
+  const title=hero.querySelector(".hero-content h1");
+  const cta=hero.querySelector(".hero-content .primary-cta");
+  if(!img||!title||!cta)return;
+
+  let current=0,timer=null,swapTimer=null;
+  const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let controls=hero.querySelector(".hero-rotator");
+  if(!controls){
+    controls=document.createElement("div");
+    controls.className="hero-rotator";
+    controls.setAttribute("aria-label","Prepínanie hlavných článkov");
+    controls.innerHTML='<button type="button" class="hero-prev" aria-label="Predchádzajúci článok">‹</button><div class="hero-dots" aria-label="Hlavné články"></div><button type="button" class="hero-next" aria-label="Nasledujúci článok">›</button>';
+    hero.appendChild(controls)
+  }
+  const dots=controls.querySelector(".hero-dots");
+  dots.innerHTML=items.map((_,i)=>`<button type="button" data-hero-index="${i}" aria-label="Zobraziť článok ${i+1}"></button>`).join("");
+
+  function apply(){
+    const a=items[current],titleText=String(a.title||"");
+    img.src=a.image;
+    img.alt=a.imageAlt||titleText;
+    hero.classList.remove("hero-title-long","hero-title-xlong");
+    if(titleText.length>92)hero.classList.add("hero-title-xlong");
+    else if(titleText.length>68)hero.classList.add("hero-title-long");
+    if(caption)caption.textContent=imageLabel(a.image)+(a.imageLicense?" · "+a.imageLicense:"");
+    title.textContent=titleText;
+    cta.href=a.url;
+    cta.dataset.trackEvent="hero_click";
+    cta.dataset.trackLabel=a.slug||a.url||"";
+    controls.querySelectorAll("[data-hero-index]").forEach((b,i)=>{
+      b.classList.toggle("is-active",i===current);
+      b.setAttribute("aria-current",i===current?"true":"false")
+    })
+  }
+  function show(index,animate=true){
+    current=(index+items.length)%items.length;
+    clearTimeout(swapTimer);
+    if(animate&&!reduce){
+      hero.classList.add("hero-switching");
+      swapTimer=setTimeout(()=>{apply();requestAnimationFrame(()=>hero.classList.remove("hero-switching"))},140)
+    }else{
+      apply();hero.classList.remove("hero-switching")
+    }
+  }
+  function stop(){clearInterval(timer);timer=null}
+  function start(){stop();if(!reduce&&items.length>1)timer=setInterval(()=>show(current+1),7000)}
+  function manual(index){show(index);start()}
+
+  controls.querySelector(".hero-prev").addEventListener("click",()=>manual(current-1));
+  controls.querySelector(".hero-next").addEventListener("click",()=>manual(current+1));
+  controls.querySelectorAll("[data-hero-index]").forEach(b=>b.addEventListener("click",()=>manual(Number(b.dataset.heroIndex))));
+  hero.addEventListener("mouseenter",stop);
+  hero.addEventListener("mouseleave",start);
+  hero.addEventListener("focusin",stop);
+  hero.addEventListener("focusout",e=>{if(!hero.contains(e.relatedTarget))start()});
+  apply();start()
+}
 async function loadArticles(){try{const r=await fetch("data/articles.json",{cache:"no-store"});if(!r.ok)throw new Error("articles.json");const staticArticles=await r.json();staticArticles.forEach(a=>{a.published=a.publishedAt||a.verified||"";if(a.slug)a.url="/clanky/"+encodeURIComponent(a.slug)+"/";if(a.slug==="vakcinacia-lisok"){a.image=FOX_IMAGE;a.imageAlt="Celá líška hrdzavá stojaca vo voľnej prírode";a.imageLicense="Wikimedia Commons · Public domain · U.S. Fish and Wildlife Service"}});const live=await loadPublishedDrafts(),titles=new Set(live.map(x=>normalize(x.title)));state.articles=[...live,...staticArticles.filter(x=>!titles.has(normalize(x.title)))];renderFilters();renderArticles();renderLatest();renderBreaking();setupHero()}catch(e){console.error(e);document.querySelector("#articles-grid").innerHTML="<p>Články sa nepodarilo načítať. Skúste stránku obnoviť.</p>"}}
 document.querySelector(".menu-button")?.addEventListener("click",e=>{
   const nav=document.querySelector("#site-nav"),open=nav.classList.toggle("is-open");
