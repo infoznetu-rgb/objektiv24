@@ -6,3 +6,50 @@
   .site-header,.latest,.article-card,.search-row{backdrop-filter:none!important}.site-header{background:rgba(3,8,13,.96)}
   .hero-photo img,.article-visual,.article-card,.topic-rail a,.primary-cta{transition:none!important}
 }
+
+
+/* Homepage hero refinement: blend the text side into the photo instead of a hard dark cut. */
+.hero-shade{
+  background:
+    linear-gradient(90deg,
+      rgba(2,8,12,.96) 0%,
+      rgba(2,8,12,.90) 20%,
+      rgba(2,8,12,.70) 34%,
+      rgba(2,8,12,.42) 47%,
+      rgba(2,8,12,.14) 61%,
+      rgba(2,8,12,0) 74%),
+    linear-gradient(180deg,
+      rgba(2,8,12,.04) 0%,
+      rgba(2,8,12,.06) 52%,
+      rgba(2,8,12,.46) 82%,
+      rgba(2,8,12,.72) 100%);
+}
+.hero-shade::after{
+  content:"";
+  position:absolute;
+  top:0;
+  bottom:0;
+  left:27%;
+  width:34%;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  -webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 28%,#000 68%,transparent 100%);
+  mask-image:linear-gradient(90deg,transparent 0%,#000 28%,#000 68%,transparent 100%);
+  opacity:.52;
+  pointer-events:none;
+}
+.hero-content{
+  max-width:790px;
+  padding:48px 46px 52px;
+}
+.hero-content h1{
+  margin:0 0 22px;
+  text-shadow:0 3px 28px rgba(0,0,0,.72);
+}
+@media(max-width:980px){
+  .hero-shade{
+    background:
+      linear-gradient(180deg,rgba(2,8,12,.04) 0%,rgba(2,8,12,.14) 34%,rgba(2,8,12,.72) 67%,rgba(2,8,12,.97) 100%);
+  }
+  .hero-shade::after{display:none}
+}
