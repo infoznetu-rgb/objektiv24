@@ -1103,7 +1103,9 @@ if (QA_DRY_RUN) {
     ok:true,
     published_last_24h:0,
     prepared_last_24h:0,
-    daily_cap:12,
+    pending_drafts:0,
+    daily_cap:36,
+    queue_cap:15,
     cooldown_sources:[],
     recent_titles:[],
     recent_source_urls:[],
@@ -1115,10 +1117,16 @@ if (QA_DRY_RUN) {
   status = await ingest(statusToken, { action:"status" });
   console.log("Objektív24 status:", JSON.stringify(status));
 }
-const dailyCap = Math.max(1, Number(status.daily_cap) || 12);
+const dailyCap = Math.max(1, Number(status.daily_cap) || 36);
+const queueCap = Math.max(1, Number(status.queue_cap) || 15);
 const preparedLast24h = Math.max(0, Number(status.prepared_last_24h) || 0);
+const pendingDrafts = Math.max(0, Number(status.pending_drafts) || 0);
 if (preparedLast24h >= dailyCap) {
-  console.log("Fronta je naplnená:", preparedLast24h, "/", dailyCap, "draftov za posledných 24 hodín.");
+  console.log("Denný limit výroby je naplnený:", preparedLast24h, "/", dailyCap, "draftov za posledných 24 hodín.");
+  process.exit(0);
+}
+if (pendingDrafts >= queueCap) {
+  console.log("Fronta čakajúcich návrhov je naplnená:", pendingDrafts, "/", queueCap, "nevydaných draftov.");
   process.exit(0);
 }
 const knownSources = new Set(
@@ -1250,7 +1258,7 @@ let attempts = 0;
 let repairedCandidates = 0;
 let dryRunPassed = 0;
 const draftedBySource=new Map();
-const maxToDraft = Math.min(4, Math.max(0, dailyCap - preparedLast24h));
+const maxToDraft = Math.min(4, Math.max(0, dailyCap - preparedLast24h), Math.max(0, queueCap - pendingDrafts));
 const maxAttempts = 8;
 
 for (const c of candidates) {
