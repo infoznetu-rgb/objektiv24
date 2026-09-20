@@ -99,3 +99,27 @@
   .hero-main{min-height:500px}
   .latest-item img{width:84px!important;height:56px!important;object-fit:contain!important}
 }
+
+
+/* Visible correction notice for materially corrected articles. */
+.article-correction{
+  margin:18px 0 24px;
+  padding:18px 20px;
+  border:1px solid rgba(217,255,40,.34);
+  border-left:5px solid #d9ff28;
+  border-radius:16px;
+  background:rgba(217,255,40,.06);
+}
+.article-correction span{
+  display:block;
+  margin-bottom:8px;
+  color:#d9ff28;
+  font-size:.72rem;
+  font-weight:950;
+  letter-spacing:.09em;
+}
+.article-correction p{
+  margin:0;
+  color:#eef3f5;
+  line-height:1.65;
+}
