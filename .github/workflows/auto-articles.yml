@@ -35,7 +35,7 @@ jobs:
           INGEST_URL: https://bkyappgttwjxakkwycub.supabase.co/functions/v1/github-article-ingest
         run: |
           set -euo pipefail
-          echo "Kontrolujem limit automaticky pripravených draftov pred spustením AI."
+          echo "Kontrolujem denný limit aj aktuálnu veľkosť fronty pred spustením AI."
           if ! TOKEN_JSON="$(curl -fsS -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=objektiv24-auto-articles")"; then
             echo "::warning::OIDC pre-check zlyhal; automatiku radšej spustím."
             echo "run=true" >> "$GITHUB_OUTPUT"
@@ -53,10 +53,16 @@ jobs:
             exit 0
           fi
           COUNT="$(printf '%s' "$STATUS" | jq -r '.prepared_last_24h // 0')"
-          CAP="$(printf '%s' "$STATUS" | jq -r '.daily_cap // 12')"
+          CAP="$(printf '%s' "$STATUS" | jq -r '.daily_cap // 36')"
+          QUEUE="$(printf '%s' "$STATUS" | jq -r '.pending_drafts // 0')"
+          QUEUE_CAP="$(printf '%s' "$STATUS" | jq -r '.queue_cap // 15')"
           echo "Automaticky pripravené drafty za posledných 24 h: $COUNT / $CAP"
+          echo "Nevydané drafty vo fronte: $QUEUE / $QUEUE_CAP"
           if [ "$COUNT" -ge "$CAP" ]; then
-            echo "Fronta je naplnená; tento beh končí bez spúšťania AI."
+            echo "Denný limit výroby je naplnený; tento beh končí bez spúšťania AI."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          elif [ "$QUEUE" -ge "$QUEUE_CAP" ]; then
+            echo "Fronta čakajúcich návrhov je naplnená; tento beh končí bez spúšťania AI."
             echo "run=false" >> "$GITHUB_OUTPUT"
           else
             echo "run=true" >> "$GITHUB_OUTPUT"
