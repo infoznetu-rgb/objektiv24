@@ -1,0 +1,11 @@
+{
+  "name":"Záhrada s nápadom",
+  "short_name":"Záhrada",
+  "description":"Nekomerčný hobby projekt o záhrade, tvorení a nápadoch od ľudí pre ľudí.",
+  "lang":"sk",
+  "start_url":"/",
+  "scope":"/",
+  "display":"standalone",
+  "background_color":"#06100a",
+  "theme_color":"#07110b"
+}
