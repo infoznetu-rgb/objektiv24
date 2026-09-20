@@ -193,8 +193,12 @@ Deno.serve(async (req: Request) => {
       const permanentlyKnown = items
         .filter((x: any) => ["drafted","published","skipped"].includes(String(x.status || "")))
         .map((x: any) => canonicalUrl(x.source_url));
+      const processingSince = new Date(Date.now() - 30 * 60 * 1000).toISOString();
       const cooldownSources = items
-        .filter((x: any) => ["rejected","failed"].includes(String(x.status || "")) && String(x.updated_at || "") >= cooldownSince)
+        .filter((x: any) =>
+          (["rejected","failed"].includes(String(x.status || "")) && String(x.updated_at || "") >= cooldownSince) ||
+          (String(x.status || "") === "processing" && String(x.updated_at || "") >= processingSince)
+        )
         .map((x: any) => canonicalUrl(x.source_url));
       return json({
         ok: true,
@@ -209,7 +213,7 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    if (action !== "publish" && action !== "draft" && action !== "reject") return json({ error: "unsupported action" }, 400);
+    if (action !== "publish" && action !== "draft" && action !== "reject" && action !== "claim") return json({ error: "unsupported action" }, 400);
 
     const a = input?.article || {};
     const sourceUrl = clean(a.source_url);
@@ -225,6 +229,63 @@ Deno.serve(async (req: Request) => {
     const metaDescription = clean(a.meta_description) || fallbackMetaDescription(intro);
 
     if (!allowedSource(sourceUrl)) return json({ error: "source URL is not allowed", source_host: sourceHost(sourceUrl) || null }, 400);
+
+    if (action === "claim") {
+      const nowIso = new Date().toISOString();
+      const retryCutoff = Date.now() - 6 * 60 * 60 * 1000;
+      const processingCutoff = Date.now() - 30 * 60 * 1000;
+      const existingRows = await supabase.from("automation_source_items")
+        .select("source_url,status,updated_at,draft_id").limit(500);
+      if (existingRows.error) throw existingRows.error;
+      const sourceCanonical = canonicalUrl(sourceUrl);
+      const existing = (existingRows.data || []).find((x: any) => canonicalUrl(x.source_url) === sourceCanonical);
+
+      if (existing) {
+        const status = String(existing.status || "");
+        const updatedMs = Date.parse(String(existing.updated_at || ""));
+        if (["drafted","published","skipped"].includes(status)) {
+          return json({ ok:true, claimed:false, reason:"source already processed", status });
+        }
+        if (status === "processing" && Number.isFinite(updatedMs) && updatedMs >= processingCutoff) {
+          return json({ ok:true, claimed:false, reason:"source already being processed", status });
+        }
+        if (["rejected","failed"].includes(status) && Number.isFinite(updatedMs) && updatedMs >= retryCutoff) {
+          return json({ ok:true, claimed:false, reason:"source is in retry cooldown", status });
+        }
+
+        let update = supabase.from("automation_source_items").update({
+          source_name: sourceName,
+          source_title: sourceTitle,
+          status: "processing",
+          draft_id: null,
+          last_error: "",
+          updated_at: nowIso,
+        }).eq("source_url", existing.source_url);
+        if (existing.updated_at) update = update.eq("updated_at", existing.updated_at);
+        const claimed = await update.select("source_url,status").maybeSingle();
+        if (claimed.error) throw claimed.error;
+        if (!claimed.data) return json({ ok:true, claimed:false, reason:"source claim lost to another run" });
+        return json({ ok:true, claimed:true, status:"processing" });
+      }
+
+      const inserted = await supabase.from("automation_source_items").insert({
+        source_url: sourceUrl,
+        source_name: sourceName,
+        source_title: sourceTitle,
+        status: "processing",
+        draft_id: null,
+        last_error: "",
+        updated_at: nowIso,
+      }).select("source_url,status").maybeSingle();
+      if (inserted.error) {
+        if (String(inserted.error.code || "") === "23505") {
+          return json({ ok:true, claimed:false, reason:"source claim lost to another run" });
+        }
+        throw inserted.error;
+      }
+      return json({ ok:true, claimed:true, status:"processing" });
+    }
+
     if (action === "reject") {
       const reason = clean(input?.reason || "rejected by local QA").slice(0, 800);
       const rejected = await supabase.from("automation_source_items").upsert({
@@ -275,7 +336,7 @@ Deno.serve(async (req: Request) => {
     if (action === "draft") {
       const prepared = await supabase.from("automation_source_items")
         .select("source_url", { count: "exact", head: true })
-        .in("status", ["drafted","published"]).gte("first_seen_at", since);
+        .eq("status", "drafted").gte("updated_at", since);
       if ((prepared.count || 0) >= DAILY_CAP) return json({ skipped: true, reason: "24h draft preparation cap reached" });
     } else {
       const daily = await supabase.from("drafts").select("id", { count: "exact", head: true })
