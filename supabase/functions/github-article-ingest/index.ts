@@ -558,6 +558,27 @@ Deno.serve(async (req: Request) => {
       updated_at: new Date().toISOString(),
     });
 
+    if (createAsDraft) {
+      // Notify only the authenticated editor devices that explicitly enabled editor alerts.
+      EdgeRuntime.waitUntil(
+        fetch((Deno.env.get("SUPABASE_URL") || "") + "/functions/v1/send-editor-draft-notification", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + key,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            draft_id: insert.data.id,
+            title: insert.data.title || title,
+          }),
+        }).then(async (r) => {
+          if (!r.ok) console.warn("Editor draft notification failed:", r.status, await r.text());
+        }).catch((error) => {
+          console.warn("Editor draft notification failed:", error?.message || error);
+        })
+      );
+    }
+
     if (!createAsDraft) {
       // Automatic image generation stays only on the legacy direct-publish path.
       EdgeRuntime.waitUntil(
