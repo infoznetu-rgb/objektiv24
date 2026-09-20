@@ -112,6 +112,23 @@ jobs:
         if: steps.cap.outputs.run == 'true'
         run: node scripts/auto-articles.mjs
 
+      - name: Record automation heartbeat
+        if: always()
+        env:
+          INGEST_URL: https://bkyappgttwjxakkwycub.supabase.co/functions/v1/github-article-ingest
+          RUN_MODE: ${{ steps.cap.outputs.run }}
+          JOB_STATUS: ${{ job.status }}
+          EVENT_NAME: ${{ github.event_name }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          set +e
+          TOKEN_JSON="$(curl -fsS -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=objektiv24-auto-articles")"
+          OIDC_TOKEN="$(printf '%s' "$TOKEN_JSON" | jq -r '.value // empty')"
+          if [ -n "$OIDC_TOKEN" ]; then
+            PAYLOAD="$(jq -nc --arg status "$JOB_STATUS" --arg run_mode "$RUN_MODE" --arg event "$EVENT_NAME" --arg sha "$COMMIT_SHA"               '{action:"heartbeat",status:$status,run_mode:$run_mode,event:$event,sha:$sha}')"
+            curl -fsS -X POST "$INGEST_URL"               -H "Authorization: Bearer $OIDC_TOKEN"               -H "Content-Type: application/json"               --data "$PAYLOAD" || true
+          fi
+
       - name: Ollama diagnostics on failure
         if: failure() && steps.cap.outputs.run == 'true'
         run: |
