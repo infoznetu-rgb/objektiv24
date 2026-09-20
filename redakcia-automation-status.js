@@ -4,6 +4,8 @@
   if(!main||document.querySelector('#auto-articles-status'))return;
 
   const INGEST_URL='https://bkyappgttwjxakkwycub.supabase.co/functions/v1/github-article-ingest';
+  const EDITOR_PUSH_URL='https://bkyappgttwjxakkwycub.supabase.co/functions/v1/editor-push-subscribe';
+  const VAPID_PUBLIC_KEY='BMYq9N7rzvM-2Jh9IHfE3-F8St1l5KJeVjljyfXXSOX5RcMIrfsQ7TjHqhK6na4RjogySL4nCIlPhD3FIEqAkGY';
   const SCHEDULE_INTERVAL_MINUTES=15;
   const NORMAL_DELAY_MINUTES=10;
   const RUN_STALE_MINUTES=50;
@@ -19,7 +21,11 @@
     .auto-articles-status strong{display:block;font-size:.9rem;color:#30333a;line-height:1.35}
     .auto-articles-status small{display:block;margin-top:5px;font-size:.66rem;color:#747982;line-height:1.45}
     .auto-run-state{display:inline-flex;align-items:center;gap:6px}.auto-run-state.ok{color:#506315}.auto-run-state.warn{color:#9a5a20}.auto-run-state.running{color:#365675}.auto-run-state.bad{color:#9a2f2f}
-    .auto-articles-refresh{margin-top:8px;border:0;background:none;padding:0;color:#50545b;text-decoration:underline;font-size:.66rem;font-weight:800;cursor:pointer}
+    .auto-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:9px}
+    .auto-articles-refresh{border:0;background:none;padding:0;color:#50545b;text-decoration:underline;font-size:.66rem;font-weight:800;cursor:pointer}
+    .editor-alert-toggle{border:1px solid #cfd7a0;border-radius:999px;padding:7px 10px;background:#fff;color:#4d5d16;font-size:.66rem;font-weight:900;cursor:pointer}
+    .editor-alert-toggle.is-on{background:#d9ff28;border-color:#bfdc20;color:#243000}
+    .editor-alert-toggle:disabled{opacity:.6;cursor:wait}
     .auto-meter{height:5px;margin-top:8px;border-radius:999px;background:#edf0f2;overflow:hidden}.auto-meter>i{display:block;height:100%;width:var(--w,0%);background:#a8c612;border-radius:inherit}
     .auto-meter.warn>i{background:#d28b35}.auto-meter.bad>i{background:#b84949}
     .auto-last-title{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
@@ -39,7 +45,10 @@
       <span class="auto-articles-kicker">AUTOMATICKÁ FRONTA</span>
       <strong id="auto-run-summary">Kontrolujem automatiku…</strong>
       <small id="auto-run-note">Načítavam stav priamo zo servera Objektív24.</small>
-      <button id="auto-run-refresh" class="auto-articles-refresh" type="button">Obnoviť stav</button>
+      <div class="auto-actions">
+        <button id="auto-run-refresh" class="auto-articles-refresh" type="button">Obnoviť stav</button>
+        <button id="editor-alert-toggle" class="editor-alert-toggle" type="button">🔔 Moje upozornenia</button>
+      </div>
     </article>
 
     <article>
@@ -141,6 +150,116 @@
     let data={};try{data=JSON.parse(text)}catch{}
     if(!response.ok)throw new Error(data.error||('Server HTTP '+response.status));
     return data;
+  }
+
+  const b64ToBytes=value=>{
+    const pad='='.repeat((4-value.length%4)%4);
+    const base=(value+pad).replace(/-/g,'+').replace(/_/g,'/');
+    const raw=atob(base);
+    return Uint8Array.from([...raw].map(ch=>ch.charCodeAt(0)));
+  };
+
+  async function editorSession(){
+    const client=window.objektiv24SupabaseClient;
+    if(!client)throw new Error('Redakčný klient ešte nie je pripravený');
+    const {data:{session},error}=await client.auth.getSession();
+    if(error)throw error;
+    if(!session?.access_token)throw new Error('Nie ste prihlásený v Redakcii');
+    return session;
+  }
+
+  async function editorPushSubscription(create=false){
+    if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)){
+      throw new Error('Tento prehliadač nepodporuje push upozornenia');
+    }
+    let permission=Notification.permission;
+    if(create&&permission!=='granted')permission=await Notification.requestPermission();
+    if(permission!=='granted')return null;
+    await navigator.serviceWorker.register('/sw.js?v=24',{updateViaCache:'none'});
+    const reg=await navigator.serviceWorker.ready;
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub&&create){
+      sub=await reg.pushManager.subscribe({
+        userVisibleOnly:true,
+        applicationServerKey:b64ToBytes(VAPID_PUBLIC_KEY)
+      });
+    }
+    return sub;
+  }
+
+  async function editorAlertRequest(action,sub){
+    const session=await editorSession();
+    const json=sub?.toJSON?.()||{};
+    const response=await fetch(EDITOR_PUSH_URL,{
+      method:'POST',
+      headers:{
+        Authorization:'Bearer '+session.access_token,
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify({
+        action,
+        endpoint:sub?.endpoint||'',
+        p256dh:json.keys?.p256dh||'',
+        auth:json.keys?.auth||'',
+        user_agent:navigator.userAgent
+      }),
+      cache:'no-store'
+    });
+    const text=await response.text();
+    let data={};try{data=JSON.parse(text)}catch{}
+    if(!response.ok)throw new Error(data.error||('Server HTTP '+response.status));
+    return data;
+  }
+
+  async function refreshEditorAlerts(){
+    const button=document.querySelector('#editor-alert-toggle');
+    if(!button)return;
+    try{
+      if(Notification.permission==='denied'){
+        button.textContent='🔕 Upozornenia blokované';
+        button.classList.remove('is-on');
+        return;
+      }
+      const sub=await editorPushSubscription(false);
+      if(!sub){
+        button.textContent='🔔 Zapnúť moje upozornenia';
+        button.classList.remove('is-on');
+        return;
+      }
+      const data=await editorAlertRequest('status',sub);
+      button.textContent=data.enabled?'🔔 Moje upozornenia zapnuté':'🔔 Zapnúť moje upozornenia';
+      button.classList.toggle('is-on',Boolean(data.enabled));
+    }catch(error){
+      console.warn('Editor alert status failed',error);
+      button.textContent='🔔 Moje upozornenia';
+      button.classList.remove('is-on');
+    }
+  }
+
+  async function toggleEditorAlerts(){
+    const button=document.querySelector('#editor-alert-toggle');
+    if(!button)return;
+    button.disabled=true;
+    try{
+      const currentOn=button.classList.contains('is-on');
+      if(currentOn){
+        const sub=await editorPushSubscription(false);
+        if(sub)await editorAlertRequest('unsubscribe',sub);
+        button.classList.remove('is-on');
+        button.textContent='🔔 Zapnúť moje upozornenia';
+      }else{
+        const sub=await editorPushSubscription(true);
+        if(!sub)throw new Error('Upozornenia neboli povolené');
+        await editorAlertRequest('subscribe',sub);
+        button.classList.add('is-on');
+        button.textContent='🔔 Moje upozornenia zapnuté';
+      }
+    }catch(error){
+      alert('Upozornenia sa nepodarilo zmeniť: '+(error?.message||error));
+      await refreshEditorAlerts();
+    }finally{
+      button.disabled=false;
+    }
   }
 
   function runState(status){
@@ -262,10 +381,12 @@
   }
 
   document.querySelector('#auto-run-refresh')?.addEventListener('click',refresh);
+  document.querySelector('#editor-alert-toggle')?.addEventListener('click',toggleEditorAlerts);
   updateCountdown();
   refresh();
+  setTimeout(refreshEditorAlerts,1200);
   setInterval(updateCountdown,1000);
   setInterval(refresh,5*60*1000);
-  window.addEventListener('objektiv24-editor-ready',refresh);
+  window.addEventListener('objektiv24-editor-ready',()=>{refresh();refreshEditorAlerts()});
   window.addEventListener('objektiv24-workspace-saved',()=>{ if(!latestStatus) refresh(); },{once:true});
 })();
