@@ -215,6 +215,35 @@ function ensureHeroStyles(){
     padding:9px 14px!important;
     margin:0!important;
   }
+  html.objektiv24-standalone .hero-main.hero-rotating .hero-rotator{
+    left:auto!important;
+    right:16px!important;
+    top:auto!important;
+    bottom:17px!important;
+    padding:4px 6px!important;
+    gap:4px!important;
+    border-color:rgba(255,255,255,.10)!important;
+    background:rgba(8,19,26,.92)!important;
+    box-shadow:none!important;
+    backdrop-filter:blur(10px)!important;
+  }
+  html.objektiv24-standalone .hero-main.hero-rotating .hero-rotator>button{
+    width:22px!important;
+    height:22px!important;
+    font-size:14px!important;
+    background:rgba(255,255,255,.07)!important;
+  }
+  html.objektiv24-standalone .hero-main.hero-rotating .hero-dots{
+    gap:4px!important;
+  }
+  html.objektiv24-standalone .hero-main.hero-rotating .hero-dots button{
+    width:6px!important;
+    height:6px!important;
+    min-width:6px!important;
+  }
+  html.objektiv24-standalone .hero-main.hero-rotating .hero-dots button.is-active{
+    width:15px!important;
+  }
 }
 @media(max-width:380px){
   html.objektiv24-standalone .hero-main.hero-rotating{
@@ -230,6 +259,11 @@ function ensureHeroStyles(){
   html.objektiv24-standalone .hero-main.hero-rotating .hero-content{
     top:232px!important;
     height:158px!important;
+  }
+  html.objektiv24-standalone .hero-main.hero-rotating .hero-rotator{
+    right:13px!important;
+    bottom:15px!important;
+    padding:4px 5px!important;
   }
 }
 
