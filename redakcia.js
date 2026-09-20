@@ -525,6 +525,7 @@ async function deleteDraft(){
   if(error)throw error;
   await refreshDrafts();
   if(!restoreEditorWorkspace())resetForm();
+  window.dispatchEvent(new CustomEvent("objektiv24-editor-ready"));
 }
 
 async function showEditor(user){
