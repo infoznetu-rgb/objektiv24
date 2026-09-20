@@ -16,8 +16,19 @@ const DAILY_CAP = 36;
 const QUEUE_CAP = 15;
 
 const JWKS = createRemoteJWKSet(new URL("https://token.actions.githubusercontent.com/.well-known/jwks"));
+const ALLOWED_ORIGIN = "https://objektiv24.sk";
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+  "Access-Control-Allow-Headers": "authorization, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Max-Age": "86400",
+  "Vary": "Origin",
+};
 const json = (data: unknown, status = 200) =>
-  new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
+  new Response(JSON.stringify(data), {
+    status,
+    headers: { "Content-Type": "application/json", "Cache-Control": "no-store", ...CORS_HEADERS },
+  });
 
 function secretKey() {
   const keys = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}");
@@ -39,6 +50,29 @@ async function verifyGitHub(req: Request) {
     throw new Error("wrong workflow");
   }
   return payload;
+}
+
+async function verifyEditor(req: Request, key: string) {
+  const auth = req.headers.get("authorization") || "";
+  if (!auth.startsWith("Bearer ")) throw new Error("missing editor token");
+  const token = auth.slice(7);
+  const base = Deno.env.get("SUPABASE_URL") || "";
+
+  const [userRes, configRes] = await Promise.all([
+    fetch(base + "/auth/v1/user", {
+      headers: { apikey: key, Authorization: "Bearer " + token },
+    }),
+    fetch(base + "/rest/v1/internal_secrets?select=secret_value&secret_key=eq.editor_user_id", {
+      headers: { apikey: key, Authorization: "Bearer " + key },
+    }),
+  ]);
+  if (!userRes.ok) throw new Error("invalid editor session");
+  if (!configRes.ok) throw new Error("editor authorization unavailable");
+  const user = await userRes.json();
+  const rows = await configRes.json();
+  const editorUserId = String(rows?.[0]?.secret_value || "");
+  if (!user?.id || !editorUserId || user.id !== editorUserId) throw new Error("editor is not authorized");
+  return { sub: user.id, editor: true };
 }
 
 function clean(v: unknown) {
@@ -164,21 +198,37 @@ function extractUrls(v: string) {
 
 Deno.serve(async (req: Request) => {
   try {
-    if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
-    const claims = await verifyGitHub(req);
+    const origin = req.headers.get("origin");
+    if (req.method === "OPTIONS") {
+      if (origin && origin !== ALLOWED_ORIGIN) return new Response(null, { status: 403 });
+      return new Response(null, { status: 204, headers: CORS_HEADERS });
+    }
+    if (origin && origin !== ALLOWED_ORIGIN) return json({ error: "Origin not allowed" }, 403);
+    if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
+
     const key = secretKey();
     if (!key) return json({ error: "Supabase secret key unavailable" }, 503);
+    const input = await req.json().catch(() => ({}));
+    const action = clean(input?.action || "status");
+
+    let claims: any = null;
+    let caller = "github";
+    try {
+      claims = await verifyGitHub(req);
+    } catch (githubError) {
+      if (action !== "status") throw githubError;
+      claims = await verifyEditor(req, key);
+      caller = "editor";
+    }
+
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, key, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
-    const input = await req.json().catch(() => ({}));
-    const action = clean(input?.action || "status");
-
     if (action === "status") {
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
       const cooldownSince = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
-      const [publishedCount, preparedCount, pendingDraftCount, recent, sourceItems] = await Promise.all([
+      const [publishedCount, preparedCount, pendingDraftCount, recent, sourceItems, heartbeat] = await Promise.all([
         supabase.from("drafts").select("id", { count: "exact", head: true })
           .eq("state", "published").gte("published_at", since),
         supabase.from("automation_source_items").select("source_url", { count: "exact", head: true })
@@ -187,8 +237,10 @@ Deno.serve(async (req: Request) => {
           .eq("state", "draft"),
         supabase.from("drafts").select("title,sources,state,published_at,updated_at")
           .in("state", ["draft","published"]).order("updated_at", { ascending: false }).limit(180),
-        supabase.from("automation_source_items").select("source_url,status,updated_at")
+        supabase.from("automation_source_items").select("source_url,source_name,source_title,status,updated_at,last_error,draft_id")
           .order("updated_at", { ascending: false }).limit(500),
+        supabase.from("system_health_events").select("created_at,event,level,message,metadata")
+          .eq("component", "auto-articles").order("created_at", { ascending: false }).limit(1),
       ]);
       const recentRows = recent.data || [];
       const draftUrls = recentRows.flatMap((x: any) => extractUrls(x.sources || ""));
@@ -203,19 +255,78 @@ Deno.serve(async (req: Request) => {
           (String(x.status || "") === "processing" && String(x.updated_at || "") >= processingSince)
         )
         .map((x: any) => canonicalUrl(x.source_url));
+      const last24 = items.filter((x: any) => String(x.updated_at || "") >= since);
+      const statusCount = (status: string) => last24.filter((x: any) => String(x.status || "") === status).length;
+      const problemMap = new Map<string, number>();
+      for (const item of last24) {
+        if (!["rejected","failed"].includes(String(item.status || ""))) continue;
+        const name = clean(item.source_name || "Neznámy zdroj") || "Neznámy zdroj";
+        problemMap.set(name, (problemMap.get(name) || 0) + 1);
+      }
+      const problemSources = [...problemMap.entries()]
+        .sort((a,b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([source_name,count]) => ({ source_name, count }));
+      const latestDrafted = items.find((x: any) => String(x.status || "") === "drafted") || null;
+      const latestItem = items[0] || null;
+      const latestHeartbeat = heartbeat.data?.[0] || null;
+
       return json({
         ok: true,
+        caller,
         published_last_24h: publishedCount.count || 0,
         prepared_last_24h: preparedCount.count || 0,
         pending_drafts: pendingDraftCount.count || 0,
         daily_cap: DAILY_CAP,
         queue_cap: QUEUE_CAP,
+        rejected_last_24h: statusCount("rejected"),
+        failed_last_24h: statusCount("failed"),
+        skipped_last_24h: statusCount("skipped"),
+        processing_now: items.filter((x: any) => String(x.status || "") === "processing" && String(x.updated_at || "") >= processingSince).length,
+        problem_sources: problemSources,
+        latest_item: latestItem ? {
+          source_name: latestItem.source_name,
+          source_title: latestItem.source_title,
+          status: latestItem.status,
+          updated_at: latestItem.updated_at,
+          last_error: latestItem.last_error,
+        } : null,
+        latest_drafted: latestDrafted ? {
+          source_name: latestDrafted.source_name,
+          source_title: latestDrafted.source_title,
+          updated_at: latestDrafted.updated_at,
+          draft_id: latestDrafted.draft_id,
+        } : null,
+        last_run: latestHeartbeat,
         recent_titles: recentRows.map((x: any) => x.title),
         recent_source_urls: [...new Set(draftUrls.map(canonicalUrl))],
         known_sources: [...new Set(permanentlyKnown)],
         cooldown_sources: [...new Set(cooldownSources)],
-        run_sha: claims.sha || null,
+        run_sha: caller === "github" ? (claims.sha || null) : null,
       });
+    }
+
+    if (action === "heartbeat") {
+      if (caller !== "github") return json({ error: "GitHub workflow required" }, 403);
+      const status = clean(input?.status || "unknown").slice(0, 40);
+      const runMode = clean(input?.run_mode || "").slice(0, 40);
+      const eventName = clean(input?.event || "").slice(0, 60);
+      const event = status === "success" ? "run_completed" : "run_failed";
+      const level = status === "success" ? "info" : "error";
+      const inserted = await supabase.from("system_health_events").insert({
+        component: "auto-articles",
+        level,
+        event,
+        message: status === "success" ? "Automatic article workflow completed" : "Automatic article workflow did not complete successfully",
+        metadata: {
+          status,
+          run_mode: runMode || null,
+          event: eventName || null,
+          sha: clean(input?.sha || claims.sha || "").slice(0, 80) || null,
+        },
+      });
+      if (inserted.error) throw inserted.error;
+      return json({ ok: true, recorded: true, event });
     }
 
     if (action !== "publish" && action !== "draft" && action !== "reject" && action !== "claim") return json({ error: "unsupported action" }, 400);
