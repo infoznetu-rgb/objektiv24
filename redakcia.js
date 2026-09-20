@@ -10,6 +10,7 @@ const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,
     flowType:"implicit"
   }
 });
+window.objektiv24SupabaseClient=client;
 
 let drafts=[];
 let publishedDrafts=[];
