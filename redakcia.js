@@ -235,6 +235,7 @@ async function seedPublishedArticles(){
       whatItMeans:x.meaning||"",
       nextStep:[...(Array.isArray(x.steps)?x.steps:[]),x.contact||""].filter(Boolean).join("\n\n"),
       sources:Array.isArray(x.sources)?x.sources.join("\n"):(x.sourceUrl||x.url||""),
+      correctionNote:"",correctedAt:"",
       image:x.image||"",imageName:""
     }));
   }catch{return[]}
@@ -258,6 +259,8 @@ function dbToDraft(row){
     whatItMeans:row.what_it_means||"",
     nextStep:row.next_step||"",
     sources:row.sources||"",
+    correctionNote:row.correction_note||"",
+    correctedAt:row.corrected_at||"",
     image:row.image_url||""
   };
 }
@@ -274,6 +277,8 @@ function draftToDb(draft){
     what_it_means:draft.whatItMeans||"",
     next_step:draft.nextStep||"",
     sources:draft.sources||"",
+    correction_note:draft.correctionNote||"",
+    corrected_at:draft.correctedAt||null,
     state:draft.state||"draft",
     image_url:draft.image||"",
     updated_at:new Date().toISOString()
@@ -372,6 +377,7 @@ function selectDraft(id){
   $("#what-it-means").value=d.whatItMeans||"";
   $("#next-step").value=d.nextStep||"";
   $("#sources").value=d.sources||"";
+  $("#correction-note").value=d.correctionNote||"";
   $("#state").value=d.state||"draft";
   $("#draft-status").textContent=d.seed?"Zdrojový článok · uloženie vytvorí nový návrh":"Uložené v Supabase";
   currentImageData=d.image||"";
@@ -386,8 +392,10 @@ function selectDraft(id){
 }
 
 function readForm(){
+  const currentId=$("#draft-id").value||"";
+  const selected=drafts.find(x=>x.id===currentId);
   return {
-    id:$("#draft-id").value||"",
+    id:currentId,
     seed:false,
     title:$("#title").value.trim(),
     seoTitle:$("#seo-title").value.trim(),
@@ -398,6 +406,8 @@ function readForm(){
     whatItMeans:$("#what-it-means").value.trim(),
     nextStep:$("#next-step").value.trim(),
     sources:$("#sources").value.trim(),
+    correctionNote:$("#correction-note").value.trim(),
+    correctedAt:selected?.correctedAt||"",
     state:$("#state").value,
     updated:nowDate(),
     image:currentImageData
@@ -461,6 +471,13 @@ async function saveDraft(){
 
   $("#draft-status").textContent="Ukladám…";
   const selected=drafts.find(x=>x.id===d.id);
+  if(d.correctionNote){
+    d.correctedAt=(selected&&!selected.seed&&selected.correctionNote===d.correctionNote&&selected.correctedAt)
+      ? selected.correctedAt
+      : new Date().toISOString();
+  }else{
+    d.correctedAt="";
+  }
   const payload=draftToDb(d);
 
   let result;
@@ -613,7 +630,7 @@ $("#article-form").addEventListener("submit",async e=>{
 
 $("#new-draft").addEventListener("click",()=>{resetForm();window.scrollTo({top:0,behavior:"smooth"})});
 $("#draft-search").addEventListener("input",renderDraftList);
-["#title","#category","#intro","#what-happened","#what-it-means","#next-step","#sources","#seo-title","#meta-description"].forEach(id=>{
+["#title","#category","#intro","#what-happened","#what-it-means","#next-step","#sources","#seo-title","#meta-description","#correction-note"].forEach(id=>{
   $(id)?.addEventListener("input",()=>{
     workspaceDirty=true;
     updateLivePreview();
