@@ -38,7 +38,7 @@
     <article class="auto-main" id="auto-health-card">
       <span class="auto-articles-kicker">AUTOMATICKÁ FRONTA</span>
       <strong id="auto-run-summary">Kontrolujem automatiku…</strong>
-      <small id="auto-run-note">Každých 15 minút sa kontrolujú zdroje a bezpečné témy sa ukladajú ako návrhy do Redakcie. Nič sa už automaticky nepublikuje. Limit je 12 pripravených návrhov za 24 hodín.</small>
+      <small id="auto-run-note">Každých 15 minút sa kontrolujú zdroje a bezpečné témy sa ukladajú ako návrhy do Redakcie. Nič sa automaticky nepublikuje. Výrobný limit je 36 návrhov za 24 hodín a vo fronte môže naraz čakať najviac 15 nevydaných návrhov.</small>
       <button id="auto-run-refresh" class="auto-articles-refresh" type="button">Obnoviť stav</button>
     </article>
 
