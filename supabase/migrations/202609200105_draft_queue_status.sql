@@ -10,5 +10,6 @@ alter table public.automation_source_items
     'skipped'::text,
     'failed'::text,
     'rejected'::text,
-    'drafted'::text
+    'drafted'::text,
+    'processing'::text
   ]));
