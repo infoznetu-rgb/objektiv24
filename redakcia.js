@@ -731,10 +731,8 @@ async function publishCurrentDraft(){
     $("#state").value="published";
     if(window.ensureAutomaticImageFallback) window.ensureAutomaticImageFallback();
     const saved=await saveDraft();
-    if(window.requestEditorialImageGeneration){
-      window.requestEditorialImageGeneration(saved.id,{mode:"auto",force:false,silent:true})
-        .catch(error=>console.error("Automatické AI generovanie obrázka sa nepodarilo spustiť:",error));
-    }
+    // Obrázok sa už pri publikovaní negeneruje automaticky.
+    // Redaktor ho doplní ručne alebo spustí generovanie vedome z obrazového editora.
     const visible=await isPubliclyVisible(saved.id);
     if(visible){
       try{
